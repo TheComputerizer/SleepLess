@@ -5,7 +5,10 @@ import mods.thecomputerizer.sleepless.capability.sleepdebt.SleepDebt;
 import mods.thecomputerizer.sleepless.capability.sleepdebt.SleepDebtStorage;
 import mods.thecomputerizer.sleepless.client.SleepLessClient;
 import mods.thecomputerizer.sleepless.core.Constants;
+import mods.thecomputerizer.sleepless.network.PacketUpdateClientEffects;
 import mods.thecomputerizer.sleepless.util.AddedEnums;
+import mods.thecomputerizer.theimpossiblelibrary.TheImpossibleLibrary;
+import mods.thecomputerizer.theimpossiblelibrary.network.NetworkHandler;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
@@ -17,7 +20,10 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 public class SleepLess {
 
     public SleepLess() {
+        Constants.LOGGER.info("Started constructing mod class");
         AddedEnums.load();
+        if(Constants.IS_DEV) TheImpossibleLibrary.enableDevLog();
+        NetworkHandler.queueClientPacketRegister(PacketUpdateClientEffects.class);
         Constants.LOGGER.info("Constructed mod class");
     }
 

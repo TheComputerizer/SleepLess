@@ -9,7 +9,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class ClientEffects {
     public static final ResourceLocation GRAYSCALE_SHADER = Constants.res("shaders/post/dynamic_color_overlay.json");
     public static float FOV_ADJUST = 0f;
-    public static float COLOR_CORRECTION = 1f;
+    public static float COLOR_CORRECTION = 0f;
     public static float COLOR_CORRECTION_OVERRIDE = 0f;
     public static float SCREEN_SHAKE = 0f;
 
@@ -18,7 +18,7 @@ public class ClientEffects {
     }
 
     public static float getColorCorrection() {
-        return 1f-(COLOR_CORRECTION_OVERRIDE>0 ? COLOR_CORRECTION_OVERRIDE : COLOR_CORRECTION);
+        return COLOR_CORRECTION_OVERRIDE>0 ? COLOR_CORRECTION_OVERRIDE : COLOR_CORRECTION;
     }
 
     public static boolean isScreenShaking() {

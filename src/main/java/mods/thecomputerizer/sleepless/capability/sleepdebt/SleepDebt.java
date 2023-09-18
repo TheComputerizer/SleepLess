@@ -2,15 +2,18 @@ package mods.thecomputerizer.sleepless.capability.sleepdebt;
 
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
 import mods.thecomputerizer.sleepless.core.Constants;
+import mods.thecomputerizer.sleepless.network.PacketUpdateClientEffects;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.MathHelper;
 
 public class SleepDebt implements ISleepDebt {
 
     private float debt = 0f;
+    private float grayScale = 0f;
 
     @Override
-    public void onTicksSlept(long ticks) {
+    public boolean onTicksSlept(long ticks) {
         boolean shouldAdjust = ticks<5000 || this.debt>0;
         if(shouldAdjust) {
             Constants.testLog("CURRENT DEBT IS {}", this.debt);
@@ -20,6 +23,7 @@ public class SleepDebt implements ISleepDebt {
             this.debt = Math.max(0f, this.debt + addedDebt);
             Constants.testLog("CURRENT DEBT IS NOW {}", this.debt);
         }
+        return shouldAdjust;
     }
 
     @Override
@@ -27,22 +31,14 @@ public class SleepDebt implements ISleepDebt {
         return this.debt;
     }
 
-    private float getAddedDebt(float hours) {
-        int rounded = (int)hours;
-        float t1 = 1f/3f;
-        float t2 = 2f/3f;
-        switch (rounded) {
-            case 0 : return 0.8f+(0.2f*(1-hours));
-            case 1 : return t2+((0.8f-t2)*(2-hours));
-            case 2 : return t1+(t1*(3-hours));
-            case 3 : return 0.2f+((t1-0.2f)*(4-hours));
-            case 4 : return 0.2f*(5-hours);
-            case 5 : return -0.5f*(hours-5);
-            case 6 : return -0.5f-(0.5f*(hours-6));
-            case 7 : return -1f-(0.5f*(hours-7));
-            case 8 : return -1.5f-(0.5f*(hours-8));
-            default : return -2f-((hours-9)/3f);
-        }
+    private void updateEffects() {
+        this.grayScale = MathHelper.clamp(this.debt-9f,0f,1f);
+    }
+
+    @Override
+    public void sync(EntityPlayerMP player) {
+        updateEffects();
+        new PacketUpdateClientEffects(this.grayScale).addPlayers(player).send();
     }
 
     @Override
@@ -55,5 +51,6 @@ public class SleepDebt implements ISleepDebt {
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         this.debt = tag.getFloat("debt");
+        updateEffects();
     }
 }

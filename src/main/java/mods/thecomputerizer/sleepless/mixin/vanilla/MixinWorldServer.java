@@ -16,7 +16,7 @@ public class MixinWorldServer {
         long next = time+24000L;
         long ticksPassed = (next-next%24000L)-time;
         for(EntityPlayer player : world.playerEntities)
-            CapabilityHandler.setTicksSlept(player,ticksPassed);
+            CapabilityHandler.setTicksSlept(player,ticksPassed,true);
         return time;
     }
 }

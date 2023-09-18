@@ -1,5 +1,6 @@
 package mods.thecomputerizer.sleepless.client;
 
+import mods.thecomputerizer.sleepless.client.render.ClientEffects;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -9,7 +10,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class ClientPacketHandlers {
 
     @SideOnly(Side.CLIENT)
-    public static void methodName() {
-
+    public static void updateClientEffects(float grayscale) {
+        ClientEffects.COLOR_CORRECTION = grayscale;
     }
 }

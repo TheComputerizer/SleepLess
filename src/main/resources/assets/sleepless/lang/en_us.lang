@@ -48,7 +48,9 @@ config.sleepless.client.disableHallucinations.tooltip=Disables any visual halluc
 config.sleepless.client.disableGrayscale=Disable Grayscale
 config.sleepless.client.disableGrayscale.tooltip=Stops sleep debt from removing color
 
-potion.sleepless.insomnia.name=Insomnia
+potion.sleepless.insomnia=Insomnia
+potion.sleepless.tired=Tired
 
 tile.bed.sleepless.insomnia=You can't seem to fall sleep
-tile.bed.sleepless.wakeup=Your current sleep debt is %1$s days
+
+status.sleepless.sleepdebt=Your current sleep debt is %1$s days

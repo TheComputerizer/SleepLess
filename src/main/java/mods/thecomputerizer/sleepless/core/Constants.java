@@ -12,7 +12,7 @@ public class Constants {
             "required-after:theimpossiblelibrary;";
     public static final Logger LOGGER = LogManager.getLogger(NAME);
 
-    private static final boolean IS_DEV = true;
+    public static final boolean IS_DEV = true;
 
     public static void testLog(String msg, Object ... parameters) {
         if(IS_DEV) LOGGER.error(msg,parameters);

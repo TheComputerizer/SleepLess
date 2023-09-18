@@ -29,6 +29,6 @@ public abstract class MixinWorld {
     private void sleepless$setWorldTime(long time, CallbackInfo info) {
         if(sleepless$cast() instanceof WorldServer && (getWorldTime()-1)%24000==23900)
             for(EntityPlayer player : this.playerEntities)
-                CapabilityHandler.setTicksSlept(player,0);
+                CapabilityHandler.setTicksSlept(player,0,true);
     }
 }
