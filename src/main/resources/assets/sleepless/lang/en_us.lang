@@ -1,0 +1,54 @@
+config.sleepless.sleepdebttimings=Sleep Debt Timings
+config.sleepless.sleepdebttimings.tooltip=Configurations regarding common sleep debt effects and related values
+config.sleepless.sleepdebttimings.maxDaysLost=Max Days Lost
+config.sleepless.sleepdebttimings.maxDaysLost.tooltip=The maximum number of sleep debt days added when not sleeping enough or at all during a night
+config.sleepless.sleepdebttimings.maxDaysPaid=Max Days Paid
+config.sleepless.sleepdebttimings.maxDaysPaid.tooltip=The maximum number of sleep debt days that can be paid off when enough sleep is gotten during a night
+
+config.sleepless.napping=Napping
+config.sleepless.napping.tooltip=Configurations regarding napping
+config.sleepless.napping.disableNapping=Disable Napping
+config.sleepless.napping.disableNapping.tooltip=Disable the napping mechanic entirely
+config.sleepless.napping.napTime=Nap Time
+config.sleepless.napping.napTime.tooltip=The number of hours that a nap lasts during the day when a sufficient sleep debt to enabled napping has been acquired
+config.sleepless.napping.napAmount=Nap Amount
+config.sleepless.napping.napAmount.tooltip=The number of sleep debt days that are paid off after taking a nap
+config.sleepless.napping.napDay=Nap Day
+config.sleepless.napping.napDay.tooltip=The number of sleep debt days that must be acquired before being able to nap
+
+config.sleepless.statuseffects=Status Effects
+config.sleepless.statuseffects.tooltip=Configurations regarding sleep debt status effect
+config.sleepless.statuseffects.disableStatusEffects=Disable All Status Effects
+config.sleepless.statuseffects.disableStatusEffects.tooltip=Disables all status effects that result from acquiring too much sleep debt
+config.sleepless.statuseffects.disableHunger=Disable Hunger
+config.sleepless.statuseffects.disableHunger.tooltip=Stops sleep debt from increasing hunger drain
+config.sleepless.statuseffects.disableSlowness=Disable Slowness
+config.sleepless.statuseffects.disableSlowness.tooltip=Stops sleep debt from slowing you down
+config.sleepless.statuseffects.disableMiningFatigue=Disable Mining Fatigue
+config.sleepless.statuseffects.disableMiningFatigue.tooltip=Stops sleep debt from slowing down mining speed
+config.sleepless.statuseffects.disableFasterDrowning=Disable Faster Drowning
+config.sleepless.statuseffects.disableFasterDrowning.tooltip=Stops sleep debt from making you drown faster
+
+config.sleepless.client=Client Effects
+config.sleepless.client.tooltip=Configurations regarding visual and audio effects on the client side
+config.sleepless.client.disableClientEffects=Disable All Client Effects
+config.sleepless.client.disableClientEffects.tooltip=Disables all audio and visual effects that result from acquiring too much sleep debt
+config.sleepless.client.disableAudioEffects=Disable All Audio Effects
+config.sleepless.client.disableAudioEffects.tooltip=Disables audio effects that result from acquiring too much sleep debt
+config.sleepless.client.disableAmbientSounds=Disable Ambient Sounds
+config.sleepless.client.disableAmbientSounds.tooltip=Stops sleep debt from triggering ambient sounds
+config.sleepless.client.disableSoundMuffler=Disable Sound Muffler
+config.sleepless.client.disableSoundMuffler.tooltip=Stops sleep debt from muffling sounds or making them quieter
+config.sleepless.client.disableVisualEffects=Disable All Visual Effects
+config.sleepless.client.disableVisualEffects.tooltip=Disables visual effects that result from acquiring too much sleep debt
+config.sleepless.client.disableDistortion=Disable Distorition
+config.sleepless.client.disableDistortion.tooltip=Stops any visual distortions that result from acquiring too much sleep debt
+config.sleepless.client.disableHallucinations=Disable Hallucinations
+config.sleepless.client.disableHallucinations.tooltip=Disables any visual hallucinations that result from acquiring too much sleep debt
+config.sleepless.client.disableGrayscale=Disable Grayscale
+config.sleepless.client.disableGrayscale.tooltip=Stops sleep debt from removing color
+
+potion.sleepless.insomnia.name=Insomnia
+
+tile.bed.sleepless.insomnia=You can't seem to fall sleep
+tile.bed.sleepless.wakeup=Your current sleep debt is %1$s days

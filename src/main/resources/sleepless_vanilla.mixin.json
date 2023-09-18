@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "mods.thecomputerizer.sleepless.mixin.vanilla",
+  "refmap": "sleepless.refmap.json",
+  "target": "@env(DEFAULT)",
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "MixinBlockBed",
+    "MixinWorld",
+    "MixinWorldServer"
+  ],
+  "client": [
+    "MixinShaderGroup"
+  ]
+}

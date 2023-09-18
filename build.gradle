@@ -1,0 +1,102 @@
+//file:noinspection GroovyAssignabilityCheck
+plugins {
+    id 'net.minecraftforge.gradle' version '6.0.+'
+    id 'wtf.gofancy.fancygradle' version '1.1.+'
+    id 'org.spongepowered.mixin' version '0.7.+'
+}
+
+fancyGradle {
+    patches {
+        resources
+        coremods
+        codeChickenLib
+        asm
+        mergetool
+    }
+}
+
+
+version = "${project.minecraft_version}-${project.mod_version}"
+group = project.maven_group
+archivesBaseName = project.base_name
+
+java.toolchain.getLanguageVersion().set(JavaLanguageVersion.of(8))
+
+minecraft {
+    mappings channel: 'stable', version: mappings_version
+    accessTransformer = file('src/main/resources/META-INF/sleepless_at.cfg')
+    runs {
+        def args = [
+                '-Dmixin.debug.export=true',
+                '-Dmixin.hotSwap=true',
+                '-Dmixin.checks.interfaces=true'
+        ]
+        client {
+            workingDirectory file('run')
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+            jvmArgs args
+        }
+
+        server {
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+            jvmArgs args
+        }
+    }
+}
+
+repositories {
+    maven {
+        name = 'CurseForge'
+        url = uri('https://www.cursemaven.com')
+        content {
+            includeGroup 'curse.maven'
+        }
+    }
+    maven {
+        name = 'Sponge'
+        url = uri('https://repo.spongepowered.org/maven')
+    }
+}
+
+dependencies {
+    minecraft("net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}")
+    annotationProcessor("org.spongepowered:mixin:${project.mixin_version}:processor")
+
+    //implemented cf stuff
+    implementation(fg.deobf("curse.maven:mixin-booter-419286:${project.mixinbooter_version}"))
+    implementation(fg.deobf("curse.maven:the-impossible-library-661115:${project.til_version}"))
+
+    //runtime stuff and libraries
+    runtimeOnly(fg.deobf("curse.maven:had-enough-items-557549:${project.hei_version}"))
+    runtimeOnly(fg.deobf("curse.maven:the-one-probe-245211:${project.top_version}"))
+}
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    inputs.property "version", project.version
+    inputs.property "mcversion", minecraft_version
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version': project.version, 'mcversion': minecraft_version
+    }
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+mixin {
+    add sourceSets.main, "sleepless.refmap.json"
+}
+
+jar {
+    manifest {
+        attributes([
+                'FMLCorePlugin': 'mods.thecomputerizer.sleepless.core.VanillaMixinLoader',
+                'FMLCorePluginContainsFMLMod': true,
+                'ForceLoadAsMod': false,
+                'FMLAT': 'sleepless_at.cfg',
+        ])
+    }
+}

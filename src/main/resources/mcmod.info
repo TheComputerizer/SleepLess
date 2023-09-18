@@ -1,0 +1,14 @@
+[
+  {
+    "modid": "sleepless",
+    "name": "SleepLess",
+    "description": "1.12.2 Modding Coalition SpookyJam Entry",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://www.curseforge.com/minecraft/mc-mods/sleepless",
+    "authorList": ["The_Computerizer"],
+    "credits": "The 1.12.2 Modding Coalition for hosting SpookyJam",
+    "logoFile": "SleepLessLogo.png",
+    "dependencies": ["mixinbooter","theimpossiblelibrary"]
+  }
+]
