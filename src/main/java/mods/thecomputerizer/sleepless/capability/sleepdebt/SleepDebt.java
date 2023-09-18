@@ -11,6 +11,11 @@ public class SleepDebt implements ISleepDebt {
 
     private float debt = 0f;
     private float grayScale = 0f;
+    private float hungerAmplifier = 0f;
+    private float ambientSoundChance = 0f; //chance out of 100 every second
+    private float mobSpawnAmplifier = 0f;
+    private float quietSounds = 0f;
+    private float lightDimming = 0f;
 
     @Override
     public boolean onTicksSlept(long ticks) {
@@ -31,14 +36,25 @@ public class SleepDebt implements ISleepDebt {
         return this.debt;
     }
 
+    @Override
+    public float getHungerAmplifier() {
+        return this.hungerAmplifier;
+    }
+
     private void updateEffects() {
         this.grayScale = MathHelper.clamp(this.debt-9f,0f,1f);
+        this.hungerAmplifier = this.debt>=2f ? this.debt>=4 ? 1f : 0.5f : 0f;
+        this.ambientSoundChance = this.debt>=2f ? (this.debt-2f)*0.5f : 0f;
+        this.mobSpawnAmplifier = this.debt>=3f ? this.debt>=6f ? this.debt>=9f ? 0.75f : 0.5f : 0.25f : 0f;
+        this.quietSounds = this.debt>=6f ? this.debt>=8f ? this.debt>=9f ? 0.25f : 0.5f : 0.75f : 1f;
+        this.lightDimming = this.debt>=8 ? 0.5f : 0f;
     }
 
     @Override
     public void sync(EntityPlayerMP player) {
         updateEffects();
-        new PacketUpdateClientEffects(this.grayScale).addPlayers(player).send();
+        new PacketUpdateClientEffects(this.grayScale,this.ambientSoundChance,this.quietSounds,this.lightDimming)
+                .addPlayers(player).send();
     }
 
     @Override

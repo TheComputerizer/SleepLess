@@ -5,12 +5,14 @@ varying vec2 texCoord;
 varying vec2 oneTexel;
 uniform vec2 InSize;
 uniform float Prominence = 1.0;
+uniform float LumaAdjust = 1.0;
+uniform float ColorAdjust = 1.0;
 uniform vec3 Color = vec3(1.0,1.0,1.0);
 
 float getAdjustment(vec3 Matrix, vec3 InitialMatrix, float InitialValue) {
     float PostValue = dot(InitialMatrix, Matrix);
     float difference = PostValue-InitialValue;
-    return InitialValue+(difference*Prominence);
+    return (InitialValue+(difference*Prominence))*ColorAdjust;
 }
 
 void main() {
@@ -24,7 +26,7 @@ void main() {
     // Saturation
     float Luma = dot(OutColor, vec3(0.3, 0.59, 0.11));
     vec3 Chroma = OutColor - Luma;
-    OutColor = (Chroma * (1.0-Prominence)) + Luma;
+    OutColor = (Chroma * (1.0-Prominence)) + Luma*LumaAdjust;
 
     gl_FragColor = vec4(OutColor,1.0);
 }

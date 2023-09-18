@@ -26,6 +26,14 @@
           "values": [ 1.0 ]
         },
         {
+          "name": "LumaAdjust",
+          "values": [ 1.0 ]
+        },
+        {
+          "name": "ColorAdjust",
+          "values": [ 1.0 ]
+        },
+        {
           "name": "Color",
           "values": [ 0.9, 0.9, 0.9 ]
         }

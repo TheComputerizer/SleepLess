@@ -18,8 +18,11 @@ public class DynamicColorShader extends Shader {
 
     @Override
     public void render(float partialTicks) {
-        if(Objects.nonNull(Minecraft.getMinecraft().player))
-            this.getShaderManager().getShaderUniformOrDefault("Prominence").set(ClientEffects.getColorCorrection());
+        if(Objects.nonNull(Minecraft.getMinecraft().player)) {
+            this.getShaderManager().getShaderUniformOrDefault("Prominence").set(ClientEffects.COLOR_CORRECTION);
+            this.getShaderManager().getShaderUniformOrDefault("LumaAdjust").set(1f-ClientEffects.LIGHT_DIMMING);
+            this.getShaderManager().getShaderUniformOrDefault("ColorAdjust").set(1f-ClientEffects.COLOR_CORRECTION/2f);
+        }
         super.render(partialTicks);
     }
 }

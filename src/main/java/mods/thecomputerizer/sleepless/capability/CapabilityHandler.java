@@ -35,6 +35,10 @@ public class CapabilityHandler {
         return getSleepDebtCapability(player).getDebt();
     }
 
+    public static float getHungerAmplifier(EntityPlayer player, float exhaustion) {
+        return exhaustion*(1f+getSleepDebtCapability(player).getHungerAmplifier());
+    }
+
     public static void setTicksSlept(EntityPlayer player, long ticks, boolean notifyPlayer) {
         ISleepDebt cap = getSleepDebtCapability(player);
         if(cap.onTicksSlept(ticks)) {
