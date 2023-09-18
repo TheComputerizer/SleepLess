@@ -39,6 +39,10 @@ public class CapabilityHandler {
         return exhaustion*(1f+getSleepDebtCapability(player).getHungerAmplifier());
     }
 
+    public static float getMiningSpeedFactor(EntityPlayer player) {
+        return getSleepDebtCapability(player).getMiningSpeedFactor();
+    }
+
     public static void setTicksSlept(EntityPlayer player, long ticks, boolean notifyPlayer) {
         ISleepDebt cap = getSleepDebtCapability(player);
         if(cap.onTicksSlept(ticks)) {

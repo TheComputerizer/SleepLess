@@ -7,7 +7,9 @@ public interface ISleepDebt {
 
     boolean onTicksSlept(long ticks);
     float getDebt();
+    void setDebt(EntityPlayerMP player, float debt);
     float getHungerAmplifier();
+    float getMiningSpeedFactor();
     void sync(EntityPlayerMP player);
     NBTTagCompound writeToNBT();
     void readFromNBT(NBTTagCompound tag);

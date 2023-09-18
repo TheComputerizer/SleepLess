@@ -16,6 +16,10 @@ public class SleepDebt implements ISleepDebt {
     private float mobSpawnAmplifier = 0f;
     private float quietSounds = 0f;
     private float lightDimming = 0f;
+    private float fogDensity = 0f;
+    private float speedFactor = 1f;
+    private float breathingFactor = 0f;
+    private float miningSpeed = 1f;
 
     @Override
     public boolean onTicksSlept(long ticks) {
@@ -37,24 +41,39 @@ public class SleepDebt implements ISleepDebt {
     }
 
     @Override
+    public void setDebt(EntityPlayerMP player, float debt) {
+        this.debt = debt;
+        sync(player);
+    }
+
+    @Override
     public float getHungerAmplifier() {
         return this.hungerAmplifier;
+    }
+
+    @Override
+    public float getMiningSpeedFactor() {
+        return this.miningSpeed;
     }
 
     private void updateEffects() {
         this.grayScale = MathHelper.clamp(this.debt-9f,0f,1f);
         this.hungerAmplifier = this.debt>=2f ? this.debt>=4 ? 1f : 0.5f : 0f;
-        this.ambientSoundChance = this.debt>=2f ? (this.debt-2f)*0.5f : 0f;
+        this.ambientSoundChance = this.debt>=2f ? (this.debt-2f)*0.75f : 0f;
         this.mobSpawnAmplifier = this.debt>=3f ? this.debt>=6f ? this.debt>=9f ? 0.75f : 0.5f : 0.25f : 0f;
         this.quietSounds = this.debt>=6f ? this.debt>=8f ? this.debt>=9f ? 0.25f : 0.5f : 0.75f : 1f;
-        this.lightDimming = this.debt>=8 ? 0.5f : 0f;
+        this.lightDimming = this.debt>=8f ? 0.5f : 0f;
+        this.fogDensity = this.debt>=1f ? (this.debt-1f)/10f : 0f;
+        this.speedFactor = this.debt>=7f ? this.debt>=10f ? 2f : 1.5f : 1f;
+        this.breathingFactor = this.debt>=2 ? this.debt>=5 ? this.debt>=8 ? this.debt<=10 ? 0.4f : 0.3f : 0.2f : 0.1f : 0f;
+        this.miningSpeed = this.debt>=6f ? this.debt>=10f ? 0.5f-((this.debt-10f)/180f) : 0.75f : 1f;
     }
 
     @Override
     public void sync(EntityPlayerMP player) {
         updateEffects();
-        new PacketUpdateClientEffects(this.grayScale,this.ambientSoundChance,this.quietSounds,this.lightDimming)
-                .addPlayers(player).send();
+        new PacketUpdateClientEffects(this.grayScale,this.ambientSoundChance,this.quietSounds,this.lightDimming,
+                this.fogDensity,this.speedFactor,this.breathingFactor,this.miningSpeed).addPlayers(player).send();
     }
 
     @Override

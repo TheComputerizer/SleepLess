@@ -1,3 +1,6 @@
+commands.sleepless.setsleepdebt.fail=Command did not work
+commands.sleepless.setsleepdebt.success=Set sleep debt to %1$s
+
 config.sleepless.sleepdebttimings=Sleep Debt Timings
 config.sleepless.sleepdebttimings.tooltip=Configurations regarding common sleep debt effects and related values
 config.sleepless.sleepdebttimings.maxDaysLost=Max Days Lost
