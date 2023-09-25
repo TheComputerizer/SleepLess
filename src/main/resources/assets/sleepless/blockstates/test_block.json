@@ -1,5 +1,5 @@
 {
   "variants": {
-    "normal": { "model": "sleepless:teet_block" }
+    "normal": { "model": "sleepless:test_block" }
   }
 }
