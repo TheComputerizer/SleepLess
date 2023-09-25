@@ -1,16 +1,16 @@
 package mods.thecomputerizer.sleepless.registry.entities;
 
+import mods.thecomputerizer.sleepless.core.Constants;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.monster.EntityCreeper;
-import net.minecraft.entity.monster.EntitySkeleton;
-import net.minecraft.entity.monster.EntityZombie;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.registry.EntityEntry;
-import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -19,9 +19,8 @@ import java.util.Objects;
 
 public class PhantomEntity extends EntityLiving {
 
-    private static final Class<?>[] VALID_SHADOWS = new Class<?>[]{EntityZombie.class,EntitySkeleton.class,
-            EntityCreeper.class};
-    protected EntityEntry shadowEntry;
+    private static final Class<?>[] VALID_SHADOWS = new Class<?>[]{EntityPlayer.class};
+    protected Class<? extends Entity> shadowEntityClass;
 
     public PhantomEntity(World world) {
         super(world);
@@ -30,20 +29,18 @@ public class PhantomEntity extends EntityLiving {
     }
 
     @SuppressWarnings("unchecked")
-    protected void setRandomShadow() {
-        Class<?> shadowClass = VALID_SHADOWS[this.world.rand.nextInt(VALID_SHADOWS.length)];
-        if(Entity.class.isAssignableFrom(shadowClass))
-            this.shadowEntry = EntityRegistry.getEntry((Class<? extends Entity>)shadowClass);
+    private void tryAssignShadowClass(Class<?> potentialClass) {
+        this.shadowEntityClass = Entity.class.isAssignableFrom(potentialClass) ?
+                (Class<? extends Entity>)potentialClass : null;
+        Constants.testLog("SET SHADOW CLASS TO {}",this.shadowEntityClass);
     }
 
-    @Override
-    protected void entityInit() {
-        super.entityInit();
-        setRandomShadow();
+    protected void setRandomShadow() {
+        tryAssignShadowClass(VALID_SHADOWS[this.world.rand.nextInt(VALID_SHADOWS.length)]);
     }
 
     public boolean isInitialized() {
-        return Objects.nonNull(this.shadowEntry);
+        return Objects.nonNull(this.shadowEntityClass);
     }
 
     @Override
@@ -54,7 +51,35 @@ public class PhantomEntity extends EntityLiving {
 
     @SideOnly(Side.CLIENT)
     public Render<?> getShadowRenderer(@Nonnull RenderManager manager) {
-        if(Objects.isNull(this.shadowEntry)) return null;
-        return manager.entityRenderMap.getOrDefault(this.shadowEntry.getEntityClass(),null);
+        if(Objects.isNull(this.shadowEntityClass)) return null;
+        if(EntityPlayer.class.isAssignableFrom(this.shadowEntityClass)) {
+            EntityPlayerSP player = Minecraft.getMinecraft().player;
+            return Objects.nonNull(player) ? manager.getEntityRenderObject(Minecraft.getMinecraft().player) : null;
+        }
+        return manager.entityRenderMap.getOrDefault(this.shadowEntityClass,null);
+    }
+
+    @Override
+    public void writeEntityToNBT(@Nonnull NBTTagCompound tag) {
+        super.writeEntityToNBT(tag);
+        NBTTagCompound shadowTag = new NBTTagCompound();
+        if(Objects.nonNull(this.shadowEntityClass))
+            shadowTag.setString("EntityClassName",this.shadowEntityClass.getName());
+        tag.setTag("SleepLessShadowData",shadowTag);
+    }
+
+    @Override
+    public void readEntityFromNBT(@Nonnull NBTTagCompound tag) {
+        super.writeEntityToNBT(tag);
+        readEntityClass(tag.getCompoundTag("SleepLessShadowData").getString("EntityClassName"));
+        if(Objects.isNull(this.shadowEntityClass)) setRandomShadow();
+    }
+
+    private void readEntityClass(String className) {
+        if(!className.isEmpty()) {
+            try {
+                tryAssignShadowClass(Class.forName(className));
+            } catch (ClassNotFoundException ignored) {}
+        }
     }
 }

@@ -3,7 +3,6 @@
 uniform sampler2D DiffuseSampler;
 varying vec2 texCoord;
 varying vec2 oneTexel;
-uniform vec2 InSize;
 uniform float Prominence = 1.0;
 uniform float LumaAdjust = 1.0;
 uniform float ColorAdjust = 1.0;

@@ -1,11 +1,14 @@
 package mods.thecomputerizer.sleepless.client.render;
 
 import mods.thecomputerizer.sleepless.client.model.ModelShadowBiped;
+import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.mixin.vanilla.InvokerRender;
 import mods.thecomputerizer.sleepless.registry.entities.PhantomEntity;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderBiped;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -23,12 +26,16 @@ public class RenderPhantomEntity extends RenderBiped<PhantomEntity> {
 
     @Override
     public void doRender(@Nonnull PhantomEntity entity, double x, double y, double z, float yaw, float partialTicks) {
-        if(entity.isInitialized()) super.doRender(entity,x,y,z,yaw,partialTicks);
+        if(entity.isInitialized()) {
+            Constants.testLog("ITS TIME FOR SOME SUPER RENDERING");
+            super.doRender(entity,x,y,z,yaw,partialTicks);
+        }
     }
 
     @Override
     protected @Nullable ResourceLocation getEntityTexture(@Nonnull PhantomEntity entity) {
         Render<?> render = entity.getShadowRenderer(this.renderManager);
+        if(render instanceof RenderPlayer) return ((RenderPlayer)render).getEntityTexture(Minecraft.getMinecraft().player);
         return Objects.nonNull(render) ? ((InvokerRender<?>)render).callGetEntityTexture(null) : null;
     }
 }
