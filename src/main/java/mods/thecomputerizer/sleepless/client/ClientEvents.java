@@ -2,6 +2,7 @@ package mods.thecomputerizer.sleepless.client;
 
 
 import mods.thecomputerizer.sleepless.client.render.ClientEffects;
+import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
 import mods.thecomputerizer.sleepless.core.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
@@ -21,7 +22,8 @@ public class ClientEvents {
 
     @SubscribeEvent
     public static void onFovUpdate(FOVUpdateEvent event) {
-        event.setNewfov(ClientEffects.getFOVAdjustment(event.getFov()));
+        if(SleepLessConfigHelper.shouldBreatheHeavily())
+            event.setNewfov(ClientEffects.getFOVAdjustment(event.getFov()));
     }
 
     @SubscribeEvent
@@ -36,23 +38,26 @@ public class ClientEvents {
                 event.player.rotationPitch += ClientEffects.getScreenShake(screenShakePositive);
                 screenShakePositive = !screenShakePositive;
             }
-            if(ClientEffects.BREATHING_FACTOR>0) {
+            if(SleepLessConfigHelper.shouldBreatheHeavily() && ClientEffects.BREATHING_FACTOR>0) {
                 int factor = breathingIn ? 1 : -1;
                 float adder = (ClientEffects.BREATHING_FACTOR/100f)*factor;
                 ClientEffects.FOV_ADJUST = ClientEffects.FOV_ADJUST+adder;
                 if(ClientEffects.FOV_ADJUST<=0) breathingIn = true;
                 else if (ClientEffects.FOV_ADJUST>=ClientEffects.BREATHING_FACTOR) breathingIn = false;
             }
-            secondTimer++;
-            if(secondTimer>19) {
-                ClientEffects.tryAmbientSound();
-                secondTimer = 0;
+            if(SleepLessConfigHelper.shouldPlaySounds()) {
+                secondTimer++;
+                if (secondTimer > 19) {
+                    ClientEffects.tryAmbientSound();
+                    secondTimer = 0;
+                }
             }
         }
     }
 
     @SubscribeEvent
     public static void onFogDensity(EntityViewRenderEvent.FogDensity event) {
-        event.setDensity(event.getDensity()+0.75f*ClientEffects.FOG_DENSITY);
+        if(SleepLessConfigHelper.shouldIncreaseFog())
+            event.setDensity(event.getDensity()+0.75f*ClientEffects.FOG_DENSITY);
     }
 }

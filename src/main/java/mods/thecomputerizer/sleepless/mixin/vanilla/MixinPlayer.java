@@ -1,7 +1,7 @@
 package mods.thecomputerizer.sleepless.mixin.vanilla;
 
 import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
-import mods.thecomputerizer.sleepless.core.Constants;
+import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.FoodStats;
@@ -20,11 +20,12 @@ public class MixinPlayer {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/FoodStats;addExhaustion(F)V"), method = "addExhaustion")
     private void sleepless$redirectAddExhaustion(FoodStats food, float exhaustion) {
-        EntityPlayer player = sleepless$cast();
-        if(player instanceof EntityPlayerMP) {
-            float adjusted = CapabilityHandler.getHungerAmplifier(player, exhaustion);
-            food.addExhaustion(adjusted);
-            Constants.testLog("ADDED {} EXHAUSTION INSTEAD OF {}",adjusted,exhaustion);
-        }
+        if(SleepLessConfigHelper.shouldBeHungry()) {
+            EntityPlayer player = sleepless$cast();
+            if(player instanceof EntityPlayerMP) {
+                float adjusted = CapabilityHandler.getHungerAmplifier(player, exhaustion);
+                food.addExhaustion(adjusted);
+            }
+        } else food.addExhaustion(exhaustion);
     }
 }

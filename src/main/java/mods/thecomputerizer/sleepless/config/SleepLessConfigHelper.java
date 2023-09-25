@@ -34,4 +34,49 @@ public class SleepLessConfigHelper {
             default : return -2f-((hours-9)/3f);
         }
     }
+
+    public static boolean shouldBeHungry() {
+        SleepLessConfig.StatusEffects effects = SleepLessConfig.STATUS_EFFECTS;
+        return !effects.disableStatusEffects && !effects.disableHunger;
+    }
+
+    public static boolean shouldMineSlower() {
+        SleepLessConfig.StatusEffects effects = SleepLessConfig.STATUS_EFFECTS;
+        return !effects.disableStatusEffects && !effects.disableMiningFatigue;
+    }
+
+    public static boolean shouldWalkSlower() {
+        SleepLessConfig.StatusEffects effects = SleepLessConfig.STATUS_EFFECTS;
+        return !effects.disableStatusEffects && !effects.disableSlowness;
+    }
+
+    public static boolean shouldBreatheHeavily() {
+        SleepLessConfig.ClientEffects client = SleepLessConfig.CLIENT_EFFECTS;
+        return !client.disableClientEffects && !client.disableVisualEffects && !client.disableHeavyBreathing;
+    }
+
+    public static boolean shouldPlaySounds() {
+        SleepLessConfig.ClientEffects client = SleepLessConfig.CLIENT_EFFECTS;
+        return !client.disableClientEffects && !client.disableAudioEffects && !client.disableAmbientSounds;
+    }
+
+    public static boolean shouldMuffleSounds() {
+        SleepLessConfig.ClientEffects client = SleepLessConfig.CLIENT_EFFECTS;
+        return !client.disableClientEffects && !client.disableAudioEffects && !client.disableSoundMuffler;
+    }
+
+    public static boolean shouldIncreaseFog() {
+        SleepLessConfig.ClientEffects client = SleepLessConfig.CLIENT_EFFECTS;
+        return !client.disableClientEffects && !client.disableVisualEffects && !client.disableFog;
+    }
+
+    public static boolean shouldLoseColor() {
+        SleepLessConfig.ClientEffects client = SleepLessConfig.CLIENT_EFFECTS;
+        return !client.disableClientEffects && !client.disableVisualEffects && !client.disableGrayscale;
+    }
+
+    public static boolean shouldDimLight() {
+        SleepLessConfig.ClientEffects client = SleepLessConfig.CLIENT_EFFECTS;
+        return !client.disableClientEffects && !client.disableVisualEffects;
+    }
 }

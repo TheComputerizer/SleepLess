@@ -4,7 +4,11 @@ import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.registry.ParticleRegistry;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
+@SuppressWarnings("unused")
+@SideOnly(Side.CLIENT)
 public class SleepLessClient {
 
     public static void preInit(FMLPreInitializationEvent event) {

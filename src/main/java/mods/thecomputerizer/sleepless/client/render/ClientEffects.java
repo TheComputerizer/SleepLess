@@ -36,6 +36,7 @@ public class ClientEffects {
     public static float FOG_DENSITY = 0f;
     public static float WALK_SPEED = 1f;
     public static float MINING_SPEED = 1f;
+    public static float PHANTOM_VISIBILITY = 0f;
 
     public static float getFOVAdjustment(float fov) {
         return fov*(1f-(FOV_ADJUST/2f));

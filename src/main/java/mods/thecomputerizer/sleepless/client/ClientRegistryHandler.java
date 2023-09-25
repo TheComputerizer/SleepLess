@@ -1,9 +1,9 @@
 package mods.thecomputerizer.sleepless.client;
 
-import mods.thecomputerizer.sleepless.client.render.RenderTestEntity;
+import mods.thecomputerizer.sleepless.client.render.RenderPhantomEntity;
 import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.registry.ItemRegistry;
-import mods.thecomputerizer.sleepless.registry.entities.TestEntity;
+import mods.thecomputerizer.sleepless.registry.entities.PhantomEntity;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
@@ -51,6 +51,6 @@ public final class ClientRegistryHandler {
     }
 
     private static void registerEntityRenderers() {
-        //RenderingRegistry.registerEntityRenderingHandler(TestEntity.class, RenderTestEntity::new);
+        RenderingRegistry.registerEntityRenderingHandler(PhantomEntity.class, RenderPhantomEntity::new);
     }
 }

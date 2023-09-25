@@ -13,9 +13,20 @@ import static net.minecraftforge.common.config.Config.*;
 @Config(modid = Constants.MODID, name = Constants.NAME, category = "")
 public class SleepLessConfig {
 
+    @Name("sleepdebttimings")
+    @LangKey("config.sleepless.sleepdebttimings")
     public static SleepDebtTimings SLEEP_DEBT_TIMINGS = new SleepDebtTimings();
+
+    @Name("napping")
+    @LangKey("config.sleepless.napping")
     public static Napping NAPPING = new Napping();
+
+    @Name("statuseffects")
+    @LangKey("config.sleepless.statuseffects")
     public static StatusEffects STATUS_EFFECTS = new StatusEffects();
+
+    @Name("client")
+    @LangKey("config.sleepless.client")
     public static ClientEffects CLIENT_EFFECTS = new ClientEffects();
 
     public static class SleepDebtTimings {
@@ -104,6 +115,14 @@ public class SleepLessConfig {
         @Name("disableGrayscale")
         @LangKey("config.sleepless.client.disableGrayscale")
         public boolean disableGrayscale = false;
+
+        @Name("disableHeavyBreathing")
+        @LangKey("config.sleepless.client.disableHeavyBreathing")
+        public boolean disableHeavyBreathing = false;
+
+        @Name("disableFog")
+        @LangKey("config.sleepless.client.disableFog")
+        public boolean disableFog = false;
     }
 
     @SubscribeEvent

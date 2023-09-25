@@ -95,7 +95,7 @@ jar {
         attributes([
                 'FMLCorePlugin': 'mods.thecomputerizer.sleepless.core.VanillaMixinLoader',
                 'FMLCorePluginContainsFMLMod': true,
-                'ForceLoadAsMod': false,
+                'ForceLoadAsMod': true,
                 'FMLAT': 'sleepless_at.cfg',
         ])
     }

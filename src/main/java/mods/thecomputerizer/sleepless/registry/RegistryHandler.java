@@ -34,7 +34,7 @@ public final class RegistryHandler {
     @SubscribeEvent
     public static void registerBlocks(RegistryEvent.Register<Block> event) {
         register(event,BlockRegistry.getBlocks());
-        GameRegistry.registerTileEntity(TestBlockEntity.class, Constants.res("tile.test_block"));
+        GameRegistry.registerTileEntity(TestBlockEntity.class,Constants.res("tile.test_block"));
     }
 
     @SubscribeEvent

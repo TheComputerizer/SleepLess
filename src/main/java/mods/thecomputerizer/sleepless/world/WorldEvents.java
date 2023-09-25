@@ -2,6 +2,7 @@ package mods.thecomputerizer.sleepless.world;
 
 import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
 import mods.thecomputerizer.sleepless.client.render.ClientEffects;
+import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
 import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.registry.PotionRegistry;
 import mods.thecomputerizer.sleepless.util.AddedEnums;
@@ -29,8 +30,10 @@ public class WorldEvents {
 
     @SubscribeEvent
     public static void onBreakSpeed(net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed event) {
-        float speedFactor = event.getEntityPlayer() instanceof EntityPlayerMP ?
-                CapabilityHandler.getMiningSpeedFactor(event.getEntityPlayer()) : ClientEffects.MINING_SPEED;
-        event.setNewSpeed(event.getNewSpeed()*speedFactor);
+        if(SleepLessConfigHelper.shouldMineSlower()) {
+            float speedFactor = event.getEntityPlayer() instanceof EntityPlayerMP ?
+                    CapabilityHandler.getMiningSpeedFactor(event.getEntityPlayer()) : ClientEffects.MINING_SPEED;
+            event.setNewSpeed(event.getNewSpeed() * speedFactor);
+        }
     }
 }

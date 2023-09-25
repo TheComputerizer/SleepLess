@@ -17,11 +17,13 @@ public class PacketUpdateClientEffects extends MessageImpl {
     private float walkSpeed;
     private float breathingFactor;
     private float miningSpeed;
+    private float phantomVisibility;
 
     public PacketUpdateClientEffects() {}
 
     public PacketUpdateClientEffects(float grayscale, float ambientChance, float quietSounds, float lightDim,
-                                     float fogDensity, float walkSpeed, float breathingFactor, float miningSpeed) {
+                                     float fogDensity, float walkSpeed, float breathingFactor, float miningSpeed,
+                                     float phantomVisibility) {
         this.grayscale = grayscale;
         this.ambientChance = ambientChance;
         this.quietSounds = quietSounds;
@@ -30,12 +32,13 @@ public class PacketUpdateClientEffects extends MessageImpl {
         this.walkSpeed = walkSpeed;
         this.breathingFactor = breathingFactor;
         this.miningSpeed = miningSpeed;
+        this.phantomVisibility = phantomVisibility;
     }
 
     @Override
     public IMessage handle(MessageContext messageContext) {
         ClientPacketHandlers.updateClientEffects(this.grayscale,this.ambientChance,this.quietSounds,this.lightDim,
-                this.fogDensity,this.walkSpeed,this.breathingFactor,this.miningSpeed);
+                this.fogDensity,this.walkSpeed,this.breathingFactor,this.miningSpeed,this.phantomVisibility);
         return null;
     }
 
@@ -54,6 +57,7 @@ public class PacketUpdateClientEffects extends MessageImpl {
         this.walkSpeed = buf.readFloat();
         this.breathingFactor = buf.readFloat();
         this.miningSpeed = buf.readFloat();
+        this.phantomVisibility = buf.readFloat();
     }
 
     @Override
@@ -66,5 +70,6 @@ public class PacketUpdateClientEffects extends MessageImpl {
         buf.writeFloat(this.walkSpeed);
         buf.writeFloat(this.breathingFactor);
         buf.writeFloat(this.miningSpeed);
+        buf.writeFloat(this.phantomVisibility);
     }
 }

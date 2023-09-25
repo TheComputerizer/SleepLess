@@ -13,6 +13,7 @@
   ],
   "client": [
     "MixinEntityRenderer",
+    "InvokerRender",
     "MixinShaderGroup",
     "MixinSoundSystemStarterThread"
   ]

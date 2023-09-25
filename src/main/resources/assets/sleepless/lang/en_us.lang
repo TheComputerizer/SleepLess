@@ -50,10 +50,19 @@ config.sleepless.client.disableHallucinations=Disable Hallucinations
 config.sleepless.client.disableHallucinations.tooltip=Disables any visual hallucinations that result from acquiring too much sleep debt
 config.sleepless.client.disableGrayscale=Disable Grayscale
 config.sleepless.client.disableGrayscale.tooltip=Stops sleep debt from removing color
+config.sleepless.client.disableHeavyBreathing=Disable Heavy Breathing
+config.sleepless.client.disableHeavyBreathing.tooltip=Stops sleep debt from changing FOV
+config.sleepless.client.disableFog=Disable Fog
+config.sleepless.client.disableFog.tooltip=Stops sleep debt from increasing fog density and decreasing fog distance
+
+entity.sleepless.phantom_entity.name=Phantom Entity
+
+item.sleepless.test_item.name=Item Placeholder
 
 potion.sleepless.insomnia=Insomnia
 potion.sleepless.tired=Tired
 
 tile.bed.sleepless.insomnia=You can't seem to fall sleep
+tile.sleepless.test_block.name=Block Placeholder
 
 status.sleepless.sleepdebt=Your current sleep debt is %1$s days

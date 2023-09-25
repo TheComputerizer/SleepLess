@@ -20,6 +20,7 @@ public class SleepDebt implements ISleepDebt {
     private float speedFactor = 1f;
     private float breathingFactor = 0f;
     private float miningSpeed = 1f;
+    private float phantomVisibility = 0f;
 
     @Override
     public boolean onTicksSlept(long ticks) {
@@ -67,13 +68,15 @@ public class SleepDebt implements ISleepDebt {
         this.speedFactor = this.debt>=7f ? this.debt>=10f ? 2f : 1.5f : 1f;
         this.breathingFactor = this.debt>=2 ? this.debt>=5 ? this.debt>=8 ? this.debt<=10 ? 0.4f : 0.3f : 0.2f : 0.1f : 0f;
         this.miningSpeed = this.debt>=6f ? this.debt>=10f ? 0.5f-((this.debt-10f)/180f) : 0.75f : 1f;
+        this.phantomVisibility = this.debt>=5f ? this.debt>= 10f ? 1f : (this.debt-5f)/5f : 0f;
     }
 
     @Override
     public void sync(EntityPlayerMP player) {
         updateEffects();
         new PacketUpdateClientEffects(this.grayScale,this.ambientSoundChance,this.quietSounds,this.lightDimming,
-                this.fogDensity,this.speedFactor,this.breathingFactor,this.miningSpeed).addPlayers(player).send();
+                this.fogDensity,this.speedFactor,this.breathingFactor,this.miningSpeed,this.phantomVisibility)
+                .addPlayers(player).send();
     }
 
     @Override
