@@ -50,7 +50,6 @@ public class ClientEffects {
     public static void tryAmbientSound() {
         WorldClient world = Minecraft.getMinecraft().world;
         if(Objects.nonNull(world) && RANDOM.nextFloat()<=AMBIENT_SOUND_CHANCE/100f) {
-            Constants.testLog("YOOO CUSTOM SOUND");
             EntityPlayerSP player = Minecraft.getMinecraft().player;
             world.playSound(player,player.posX,player.posY,player.posZ,randomSound(),SoundCategory.AMBIENT,
                     1f, MathHelper.clamp((float)(1d+doubleRand()/50d),0.9f,1.1f));

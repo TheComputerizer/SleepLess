@@ -27,7 +27,7 @@ public class VanillaMixinLoader implements IFMLLoadingPlugin, IEarlyMixinLoader 
 
     @Override
     public String getModContainerClass() {
-        return CoreContainer.class.getName();
+        return null;
     }
 
     @Nullable

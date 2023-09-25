@@ -1,7 +1,6 @@
 package mods.thecomputerizer.sleepless.client.render;
 
 import mods.thecomputerizer.sleepless.client.model.ModelShadowBiped;
-import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.mixin.vanilla.InvokerRender;
 import mods.thecomputerizer.sleepless.registry.entities.PhantomEntity;
 import net.minecraft.client.Minecraft;
@@ -26,10 +25,8 @@ public class RenderPhantomEntity extends RenderBiped<PhantomEntity> {
 
     @Override
     public void doRender(@Nonnull PhantomEntity entity, double x, double y, double z, float yaw, float partialTicks) {
-        if(entity.isInitialized()) {
-            Constants.testLog("ITS TIME FOR SOME SUPER RENDERING");
+        if(entity.isInitialized())
             super.doRender(entity,x,y,z,yaw,partialTicks);
-        }
     }
 
     @Override

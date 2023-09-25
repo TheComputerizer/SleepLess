@@ -2,7 +2,6 @@ package mods.thecomputerizer.sleepless.client;
 
 import mods.thecomputerizer.sleepless.client.render.ClientEffects;
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
-import mods.thecomputerizer.sleepless.core.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.SoundCategory;
 import net.minecraftforge.fml.relauncher.Side;
@@ -30,10 +29,6 @@ public class ClientPacketHandlers {
         ClientEffects.BREATHING_FACTOR = breathingFactor;
         ClientEffects.MINING_SPEED = miningSpeed;
         ClientEffects.PHANTOM_VISIBILITY = phantomVisibility;
-        Constants.testLog("SET GRAYSCALE TO {} AMBIENT TO {} QUIET TO {} LIGHT DIM TO {} FOG DENSITY TO {} " +
-                "WALK SPEED TO {} BREATHING FACTOR TO {} MINING SPEED TO {} AND PHANTOM VISIBILITY TO {}",grayscale,
-                ambientChance,quietSounds,lightDim,fogDensity,ClientEffects.WALK_SPEED,breathingFactor,miningSpeed,
-                phantomVisibility);
         Minecraft mc = Minecraft.getMinecraft();
         ((SoundSystem)mc.getSoundHandler().sndManager.sndSystem).setMasterVolume(mc.gameSettings.getSoundLevel(SoundCategory.MASTER));
         if(Objects.nonNull(mc.player)) mc.player.capabilities.setPlayerWalkSpeed(ClientEffects.WALK_SPEED);

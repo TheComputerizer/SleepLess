@@ -1,6 +1,5 @@
 package mods.thecomputerizer.sleepless.registry.entities;
 
-import mods.thecomputerizer.sleepless.core.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.entity.Render;
@@ -32,7 +31,6 @@ public class PhantomEntity extends EntityLiving {
     private void tryAssignShadowClass(Class<?> potentialClass) {
         this.shadowEntityClass = Entity.class.isAssignableFrom(potentialClass) ?
                 (Class<? extends Entity>)potentialClass : null;
-        Constants.testLog("SET SHADOW CLASS TO {}",this.shadowEntityClass);
     }
 
     protected void setRandomShadow() {
