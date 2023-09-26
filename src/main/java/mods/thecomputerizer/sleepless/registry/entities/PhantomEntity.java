@@ -21,6 +21,11 @@ public class PhantomEntity extends EntityLiving {
     private static final Class<?>[] VALID_SHADOWS = new Class<?>[]{EntityPlayer.class};
     protected Class<? extends Entity> shadowEntityClass;
 
+    /**
+     * Stored class name for caching purposes
+     */
+    private String shadowEntityClassName;
+
     public PhantomEntity(World world) {
         super(world);
         this.setHealth(this.getMaxHealth());
@@ -31,6 +36,7 @@ public class PhantomEntity extends EntityLiving {
     private void tryAssignShadowClass(Class<?> potentialClass) {
         this.shadowEntityClass = Entity.class.isAssignableFrom(potentialClass) ?
                 (Class<? extends Entity>)potentialClass : null;
+        this.shadowEntityClassName = Objects.nonNull(this.shadowEntityClass) ? this.shadowEntityClass.getName() : null;
     }
 
     protected void setRandomShadow() {
@@ -61,16 +67,18 @@ public class PhantomEntity extends EntityLiving {
     public void writeEntityToNBT(@Nonnull NBTTagCompound tag) {
         super.writeEntityToNBT(tag);
         NBTTagCompound shadowTag = new NBTTagCompound();
-        if(Objects.nonNull(this.shadowEntityClass))
-            shadowTag.setString("EntityClassName",this.shadowEntityClass.getName());
+        if(Objects.nonNull(this.shadowEntityClassName))
+            shadowTag.setString("EntityClassName",this.shadowEntityClassName);
         tag.setTag("SleepLessShadowData",shadowTag);
     }
 
     @Override
     public void readEntityFromNBT(@Nonnull NBTTagCompound tag) {
         super.writeEntityToNBT(tag);
-        readEntityClass(tag.getCompoundTag("SleepLessShadowData").getString("EntityClassName"));
-        if(Objects.isNull(this.shadowEntityClass)) setRandomShadow();
+        if(Objects.isNull(this.shadowEntityClassName)) {
+            readEntityClass(tag.getCompoundTag("SleepLessShadowData").getString("EntityClassName"));
+            if(Objects.isNull(this.shadowEntityClassName)) setRandomShadow();
+        }
     }
 
     private void readEntityClass(String className) {
