@@ -4,7 +4,6 @@ import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.registry.blocks.TestBlock;
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraftforge.fml.common.registry.GameRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +11,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @SuppressWarnings("SameParameterValue")
-@GameRegistry.ObjectHolder(Constants.MODID)
 public final class BlockRegistry {
 
     private static final List<Block> ALL_BLOCKS = new ArrayList<>();

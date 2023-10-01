@@ -4,12 +4,10 @@ import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.registry.potions.InsomniaPotion;
 import mods.thecomputerizer.sleepless.registry.potions.TiredPotion;
 import net.minecraft.potion.Potion;
-import net.minecraftforge.fml.common.registry.GameRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@GameRegistry.ObjectHolder(Constants.MODID)
 public class PotionRegistry {
 
     private static final List<Potion> ALL_POTIONS = new ArrayList<>();

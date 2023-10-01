@@ -5,7 +5,6 @@ import mods.thecomputerizer.sleepless.registry.items.EpicItem;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
-import net.minecraftforge.fml.common.registry.GameRegistry;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -17,7 +16,6 @@ import java.util.function.Supplier;
 import static mods.thecomputerizer.sleepless.registry.RegistryHandler.SLEEPLESS_TAB;
 
 @SuppressWarnings("SameParameterValue")
-@GameRegistry.ObjectHolder(Constants.MODID)
 public final class ItemRegistry {
 
     private static final List<Item> ALL_ITEMS = new ArrayList<>();
