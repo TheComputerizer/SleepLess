@@ -25,8 +25,7 @@ import static mods.thecomputerizer.sleepless.registry.ItemRegistry.TEST_ITEM;
 public final class RegistryHandler {
     public static final CreativeTabs SLEEPLESS_TAB = new CreativeTabs(Constants.MODID) {
         @SideOnly(Side.CLIENT)
-        @Nonnull
-        public ItemStack createIcon() {
+        public @Nonnull ItemStack createIcon() {
             return new ItemStack(TEST_ITEM);
         }
     };

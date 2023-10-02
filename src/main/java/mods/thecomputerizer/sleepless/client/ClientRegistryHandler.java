@@ -13,25 +13,21 @@ import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.registries.IForgeRegistryEntry;
 
-import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Objects;
 
 @SuppressWarnings("SameParameterValue")
-@Mod.EventBusSubscriber(modid = Constants.MODID, value = { Side.CLIENT })
+@ParametersAreNonnullByDefault
+@Mod.EventBusSubscriber(modid = Constants.MODID, value = Side.CLIENT)
 public final class ClientRegistryHandler {
 
-    public static void registerRenderers() {
-        registerEntityRenderers();
-    }
 
     @SubscribeEvent
     public static void onModelRegister(ModelRegistryEvent event) {
-        registerBasicItemModel();
-    }
-
-    private static void registerBasicItemModel() {
         registerItemModels();
+        registerEntityRenderers();
     }
 
     private static void registerItemModels() {
@@ -44,13 +40,13 @@ public final class ClientRegistryHandler {
             ModelLoader.setCustomModelResourceLocation(item,meta,modelResource);
     }
 
-    private static ModelResourceLocation getModelResource(@Nonnull Item item, @Nonnull String modelState) {
-        ResourceLocation regName = item.getRegistryName();
+    private static ModelResourceLocation getModelResource(IForgeRegistryEntry.Impl<?> entry, String modelState) {
+        ResourceLocation regName = entry.getRegistryName();
         if(Objects.isNull(regName)) return null;
         return new ModelResourceLocation(regName,modelState);
     }
 
     private static void registerEntityRenderers() {
-        RenderingRegistry.registerEntityRenderingHandler(PhantomEntity.class, RenderPhantomEntity::new);
+        RenderingRegistry.registerEntityRenderingHandler(PhantomEntity.class,RenderPhantomEntity::new);
     }
 }

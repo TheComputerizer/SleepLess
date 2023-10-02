@@ -13,7 +13,6 @@ public class SleepLessClient {
 
     public static void preInit(FMLPreInitializationEvent event) {
         Constants.LOGGER.info("Starting client pre-init");
-        ClientRegistryHandler.registerRenderers();
         Constants.LOGGER.info("Completed client pre-init");
     }
 

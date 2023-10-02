@@ -1,11 +1,15 @@
 package mods.thecomputerizer.sleepless.registry.entities;
 
+import mods.thecomputerizer.sleepless.client.render.ClientEffects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.monster.EntityEnderman;
+import net.minecraft.entity.monster.EntitySkeleton;
+import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
@@ -18,7 +22,8 @@ import java.util.Objects;
 
 public class PhantomEntity extends EntityLiving {
 
-    private static final Class<?>[] VALID_SHADOWS = new Class<?>[]{EntityPlayer.class};
+    private static final Class<?>[] VALID_SHADOWS = new Class<?>[]{EntityZombie.class,EntitySkeleton.class,
+            EntityEnderman.class,EntityPlayer.class};
     protected Class<? extends Entity> shadowEntityClass;
 
     /**
@@ -34,9 +39,11 @@ public class PhantomEntity extends EntityLiving {
 
     @SuppressWarnings("unchecked")
     private void tryAssignShadowClass(Class<?> potentialClass) {
-        this.shadowEntityClass = Entity.class.isAssignableFrom(potentialClass) ?
-                (Class<? extends Entity>)potentialClass : null;
-        this.shadowEntityClassName = Objects.nonNull(this.shadowEntityClass) ? this.shadowEntityClass.getName() : null;
+        Class<? extends Entity> nextClass = Entity.class.isAssignableFrom(potentialClass) ? (Class<? extends Entity>)potentialClass : null;
+        boolean isDifferent = this.shadowEntityClass!=nextClass;
+        this.shadowEntityClass = nextClass;
+        if(isDifferent)
+            this.shadowEntityClassName = Objects.nonNull(this.shadowEntityClass) ? this.shadowEntityClass.getName() : null;
     }
 
     protected void setRandomShadow() {
@@ -51,16 +58,6 @@ public class PhantomEntity extends EntityLiving {
     protected void damageEntity(@Nonnull DamageSource source, float amount) {
         super.damageEntity(source,amount);
         setRandomShadow();
-    }
-
-    @SideOnly(Side.CLIENT)
-    public Render<?> getShadowRenderer(@Nonnull RenderManager manager) {
-        if(Objects.isNull(this.shadowEntityClass)) return null;
-        if(EntityPlayer.class.isAssignableFrom(this.shadowEntityClass)) {
-            EntityPlayerSP player = Minecraft.getMinecraft().player;
-            return Objects.nonNull(player) ? manager.getEntityRenderObject(Minecraft.getMinecraft().player) : null;
-        }
-        return manager.entityRenderMap.getOrDefault(this.shadowEntityClass,null);
     }
 
     @Override
@@ -87,5 +84,35 @@ public class PhantomEntity extends EntityLiving {
                 tryAssignShadowClass(Class.forName(className));
             } catch (ClassNotFoundException ignored) {}
         }
+    }
+
+    @Override
+    public float getBrightness() {
+        if(!this.world.isRemote) return super.getBrightness();
+        return super.getBrightness()*ClientEffects.PHANTOM_VISIBILITY;
+    }
+
+    @SideOnly(Side.CLIENT)
+    public Class<? extends Entity> getShadowEntityClass() {
+        return this.shadowEntityClass;
+    }
+
+    @SideOnly(Side.CLIENT)
+    public Render<?> getShadowRender(@Nonnull RenderManager manager) {
+        if(Objects.isNull(this.shadowEntityClass)) return null;
+        if(EntityPlayer.class.isAssignableFrom(this.shadowEntityClass)) {
+            EntityPlayerSP player = Minecraft.getMinecraft().player;
+            return Objects.nonNull(player) ? manager.getEntityRenderObject(Minecraft.getMinecraft().player) : null;
+        }
+        return getNonPlayerShadowRender(manager,this.shadowEntityClass);
+    }
+
+    @SuppressWarnings("unchecked")
+    @SideOnly(Side.CLIENT)
+    private Render<?> getNonPlayerShadowRender(@Nonnull RenderManager manager, Class<? extends Entity> entityClass) {
+        Render<?> render = manager.entityRenderMap.get(this.shadowEntityClass);
+        if(Objects.isNull(render) && this.shadowEntityClass!=Entity.class)
+            render = getNonPlayerShadowRender(manager,(Class<? extends Entity>)entityClass.getSuperclass());
+        return render;
     }
 }
