@@ -142,9 +142,9 @@ public class RenderPhantomEntity extends RenderLiving<PhantomEntity> {
         boolean flag1 = !flag && !entity.isInvisibleToPlayer(Minecraft.getMinecraft().player);
         if (flag || flag1) {
             if (!this.bindEntityTexture(entity)) return;
-            if (flag1) GlStateManager.enableBlendProfile(GlStateManager.Profile.TRANSPARENT_MODEL);
+            applyColor();
             this.mainModel.render(this.referenceEntity,swing,swingAmount,ageInTicks,headYaw,headPitch,scale);
-            if(flag1) GlStateManager.disableBlendProfile(GlStateManager.Profile.TRANSPARENT_MODEL);
+            finishColor();
         }
     }
 
@@ -159,6 +159,21 @@ public class RenderPhantomEntity extends RenderLiving<PhantomEntity> {
                 if (flag) this.unsetBrightness();
             }
         }
+    }
+
+    private void applyColor() {
+        float reversePhantom = 1f-ClientEffects.PHANTOM_VISIBILITY;
+        GlStateManager.color(reversePhantom,reversePhantom,reversePhantom,ClientEffects.PHANTOM_VISIBILITY);
+        GlStateManager.depthMask(false);
+        GlStateManager.enableBlend();
+        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+        GlStateManager.alphaFunc(516,0.003921569f);
+    }
+
+    private void finishColor() {
+        GlStateManager.disableBlend();
+        GlStateManager.alphaFunc(516,0.1f);
+        GlStateManager.depthMask(true);
     }
 
     @Override
