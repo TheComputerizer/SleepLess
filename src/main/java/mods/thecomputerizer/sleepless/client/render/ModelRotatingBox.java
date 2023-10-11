@@ -164,7 +164,7 @@ public class ModelRotatingBox {
         float x = this.xRot/max;
         float y = this.yRot/max;
         float z = this.zRot/max;
-        GlStateManager.rotate(max,x,y,z);
+        GlStateManager.rotate(1f,x,y,z);
     }
 
     private float setClamped(float val, float min, float max) {

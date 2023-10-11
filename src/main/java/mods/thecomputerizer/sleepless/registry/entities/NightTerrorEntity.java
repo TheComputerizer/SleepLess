@@ -1,8 +1,7 @@
 package mods.thecomputerizer.sleepless.registry.entities;
 
-import mods.thecomputerizer.sleepless.client.render.ModelRotatingBox;
+import mods.thecomputerizer.sleepless.client.render.geometry.Cube;
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -12,20 +11,24 @@ import java.util.Objects;
 public class NightTerrorEntity extends EntityLiving {
 
     @SideOnly(Side.CLIENT)
-    private ModelRotatingBox testBox;
+    private Cube testCube;
 
     public NightTerrorEntity(World world) {
         super(world);
     }
 
+    @Override
+    public boolean shouldRenderInPass(int pass) {
+        return true;
+    }
+
     @SideOnly(Side.CLIENT)
-    public ModelRotatingBox getTestBox(double x, double y, double z) {
-        if(Objects.isNull(this.testBox)) {
-            this.testBox = new ModelRotatingBox(this.rand,5f,-1).setCenter(new Vec3d(x, y, z))
-                    .setDimensions(new Vec3d(2d, 2d, 2d));
-            return this.testBox.init() ? this.testBox : null;
+    public Cube getTestCube() {
+        if(Objects.isNull(this.testCube)) {
+            this.testCube = new Cube();
+            this.testCube.setRandomRotations(this.rand,5d);
+            this.testCube.setColor(1f,1f,1f,0.5f);
         }
-        this.testBox.setCenter(new Vec3d(x, y, z));
-        return this.testBox;
+        return this.testCube;
     }
 }

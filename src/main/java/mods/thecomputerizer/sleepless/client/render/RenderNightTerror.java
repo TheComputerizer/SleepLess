@@ -1,11 +1,8 @@
 package mods.thecomputerizer.sleepless.client.render;
 
+import mods.thecomputerizer.sleepless.client.render.geometry.Cube;
 import mods.thecomputerizer.sleepless.registry.entities.NightTerrorEntity;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.util.ResourceLocation;
@@ -24,36 +21,30 @@ public class RenderNightTerror extends RenderLiving<NightTerrorEntity> {
     }
 
     @Override
-    public void doRender(@Nonnull NightTerrorEntity entity, double x, double y, double z, float entityYaw, float partialTicks) {
-        ModelRotatingBox box = entity.getTestBox(x,y+3,z);
-        if(Objects.nonNull(box)) {
+    public void doRender(@Nonnull NightTerrorEntity entity, double x, double y, double z, float entityYaw, float partialTick) {
+        Cube testCube = entity.getTestCube();
+        if(Objects.nonNull(testCube)) {
             preRender();
-            box.render(this.renderManager,Tessellator.getInstance().getBuffer(),partialTicks);
+            testCube.render(x,y+1,z,partialTick);
             postRender();
         }
     }
 
     private void preRender() {
         GlStateManager.pushMatrix();
-        RenderHelper.enableStandardItemLighting();
-        GlStateManager.disableCull();
-        GlStateManager.enableAlpha();
-        GlStateManager.color(1f,1f,1f,1f);
-        GlStateManager.depthMask(false);
         GlStateManager.enableBlend();
-        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-        GlStateManager.alphaFunc(516,0.003921569f);
+        GlStateManager.disableTexture2D();
+        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA,GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+        GlStateManager.depthMask(false);
+        GlStateManager.disableLighting();
     }
 
     private void postRender() {
-        GlStateManager.disableBlend();
-        GlStateManager.alphaFunc(516,0.1f);
-        GlStateManager.depthMask(true);
-        GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
         GlStateManager.enableTexture2D();
-        GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
-        GlStateManager.enableCull();
-        RenderHelper.disableStandardItemLighting();
+        GlStateManager.disableBlend();
+        GlStateManager.enableLighting();
+        GlStateManager.depthMask(true);
         GlStateManager.popMatrix();
     }
 
