@@ -23,9 +23,9 @@ public class RenderNightTerror extends RenderLiving<NightTerrorEntity> {
     @Override
     public void doRender(@Nonnull NightTerrorEntity entity, double x, double y, double z, float entityYaw, float partialTick) {
         Cube testCube = entity.getTestCube();
-        if(Objects.nonNull(testCube)) {
+        if(Objects.nonNull(testCube) && (x!=0 || y!=0 || z!=0)) {
             preRender();
-            testCube.render(x,y+1,z,partialTick);
+            testCube.render(x,y+2,z);
             postRender();
         }
     }

@@ -26,8 +26,9 @@ public class NightTerrorEntity extends EntityLiving {
     public Cube getTestCube() {
         if(Objects.isNull(this.testCube)) {
             this.testCube = new Cube();
-            this.testCube.setRandomRotations(this.rand,5d);
+            this.testCube.setRandomRotations(this.rand,4d);
             this.testCube.setColor(1f,1f,1f,0.5f);
+            this.testCube.setScale(0.5f,0.5f,0.5f);
         }
         return this.testCube;
     }
