@@ -1,5 +1,8 @@
 commands.sleepless.setsleepdebt.fail=Command did not work
 commands.sleepless.setsleepdebt.success=Set sleep debt to %1$s
+commands.sleepless.testrenders.fail=Usage: '/testrenders x y z xRot yRot zRot ticks'
+commands.sleepless.testrenders.player=This command can current only be executed by a player
+commands.sleepless.testrenders.success=Successfully ran render test for rotating box model
 
 config.sleepless.sleepdebttimings=Sleep Debt Timings
 config.sleepless.sleepdebttimings.tooltip=Configurations regarding common sleep debt effects and related values

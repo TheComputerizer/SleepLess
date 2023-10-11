@@ -1,8 +1,10 @@
 package mods.thecomputerizer.sleepless.client;
 
+import mods.thecomputerizer.sleepless.client.render.RenderNightTerror;
 import mods.thecomputerizer.sleepless.client.render.RenderPhantomEntity;
 import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.registry.ItemRegistry;
+import mods.thecomputerizer.sleepless.registry.entities.NightTerrorEntity;
 import mods.thecomputerizer.sleepless.registry.entities.PhantomEntity;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
@@ -48,5 +50,6 @@ public final class ClientRegistryHandler {
 
     private static void registerEntityRenderers() {
         RenderingRegistry.registerEntityRenderingHandler(PhantomEntity.class,RenderPhantomEntity::new);
+        RenderingRegistry.registerEntityRenderingHandler(NightTerrorEntity.class,RenderNightTerror::new);
     }
 }

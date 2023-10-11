@@ -1,6 +1,7 @@
 package mods.thecomputerizer.sleepless.registry;
 
 import mods.thecomputerizer.sleepless.core.Constants;
+import mods.thecomputerizer.sleepless.registry.entities.NightTerrorEntity;
 import mods.thecomputerizer.sleepless.registry.entities.PhantomEntity;
 import net.minecraft.entity.Entity;
 import net.minecraftforge.fml.common.registry.EntityEntry;
@@ -12,7 +13,8 @@ import java.util.List;
 @SuppressWarnings({"SameParameterValue", "unchecked", "unused"})
 public final class EntityRegistry {
     private static final List<EntityEntry> ALL_ENTRIES = new ArrayList<>();
-    public static final EntityEntry PHANTOM_ENTITY = makeEntry("phantom_entity", PhantomEntity.class,0,0);
+    public static final EntityEntry PHANTOM_ENTITY = makeEntry("phantom_entity",PhantomEntity.class,1,1);
+    public static final EntityEntry NIGHT_TERROR_ENTITY = makeEntry("night_terror",NightTerrorEntity.class,0,0);
     private static int entityIdCounter = 0;
 
     private static <E extends Entity> EntityEntry makeEntry(final String name, final Class<E> entityClass,

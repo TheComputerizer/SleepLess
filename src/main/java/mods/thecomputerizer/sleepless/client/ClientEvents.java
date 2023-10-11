@@ -2,15 +2,19 @@ package mods.thecomputerizer.sleepless.client;
 
 
 import mods.thecomputerizer.sleepless.client.render.ClientEffects;
+import mods.thecomputerizer.sleepless.client.render.RenderTests;
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
 import mods.thecomputerizer.sleepless.core.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.FOVUpdateEvent;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
+
+import java.util.Objects;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID, value = Side.CLIENT)
 public class ClientEvents {
@@ -59,5 +63,16 @@ public class ClientEvents {
     public static void onFogDensity(EntityViewRenderEvent.FogDensity event) {
         if(SleepLessConfigHelper.shouldIncreaseFog())
             event.setDensity(event.getDensity()+0.75f*ClientEffects.FOG_DENSITY);
+    }
+
+    @SubscribeEvent
+    public static void onClientTick(TickEvent.ClientTickEvent event) {
+        if(event.phase==TickEvent.Phase.END && Objects.nonNull(Minecraft.getMinecraft().world))
+            RenderTests.onClientTick();
+    }
+
+    @SubscribeEvent
+    public static void onRenderWorld(RenderWorldLastEvent event) {
+        RenderTests.onRenderWorld(Minecraft.getMinecraft().getRenderManager(),event.getPartialTicks());
     }
 }

@@ -1,9 +1,11 @@
 package mods.thecomputerizer.sleepless.client;
 
 import mods.thecomputerizer.sleepless.client.render.ClientEffects;
+import mods.thecomputerizer.sleepless.client.render.RenderTests;
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import paulscode.sound.SoundSystem;
@@ -33,5 +35,10 @@ public class ClientPacketHandlers {
         ((SoundSystem)mc.getSoundHandler().sndManager.sndSystem).setMasterVolume(mc.gameSettings.getSoundLevel(SoundCategory.MASTER));
         if(Objects.nonNull(mc.player)) mc.player.capabilities.setPlayerWalkSpeed(ClientEffects.WALK_SPEED);
         if(ClientEffects.BREATHING_FACTOR==0) ClientEffects.FOV_ADJUST = 0f;
+    }
+
+    @SideOnly(Side.CLIENT)
+    public static void testBoxRenderRot(double x, double y, double z, double xRot, double yRot, double zRot, int ticks) {
+        RenderTests.renderRotatingBox(new Vec3d(x,y,z),xRot,yRot,zRot,ticks);
     }
 }

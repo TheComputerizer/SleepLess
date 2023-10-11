@@ -8,7 +8,7 @@
     "url": "https://www.curseforge.com/minecraft/mc-mods/sleepless",
     "authorList": ["The_Computerizer"],
     "credits": "The 1.12.2 Modding Coalition for hosting SpookyJam",
-    "logoFile": "SleepLessLogo.png",
+    "logoFile": "sleeplesslogo.png",
     "dependencies": ["mixinbooter","theimpossiblelibrary"]
   }
 ]

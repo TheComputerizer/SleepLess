@@ -12,8 +12,8 @@
     "MixinWorldServer"
   ],
   "client": [
-    "MixinEntityRenderer",
     "InvokerRender",
+    "MixinEntityRenderer",
     "MixinShaderGroup",
     "MixinSoundSystemStarterThread"
   ]

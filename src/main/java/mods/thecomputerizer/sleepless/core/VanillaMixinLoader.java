@@ -30,16 +30,13 @@ public class VanillaMixinLoader implements IFMLLoadingPlugin, IEarlyMixinLoader 
         return null;
     }
 
-    @Nullable
     @Override
-    public String getSetupClass() {
+    public @Nullable String getSetupClass() {
         return null;
     }
 
     @Override
-    public void injectData(Map<String, Object> data) {
-
-    }
+    public void injectData(Map<String, Object> data) {}
 
     @Override
     public String getAccessTransformerClass() {
