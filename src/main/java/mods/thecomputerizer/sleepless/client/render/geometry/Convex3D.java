@@ -15,8 +15,13 @@ public class Convex3D {
     private final TriangleMapper[] triangles;
     private final float[] color = new float[]{1f,1f,1f,1f};
     private final float[] scale = new float[]{1f,1f,1f};
+    private final double[] translationOffset = new double[]{0d,0d,0d};
     private final double[] rotationSpeed = new double[]{0d,0d,0d};
     private final float[] currentRotation = new float[]{0f,0f,0f};
+    private boolean showOutlines = true;
+    private Vec3d previousRenderPos;
+    private Vec3d orbitVec;
+    private Orbit orbit;
 
     public Convex3D(Vec3d ... relativeCoords) {
         if(Objects.isNull(relativeCoords) || relativeCoords.length<=3)
@@ -38,11 +43,54 @@ public class Convex3D {
 
     public void setRotationSpeed(double ... newSpeed) {
         for(int i=0; i<this.rotationSpeed.length; i++)
-            this.rotationSpeed[i] = newSpeed.length>i ? newSpeed[i] : 1d;
+            this.rotationSpeed[i] = newSpeed.length>i ? newSpeed[i] : 0d;
     }
 
     public void setRandomRotations(Random random, double speedFactor) {
         setRotationSpeed(random.nextDouble()*speedFactor,random.nextDouble()*speedFactor,random.nextDouble()*speedFactor);
+    }
+
+    public void setTranslationOffset(double ... newOffset) {
+        for(int i=0; i<this.translationOffset.length; i++)
+            this.translationOffset[i] = newOffset.length>i ? newOffset[i] : 0d;
+    }
+
+    public void setOrbit(double radius, double speed, double angle) {
+        this.orbit = new Orbit(radius,speed,angle);
+    }
+
+    public void setRandomTranslationOffset(Random random, double range) {
+        setTranslationOffset(randomOffset(random,range),randomOffset(random,range),randomOffset(random,range));
+    }
+
+    private double randomOffset(Random random,double range) {
+        return (-range/2d)+(random.nextDouble()*range);
+    }
+
+    public void setEnableOutline(boolean showOutlines) {
+        this.showOutlines = showOutlines;
+    }
+
+    private void preRender() {
+        GlStateManager.pushMatrix();
+        GlStateManager.enableBlend();
+        GlStateManager.disableTexture2D();
+        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA,GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+        GlStateManager.depthMask(false);
+        GlStateManager.alphaFunc(GL11.GL_GREATER,0.003921569f);
+        GlStateManager.disableCull();
+        GlStateManager.disableLighting();
+    }
+
+    private void postRender() {
+        GlStateManager.enableTexture2D();
+        GlStateManager.disableBlend();
+        GlStateManager.enableLighting();
+        GlStateManager.enableCull();
+        GlStateManager.depthMask(true);
+        GlStateManager.alphaFunc(GL11.GL_GREATER,0.1f);
+        GlStateManager.popMatrix();
     }
 
     public void render(double x, double y, double z) {
@@ -50,9 +98,10 @@ public class Convex3D {
     }
 
     public void render(Vec3d pos) {
+        preRender();
         GlStateManager.color(this.color[0],this.color[1],this.color[2],this.color[3]);
         GlStateManager.scale(this.scale[0],this.scale[1],this.scale[2]);
-        GlStateManager.translate(pos.x/this.scale[0],pos.y/this.scale[1],pos.z/this.scale[2]);
+        setTranslation(new Vec3d(pos.x/this.scale[0],pos.y/this.scale[1],pos.z/this.scale[2]));
         for(int i = 0; i < this.currentRotation.length; i++)
             this.currentRotation[i] = rotateClampedAxis(i);
         GlStateManager.rotate(this.currentRotation[0],1f,0f,0f);
@@ -60,7 +109,25 @@ public class Convex3D {
         GlStateManager.rotate(this.currentRotation[2],0f,0f,1f);
         for(TriangleMapper triangle : this.triangles)
             renderTriangle(triangle);
-        renderOutlines();
+        if(this.showOutlines) renderOutlines();
+        postRender();
+    }
+
+    private void setTranslation(Vec3d initialPos) {
+        if(Objects.isNull(this.previousRenderPos)) this.previousRenderPos = initialPos;
+        if(Objects.isNull(this.orbit)) GlStateManager.translate(initialPos.x+this.translationOffset[0],
+                initialPos.y+this.translationOffset[1],initialPos.z+this.translationOffset[2]);
+        else {
+            if(Objects.isNull(this.orbitVec))
+                this.orbitVec = new Vec3d(this.translationOffset[0],this.translationOffset[1],this.translationOffset[2]);
+            else if(!initialPos.equals(this.previousRenderPos)) {
+                double distance = initialPos.distanceTo(this.previousRenderPos);
+                this.orbitVec = this.orbitVec.add(initialPos.subtract(this.previousRenderPos).normalize().scale(distance));
+            }
+            this.orbitVec = this.orbit.getNextVec(this.orbitVec,initialPos);
+            GlStateManager.translate(this.orbitVec.x,this.orbitVec.y,this.orbitVec.z);
+        }
+        this.previousRenderPos = initialPos;
     }
 
     private float rotateClampedAxis(int index) {
