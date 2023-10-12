@@ -8,11 +8,9 @@ import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.network.PacketRenderTests;
 import mods.thecomputerizer.sleepless.network.PacketUpdateClientEffects;
 import mods.thecomputerizer.sleepless.util.AddedEnums;
-import mods.thecomputerizer.sleepless.world.SetSleepDebtCommand;
-import mods.thecomputerizer.sleepless.world.TestRendersCommand;
+import mods.thecomputerizer.sleepless.world.SleepLessCommands;
 import mods.thecomputerizer.theimpossiblelibrary.TheImpossibleLibrary;
 import mods.thecomputerizer.theimpossiblelibrary.network.NetworkHandler;
-import net.minecraft.block.BlockFalling;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
@@ -49,8 +47,7 @@ public class SleepLess {
     @Mod.EventHandler
     public void start(FMLServerStartingEvent event) {
         Constants.LOGGER.info("Handling server starting");
-        event.registerServerCommand(new SetSleepDebtCommand());
-        event.registerServerCommand(new TestRendersCommand());
+        event.registerServerCommand(new SleepLessCommands());
         Constants.LOGGER.info("Handled server starting");
     }
 

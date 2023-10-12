@@ -3,35 +3,28 @@ package mods.thecomputerizer.sleepless.network;
 import io.netty.buffer.ByteBuf;
 import mods.thecomputerizer.sleepless.client.ClientPacketHandlers;
 import mods.thecomputerizer.theimpossiblelibrary.network.MessageImpl;
+import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 
 public class PacketRenderTests extends MessageImpl {
 
-    private double x;
-    private double y;
-    private double z;
-    private double xRot;
-    private double yRot;
-    private double zRot;
+    private Vec3d posVec;
+    private Vec3d rotVec;
     private int ticks;
 
     public PacketRenderTests() {}
 
-    public PacketRenderTests(double x, double y, double z, double xRot, double yRot, double zRot, int ticks) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.xRot = xRot;
-        this.yRot = yRot;
-        this.zRot = zRot;
+    public PacketRenderTests(Vec3d posVec, Vec3d rotVec, int ticks) {
+        this.posVec = posVec;
+        this.rotVec = rotVec;
         this.ticks = ticks;
     }
 
     @Override
     public IMessage handle(MessageContext ctx) {
-        ClientPacketHandlers.testColumnRender(this.x,this.y,this.z);
+        ClientPacketHandlers.testColumnRender(this.posVec);
         return null;
     }
 
@@ -42,23 +35,25 @@ public class PacketRenderTests extends MessageImpl {
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        this.x = buf.readDouble();
-        this.y = buf.readDouble();
-        this.z = buf.readDouble();
-        this.xRot = buf.readDouble();
-        this.yRot = buf.readDouble();
-        this.zRot = buf.readDouble();
+        this.posVec = readVec(buf);
+        this.rotVec = readVec(buf);
         this.ticks = buf.readInt();
+    }
+
+    private Vec3d readVec(ByteBuf buf) {
+        return new Vec3d(buf.readDouble(),buf.readDouble(),buf.readDouble());
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
-        buf.writeDouble(this.x);
-        buf.writeDouble(this.y);
-        buf.writeDouble(this.z);
-        buf.writeDouble(this.xRot);
-        buf.writeDouble(this.yRot);
-        buf.writeDouble(this.zRot);
+        writeVec(buf,this.posVec);
+        writeVec(buf,this.rotVec);
         buf.writeInt(this.ticks);
+    }
+
+    private void writeVec(ByteBuf buf, Vec3d vec) {
+        buf.writeDouble(vec.x);
+        buf.writeDouble(vec.y);
+        buf.writeDouble(vec.z);
     }
 }

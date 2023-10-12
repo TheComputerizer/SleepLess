@@ -1,7 +1,6 @@
 package mods.thecomputerizer.sleepless.client;
 
 import mods.thecomputerizer.sleepless.client.render.ClientEffects;
-import mods.thecomputerizer.sleepless.client.render.RenderTests;
 import mods.thecomputerizer.sleepless.client.render.geometry.Column;
 import mods.thecomputerizer.sleepless.client.render.geometry.StaticGeometryRender;
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
@@ -42,8 +41,8 @@ public class ClientPacketHandlers {
     }
 
     @SideOnly(Side.CLIENT)
-    public static void testColumnRender(double x, double y, double z) {
-        StaticGeometryRender render = new StaticGeometryRender(Minecraft.getMinecraft().getRenderManager(),new Vec3d(x,y,z));
+    public static void testColumnRender(Vec3d pos) {
+        StaticGeometryRender render = new StaticGeometryRender(Minecraft.getMinecraft().getRenderManager(),pos);
         render.addColumn(new Column(Minecraft.getMinecraft().world.rand,new Vec3d(0d,-1d,0d),500d,10d,7.5d));
         synchronized (STATIC_RENDERS) {
             STATIC_RENDERS.add(render);

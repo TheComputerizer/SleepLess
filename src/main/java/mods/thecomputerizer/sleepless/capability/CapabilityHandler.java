@@ -31,19 +31,23 @@ public class CapabilityHandler {
         return player.getCapability(SLEEP_DEBT_CAPABILITY,null);
     }
 
-    public static float getSleepDebt(EntityPlayer player) {
+    public static void setSleepDebt(EntityPlayerMP player, float debt) {
+        getSleepDebtCapability(player).setDebt(player,debt);
+    }
+
+    public static float getSleepDebt(EntityPlayerMP player) {
         return getSleepDebtCapability(player).getDebt();
     }
 
-    public static float getHungerAmplifier(EntityPlayer player, float exhaustion) {
+    public static float getHungerAmplifier(EntityPlayerMP player, float exhaustion) {
         return exhaustion*(1f+getSleepDebtCapability(player).getHungerAmplifier());
     }
 
-    public static float getMiningSpeedFactor(EntityPlayer player) {
+    public static float getMiningSpeedFactor(EntityPlayerMP player) {
         return getSleepDebtCapability(player).getMiningSpeedFactor();
     }
 
-    public static void setTicksSlept(EntityPlayer player, long ticks, boolean notifyPlayer) {
+    public static void setTicksSlept(EntityPlayerMP player, long ticks, boolean notifyPlayer) {
         ISleepDebt cap = getSleepDebtCapability(player);
         if(cap.onTicksSlept(ticks)) {
             sync(player);

@@ -1,8 +1,19 @@
-commands.sleepless.setsleepdebt.fail=Command did not work
+commands.sleepless.help=Valid subcommands for `/sleepless`: [ setsleepdebt, testrenders, nightterror ]
+commands.sleepless.setsleepdebt.player=Failed to get player for command `/sleepless setsleepdebt`
+commands.sleepless.setsleepdebt.number=Failed to parse number from argumant `%1$s`in `/sleepless setsleepdebt`
+commands.sleepless.setsleepdebt.number.missing=Failed to parse number from missing or empty argument in `/sleepless setsleepdebt`
 commands.sleepless.setsleepdebt.success=Set sleep debt to %1$s
-commands.sleepless.testrenders.fail=Usage: '/testrenders x y z xRot yRot zRot ticks'
-commands.sleepless.testrenders.player=This command can current only be executed by a player
-commands.sleepless.testrenders.success=Successfully ran render test for rotating box model
+commands.sleepless.setsleepdebt.usage=Usage: `/sleepless setsleepdebt player amount`
+commands.sleepless.testrenders.number=Failed to parse number from argumant `%1$s`in `/sleepless testrenders`
+commands.sleepless.testrenders.number.missing=Failed to parse number from missing or empty argument in `/sleepless testrenders`
+commands.sleepless.testrenders.player=Failed to get player for command `/sleepless testrenders`
+commands.sleepless.testrenders.pos=An unknown error occured while trying to parse a position in `/sleepless testrenders`
+commands.sleepless.testrenders.pos.missing=Failed to parse position from 1 or more missing or empty arguments in `/sleepless testrenders`
+commands.sleepless.testrenders.success=Successfully ran render test at (%1$s, %2$s, %3$s) for `/sleepless testrenders`
+commands.sleepless.testrenders.usage=Usage: `/sleepless testrenders player x y z <Optional>xRot <Optional>yRot <Optional>zRot <Optional>ticks`
+commands.sleepless.nightterror.success.start=Successfully ran `/sleepless nightterror start`
+commands.sleepless.nightterror.success.stop=Successfully ran `/sleepless nightterror stop`
+commands.sleepless.nightterror.usage=Valid subcommands for `/sleepless nightterror`: [ start, stop ]
 
 config.sleepless.sleepdebttimings=Sleep Debt Timings
 config.sleepless.sleepdebttimings.tooltip=Configurations regarding common sleep debt effects and related values

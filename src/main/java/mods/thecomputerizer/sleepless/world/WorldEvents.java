@@ -32,7 +32,7 @@ public class WorldEvents {
     public static void onBreakSpeed(net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed event) {
         if(SleepLessConfigHelper.shouldMineSlower()) {
             float speedFactor = event.getEntityPlayer() instanceof EntityPlayerMP ?
-                    CapabilityHandler.getMiningSpeedFactor(event.getEntityPlayer()) : ClientEffects.MINING_SPEED;
+                    CapabilityHandler.getMiningSpeedFactor((EntityPlayerMP)event.getEntityPlayer()) : ClientEffects.MINING_SPEED;
             event.setNewSpeed(event.getNewSpeed() * speedFactor);
         }
     }

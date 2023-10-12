@@ -23,7 +23,7 @@ public class MixinPlayer {
         if(SleepLessConfigHelper.shouldBeHungry()) {
             EntityPlayer player = sleepless$cast();
             if(player instanceof EntityPlayerMP) {
-                float adjusted = CapabilityHandler.getHungerAmplifier(player, exhaustion);
+                float adjusted = CapabilityHandler.getHungerAmplifier((EntityPlayerMP)player, exhaustion);
                 food.addExhaustion(adjusted);
             }
         } else food.addExhaustion(exhaustion);

@@ -2,6 +2,7 @@ package mods.thecomputerizer.sleepless.mixin.vanilla;
 
 import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import org.spongepowered.asm.mixin.Final;
@@ -29,6 +30,6 @@ public abstract class MixinWorld {
     private void sleepless$setWorldTime(long time, CallbackInfo info) {
         if(sleepless$cast() instanceof WorldServer && (getWorldTime()-1)%24000==23900)
             for(EntityPlayer player : this.playerEntities)
-                CapabilityHandler.setTicksSlept(player,0,true);
+                CapabilityHandler.setTicksSlept((EntityPlayerMP)player,0,true);
     }
 }
