@@ -2,6 +2,8 @@ package mods.thecomputerizer.sleepless.client;
 
 import mods.thecomputerizer.sleepless.client.render.ClientEffects;
 import mods.thecomputerizer.sleepless.client.render.RenderTests;
+import mods.thecomputerizer.sleepless.client.render.geometry.Column;
+import mods.thecomputerizer.sleepless.client.render.geometry.StaticGeometryRender;
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.SoundCategory;
@@ -11,6 +13,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import paulscode.sound.SoundSystem;
 
 import java.util.Objects;
+
+import static mods.thecomputerizer.sleepless.client.render.geometry.StaticGeometryRender.STATIC_RENDERS;
 
 /**
  * The class itself shouldn't be annotated with SideOnly but all methods and parameters should be
@@ -38,7 +42,11 @@ public class ClientPacketHandlers {
     }
 
     @SideOnly(Side.CLIENT)
-    public static void testBoxRenderRot(double x, double y, double z, double xRot, double yRot, double zRot, int ticks) {
-        RenderTests.renderRotatingBox(new Vec3d(x,y,z),xRot,yRot,zRot,ticks);
+    public static void testColumnRender(double x, double y, double z) {
+        StaticGeometryRender render = new StaticGeometryRender(Minecraft.getMinecraft().getRenderManager(),new Vec3d(x,y,z));
+        render.addColumn(new Column(Minecraft.getMinecraft().world.rand,new Vec3d(0d,-1d,0d),500d,10d,7.5d));
+        synchronized (STATIC_RENDERS) {
+            STATIC_RENDERS.add(render);
+        }
     }
 }

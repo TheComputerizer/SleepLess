@@ -3,6 +3,7 @@ package mods.thecomputerizer.sleepless.client;
 
 import mods.thecomputerizer.sleepless.client.render.ClientEffects;
 import mods.thecomputerizer.sleepless.client.render.RenderTests;
+import mods.thecomputerizer.sleepless.client.render.geometry.StaticGeometryRender;
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
 import mods.thecomputerizer.sleepless.core.Constants;
 import net.minecraft.client.Minecraft;
@@ -15,6 +16,8 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 
 import java.util.Objects;
+
+import static mods.thecomputerizer.sleepless.client.render.geometry.StaticGeometryRender.STATIC_RENDERS;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID, value = Side.CLIENT)
 public class ClientEvents {
@@ -73,6 +76,9 @@ public class ClientEvents {
 
     @SubscribeEvent
     public static void onRenderWorld(RenderWorldLastEvent event) {
-        RenderTests.onRenderWorld(Minecraft.getMinecraft().getRenderManager(),event.getPartialTicks());
+        synchronized (STATIC_RENDERS) {
+            for(StaticGeometryRender staticRender : STATIC_RENDERS)
+                staticRender.render(event.getPartialTicks());
+        }
     }
 }

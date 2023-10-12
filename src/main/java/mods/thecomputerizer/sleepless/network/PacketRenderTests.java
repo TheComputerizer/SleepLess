@@ -31,7 +31,7 @@ public class PacketRenderTests extends MessageImpl {
 
     @Override
     public IMessage handle(MessageContext ctx) {
-        ClientPacketHandlers.testBoxRenderRot(this.x,this.y,this.z,this.xRot,this.yRot,this.zRot,this.ticks);
+        ClientPacketHandlers.testColumnRender(this.x,this.y,this.z);
         return null;
     }
 

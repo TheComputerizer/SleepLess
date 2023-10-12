@@ -58,6 +58,7 @@ config.sleepless.client.disableHeavyBreathing.tooltip=Stops sleep debt from chan
 config.sleepless.client.disableFog=Disable Fog
 config.sleepless.client.disableFog.tooltip=Stops sleep debt from increasing fog density and decreasing fog distance
 
+entity.night_terror.name=Night Terror
 entity.phantom_entity.name=Phantom Entity
 
 item.sleepless.test_item.name=Item Placeholder
