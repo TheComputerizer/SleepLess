@@ -42,9 +42,13 @@ public class NightTerror {
                     if(chance>0) chances.add(chance);
                 }
                 if(!chances.isEmpty() && world.rand.nextFloat()<SleepLessConfigHelper.calculateFinalChance(chances))
-                    INSTANCE = new NightTerror(world);
+                    createInstance(world);
             }
         }
+    }
+
+    public static void createInstance(WorldServer world) {
+        INSTANCE = new NightTerror(world);
     }
 
     private final WorldServer world;
@@ -114,7 +118,7 @@ public class NightTerror {
         return Objects.nonNull(style) ? text.setStyle(style) : text;
     }
 
-    private void finish() {
+    public void finish() {
         PacketUpdateNightTerrorClient packet = new PacketUpdateNightTerrorClient(false,0f,0f,-1);
         sendUpdate(player -> {
             player.removePotionEffect(PotionRegistry.INSOMNIA);

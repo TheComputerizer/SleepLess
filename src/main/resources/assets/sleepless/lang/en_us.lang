@@ -11,9 +11,12 @@ commands.sleepless.testrenders.pos=An unknown error occured while trying to pars
 commands.sleepless.testrenders.pos.missing=Failed to parse position from 1 or more missing or empty arguments in `/sleepless testrenders`
 commands.sleepless.testrenders.success=Successfully ran render test at (%1$s, %2$s, %3$s) for `/sleepless testrenders`
 commands.sleepless.testrenders.usage=Usage: `/sleepless testrenders player x y z <Optional>xRot <Optional>yRot <Optional>zRot <Optional>ticks`
-commands.sleepless.nightterror.success.start=Successfully ran `/sleepless nightterror start`
-commands.sleepless.nightterror.success.stop=Successfully ran `/sleepless nightterror stop`
-commands.sleepless.nightterror.usage=Valid subcommands for `/sleepless nightterror`: [ start, stop ]
+commands.sleepless.nightterror.fail.begin.active=There is already a night terror event active
+commands.sleepless.nightterror.fail.begin.time=Night terror events can only be started during nighttime
+commands.sleepless.nightterror.fail.stop=There was no current night terror event to stop
+commands.sleepless.nightterror.success.begin=Successfully started a night terror event
+commands.sleepless.nightterror.success.stop=Successfully stopped a night terror event
+commands.sleepless.nightterror.usage=Valid subcommands for `/sleepless nightterror`: [ begin, stop ]
 
 config.sleepless.sleepdebttimings=Sleep Debt Timings
 config.sleepless.sleepdebttimings.tooltip=Configurations regarding common sleep debt effects and related values

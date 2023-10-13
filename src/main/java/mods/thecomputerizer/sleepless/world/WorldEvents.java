@@ -46,7 +46,7 @@ public class WorldEvents {
 
     @SubscribeEvent
     public static void onWorldTick(TickEvent.WorldTickEvent event) {
-        if(event.phase==TickEvent.Phase.END && event.world instanceof WorldServer) {
+        if(event.phase==TickEvent.Phase.END && event.world.provider.getDimension()==0 && event.world instanceof WorldServer) {
             tickTimer++;
             if(tickTimer>20) {
                 NightTerror.checkInstance((WorldServer)event.world);

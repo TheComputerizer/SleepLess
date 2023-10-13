@@ -4,6 +4,7 @@ import mcp.MethodsReturnNonnullByDefault;
 import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
 import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.network.PacketRenderTests;
+import mods.thecomputerizer.sleepless.world.nightterror.NightTerror;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -12,6 +13,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.world.WorldServer;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -42,35 +44,40 @@ public class SleepLessCommands extends CommandBase {
 
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String ... args) throws CommandException {
-        if(args.length==0) sendMessage(sender,true,false,"help");
-        this.curSubName = getOrNull(0,args);
-        if(Objects.isNull(this.curSubName) || this.curSubName.isEmpty())
-            sendMessage(sender,true,false,"help");
-        else {
-            switch(this.curSubName) {
-                case "setsleepdebt" : {
-                    setSleepDebt(server,sender,getOrNull(1,args),getOrNull(2,args));
-                    resetParameters();
-                    return;
-                }
-                case "testrenders" : {
-                    if(args.length<5) sendMessage(sender,true,false,"usage");
-                    testRenders(server,sender,getOrNull(1,args),getOrNull(2,args),getOrNull(3,args),
-                            getOrNull(4,args),getOrNull(5,args),getOrNull(6,args),
-                            getOrNull(7,args),getOrNull(8,args));
-                    resetParameters();
-                    return;
-                }
-                case "nightterror" : {
-                    nightTerror(sender,getOrNull(1,args));
-                    resetParameters();
-                    return;
-                }
-                default: {
-                    resetParameters();
-                    sendMessage(sender,true,false,"usage");
+        try {
+            if (args.length == 0) sendMessage(sender, true, false, "help");
+            this.curSubName = getOrNull(0, args);
+            if (Objects.isNull(this.curSubName) || this.curSubName.isEmpty())
+                sendMessage(sender, true, false, "help");
+            else {
+                switch (this.curSubName) {
+                    case "setsleepdebt": {
+                        setSleepDebt(server, sender, getOrNull(1, args), getOrNull(2, args));
+                        resetParameters();
+                        return;
+                    }
+                    case "testrenders": {
+                        if (args.length < 5) sendMessage(sender, true, false, "usage");
+                        testRenders(server, sender, getOrNull(1, args), getOrNull(2, args), getOrNull(3, args),
+                                getOrNull(4, args), getOrNull(5, args), getOrNull(6, args),
+                                getOrNull(7, args), getOrNull(8, args));
+                        resetParameters();
+                        return;
+                    }
+                    case "nightterror": {
+                        nightTerror(server, sender, getOrNull(1, args));
+                        resetParameters();
+                        return;
+                    }
+                    default: {
+                        resetParameters();
+                        sendMessage(sender, true, false, "usage");
+                    }
                 }
             }
+        } catch (CommandException ex) {
+            resetParameters();
+            throw ex;
         }
     }
 
@@ -105,28 +112,33 @@ public class SleepLessCommands extends CommandBase {
         }
     }
 
-    private void nightTerror(ICommandSender sender, @Nullable String subType) throws CommandException {
-        try {
-            if(Objects.isNull(subType) || subType.isEmpty())
-                sendMessage(sender, true, false, "usage");
-            else {
-                switch(subType) {
-                    //TODO Implement nightterror command once the event is actually made
-                    case "start": {
-                        sendMessage(sender, false, false, "success.start");
-                        return;
+    private void nightTerror(MinecraftServer server, ICommandSender sender, @Nullable String subType) throws CommandException {
+        if(Objects.isNull(subType) || subType.isEmpty())
+            sendMessage(sender, true, false, "usage");
+        else {
+            switch(subType) {
+                case "begin": {
+                    WorldServer overworld = server.getWorld(0);
+                    if(Objects.nonNull(NightTerror.INSTANCE))
+                        sendMessage(sender,false,false,"fail.begin.active");
+                    else if(overworld.isDaytime())
+                        sendMessage(sender,false,false,"fail.begin.time");
+                    else {
+                        NightTerror.createInstance(overworld);
+                        sendMessage(sender, false, false, "success.begin");
                     }
-                    case "stop": {
-                        sendMessage(sender, false, false, "success.stop");
-                        return;
-                    }
-                    default:
-                        sendMessage(sender, true, false, "usage");
+                    return;
                 }
+                case "stop": {
+                    if(Objects.nonNull(NightTerror.INSTANCE)) {
+                        NightTerror.INSTANCE.finish();
+                        sendMessage(sender, false, false, "success.stop");
+                    }
+                    else sendMessage(sender, false, false, "fail.stop");
+                    return;
+                }
+                default: sendMessage(sender, true, false, "usage");
             }
-        } catch (CommandException ex) {
-            resetParameters();
-            throw ex;
         }
     }
 
