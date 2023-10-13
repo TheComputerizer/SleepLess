@@ -14,6 +14,7 @@
   "client": [
     "InvokerRender",
     "MixinEntityRenderer",
+    "MixinMinecraft",
     "MixinShaderGroup",
     "MixinSoundSystemStarterThread"
   ]

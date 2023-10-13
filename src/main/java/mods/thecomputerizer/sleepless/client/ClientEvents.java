@@ -6,6 +6,7 @@ import mods.thecomputerizer.sleepless.client.render.RenderTests;
 import mods.thecomputerizer.sleepless.client.render.geometry.StaticGeometryRender;
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
 import mods.thecomputerizer.sleepless.core.Constants;
+import mods.thecomputerizer.sleepless.world.nightterror.NightTerrorClient;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.FOVUpdateEvent;
@@ -44,6 +45,7 @@ public class ClientEvents {
             if(ClientEffects.SCREEN_SHAKE>0) {
                 event.player.rotationPitch += ClientEffects.getScreenShake(screenShakePositive);
                 screenShakePositive = !screenShakePositive;
+                ClientEffects.SCREEN_SHAKE-=0.01f;
             }
             if(SleepLessConfigHelper.shouldBreatheHeavily() && ClientEffects.BREATHING_FACTOR>0) {
                 int factor = breathingIn ? 1 : -1;
@@ -59,13 +61,23 @@ public class ClientEvents {
                     secondTimer = 0;
                 }
             }
+            if(Objects.nonNull(NightTerrorClient.GEOMETRY_RENDER))
+                NightTerrorClient.GEOMETRY_RENDER.setRenderVec(mc.player.getPositionVector());
         }
     }
 
     @SubscribeEvent
     public static void onFogDensity(EntityViewRenderEvent.FogDensity event) {
-        if(SleepLessConfigHelper.shouldIncreaseFog())
-            event.setDensity(event.getDensity()+0.75f*ClientEffects.FOG_DENSITY);
+        if(SleepLessConfigHelper.shouldIncreaseFog()) {
+            event.setDensity(NightTerrorClient.overrideFog(event.getDensity()+(0.75f*ClientEffects.FOG_DENSITY)+10f*ClientEffects.SCREEN_SHAKE));
+        }
+    }
+
+    @SubscribeEvent
+    public static void onFogColor(EntityViewRenderEvent.FogColors event) {
+        event.setBlue(NightTerrorClient.overrideNotRed(event.getBlue()*(1f-ClientEffects.SCREEN_SHAKE)));
+        event.setGreen(NightTerrorClient.overrideNotRed(event.getGreen()*(1f-ClientEffects.SCREEN_SHAKE)));
+        event.setRed(NightTerrorClient.overrideRed(event.getRed()+((1f-event.getRed())*ClientEffects.SCREEN_SHAKE)));
     }
 
     @SubscribeEvent

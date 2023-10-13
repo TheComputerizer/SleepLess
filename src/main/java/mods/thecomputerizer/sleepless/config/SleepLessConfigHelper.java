@@ -1,6 +1,12 @@
 package mods.thecomputerizer.sleepless.config;
 
+import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
+import mods.thecomputerizer.sleepless.world.nightterror.NightTerrorClient;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.math.MathHelper;
+
+import java.util.Collection;
+import java.util.Collections;
 
 public class SleepLessConfigHelper {
 
@@ -35,6 +41,26 @@ public class SleepLessConfigHelper {
         }
     }
 
+    public static float nightTerrorChance(EntityPlayerMP player) {
+        SleepLessConfig.NightTerror nightTerror = SleepLessConfig.NIGHT_TERROR;
+        float sleepDebt = CapabilityHandler.getSleepDebt(player);
+        if(sleepDebt<nightTerror.minSleepDebt) return -1;
+        float debtIncrements = (sleepDebt-nightTerror.minSleepDebt)/nightTerror.sleepDebtIncrement;
+        return nightTerror.minChance+(debtIncrements*nightTerror.chanceIncrement);
+    }
+
+    public static float calculateFinalChance(Collection<Float> chances) {
+        switch(SleepLessConfig.NIGHT_TERROR.serverChanceFormula) {
+            case "HIGHEST": return Collections.max(chances)/100f;
+            case "LOWEST": return Collections.min(chances)/100f;
+            default: {
+                float total = 0f;
+                for(Float chance : chances) total+=chance;
+                return (total/chances.size())/100f;
+            }
+        }
+    }
+
     public static boolean shouldBeHungry() {
         SleepLessConfig.StatusEffects effects = SleepLessConfig.STATUS_EFFECTS;
         return !effects.disableStatusEffects && !effects.disableHunger;
@@ -57,12 +83,12 @@ public class SleepLessConfigHelper {
 
     public static boolean shouldPlaySounds() {
         SleepLessConfig.ClientEffects client = SleepLessConfig.CLIENT_EFFECTS;
-        return !client.disableClientEffects && !client.disableAudioEffects && !client.disableAmbientSounds;
+        return !NightTerrorClient.isSilencingMusic() && !client.disableClientEffects && !client.disableAudioEffects && !client.disableAmbientSounds;
     }
 
     public static boolean shouldMuffleSounds() {
         SleepLessConfig.ClientEffects client = SleepLessConfig.CLIENT_EFFECTS;
-        return !client.disableClientEffects && !client.disableAudioEffects && !client.disableSoundMuffler;
+        return !NightTerrorClient.isSilencingMusic() && !client.disableClientEffects && !client.disableAudioEffects && !client.disableSoundMuffler;
     }
 
     public static boolean shouldIncreaseFog() {

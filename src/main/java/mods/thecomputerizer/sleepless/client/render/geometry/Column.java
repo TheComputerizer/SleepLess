@@ -35,7 +35,8 @@ public class Column {
     }
 
     public void render(Vec3d relativeCenter) {
-        this.outline.render(relativeCenter);
+        Vec3d actualRender = relativeCenter.add(this.relativeBottom.x,0d,this.relativeBottom.z);
+        this.outline.render(actualRender);
         if(this.movingShapes.isEmpty() || Objects.isNull(this.recentShape) ||
                 this.recentShape.getRelativePosition().y-this.relativeBottom.y>this.spacing) {
             ShapeHolder newholder = new ShapeHolder(generateRandomBox())
@@ -47,7 +48,7 @@ public class Column {
         Iterator<ShapeHolder> shapesIterator = this.movingShapes.listIterator();
         while(shapesIterator.hasNext()) {
             ShapeHolder holder = shapesIterator.next();
-            holder.render(relativeCenter);
+            holder.render(actualRender);
             if(holder.getRelativePosition().y+this.spacing>this.relativeBottom.y+height)
                 shapesIterator.remove();
         }

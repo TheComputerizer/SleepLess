@@ -20,7 +20,7 @@ public class StaticGeometryRender {
     private final RenderManager manager;
     private final List<ShapeHolder> freeShapeRenders;
     private final List<Column> columnRenders;
-    private final Vec3d renderVec;
+    private Vec3d renderVec;
 
     public StaticGeometryRender(RenderManager manager, Vec3d renderVec) {
         this.manager = manager;
@@ -35,6 +35,10 @@ public class StaticGeometryRender {
 
     public void addFreeShape(ShapeHolder holder) {
         this.freeShapeRenders.add(holder);
+    }
+
+    public void setRenderVec(Vec3d renderVec) {
+        this.renderVec = renderVec;
     }
 
     public void render(float partialTick) {

@@ -48,16 +48,26 @@ public class SleepLessCommands extends CommandBase {
             sendMessage(sender,true,false,"help");
         else {
             switch(this.curSubName) {
-                case "setsleepdebt" : setSleepDebt(server,sender,getOrNull(1,args),getOrNull(2,args));
+                case "setsleepdebt" : {
+                    setSleepDebt(server,sender,getOrNull(1,args),getOrNull(2,args));
+                    resetParameters();
+                    return;
+                }
                 case "testrenders" : {
                     if(args.length<5) sendMessage(sender,true,false,"usage");
                     testRenders(server,sender,getOrNull(1,args),getOrNull(2,args),getOrNull(3,args),
                             getOrNull(4,args),getOrNull(5,args),getOrNull(6,args),
                             getOrNull(7,args),getOrNull(8,args));
+                    resetParameters();
+                    return;
                 }
-                case "nightterror" : nightTerror(sender,getOrNull(1,args));
+                case "nightterror" : {
+                    nightTerror(sender,getOrNull(1,args));
+                    resetParameters();
+                    return;
+                }
                 default: {
-                    this.curSubName = null;
+                    resetParameters();
                     sendMessage(sender,true,false,"usage");
                 }
             }
@@ -96,15 +106,27 @@ public class SleepLessCommands extends CommandBase {
     }
 
     private void nightTerror(ICommandSender sender, @Nullable String subType) throws CommandException {
-        if(Objects.isNull(subType) || subType.isEmpty())
-            sendMessage(sender,true,false,"usage");
-        else {
-            switch(subType) {
-                //TODO Implement nightterror command once the event is actually made
-                case "start" : sendMessage(sender,false,false,"success.start");
-                case "stop" : sendMessage(sender,false,false,"success.stop");
-                default: sendMessage(sender,true,false,"usage");
+        try {
+            if(Objects.isNull(subType) || subType.isEmpty())
+                sendMessage(sender, true, false, "usage");
+            else {
+                switch(subType) {
+                    //TODO Implement nightterror command once the event is actually made
+                    case "start": {
+                        sendMessage(sender, false, false, "success.start");
+                        return;
+                    }
+                    case "stop": {
+                        sendMessage(sender, false, false, "success.stop");
+                        return;
+                    }
+                    default:
+                        sendMessage(sender, true, false, "usage");
+                }
             }
+        } catch (CommandException ex) {
+            resetParameters();
+            throw ex;
         }
     }
 
@@ -174,6 +196,11 @@ public class SleepLessCommands extends CommandBase {
         StringBuilder builder = withSlash ? new StringBuilder("/") : new StringBuilder();
         for(Object arg : args) builder.append(arg).append(" ");
         return builder.toString().trim();
+    }
+
+    private void resetParameters() {
+        this.curSubName = null;
+        this.curPlayerSelector = null;
     }
 
     @Override

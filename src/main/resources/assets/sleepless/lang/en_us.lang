@@ -46,6 +46,21 @@ config.sleepless.statuseffects.disableMiningFatigue.tooltip=Stops sleep debt fro
 config.sleepless.statuseffects.disableFasterDrowning=Disable Faster Drowning
 config.sleepless.statuseffects.disableFasterDrowning.tooltip=Stops sleep debt from making you drown faster
 
+config.sleepless.nightterror=Night Terrors
+config.sleepless.nightterror.tooltip=Configurations regarding night terrors
+config.sleepless.nightterror.disableNightTerrors=Disable Night Terrors
+config.sleepless.nightterror.disableNightTerrors.tooltip=Disables the night terror mechanic entirely
+config.sleepless.nightterror.minSleepDebt=Minimum Sleep Debt
+config.sleepless.nightterror.minSleepDebt.tooltip=The minimum sleep debt required for the chance of a night terror to occur
+config.sleepless.nightterror.minChance=Minimum Chance
+config.sleepless.nightterror.minChance.tooltip=The minimum percentage chance for a night terror to occur in a world each night when at least 1 player in that world has the required sleep debt
+config.sleepless.nightterror.chanceIncrement=Chance Increment
+config.sleepless.nightterror.chanceIncrement.tooltip=The amount the percentage chance for a night terror to occur in a world each night will increase per sleep debt increment
+config.sleepless.nightterror.sleepDebtIncrement=Sleep Debt Increment
+config.sleepless.nightterror.sleepDebtIncrement.tooltip=The increment above the minimum sleep debt to apply a chance increment at. For example, if the minimum sleep debt is 8, the sleep debt increment is 0.5, and the chance increment is 10, that means an additional 10% is added to the minimum chance for every increment of 0.5 above 8.
+config.sleepless.nightterror.serverChanceFormula=Server Chance formula
+config.sleepless.nightterror.serverChanceFormula.tooltip=Decides the formula to use when calculating the chance for a night terror to occur in multiplayer. Accepted values are AVERAGE, HIGHEST, or LOWEST.\nAVERAGE is the default and takes the average of the chance values for all players that meet the minimum requirements.\nHIGHEST means the chance will be equivalent to the highest player's chance value of all players that meet the minimum requirements in a world.\n LOWEST means the chance will be equivalent to the lowest player's chance value of all players that meet the minimum requirements in a world
+
 config.sleepless.client=Client Effects
 config.sleepless.client.tooltip=Configurations regarding visual and audio effects on the client side
 config.sleepless.client.disableClientEffects=Disable All Client Effects
@@ -73,6 +88,12 @@ entity.night_terror.name=Night Terror
 entity.phantom_entity.name=Phantom Entity
 
 item.sleepless.test_item.name=Item Placeholder
+
+nightterror.sleepless.start=You feel like you should probably sleep
+nightterror.sleepless.toolate1=Something doesn't seem right
+nightterror.sleepless.toolate2=The air feels stifling
+nightterror.sleepless.toolate3=You are beginning to feel terrified
+nightterror.sleepless.toolate4=You don't feel like you can fall asleep anymore
 
 potion.sleepless.insomnia=Insomnia
 potion.sleepless.tired=Tired

@@ -7,6 +7,8 @@ import mods.thecomputerizer.sleepless.client.SleepLessClient;
 import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.network.PacketRenderTests;
 import mods.thecomputerizer.sleepless.network.PacketUpdateClientEffects;
+import mods.thecomputerizer.sleepless.network.PacketUpdateNightTerrorClient;
+import mods.thecomputerizer.sleepless.network.PacketWorldSound;
 import mods.thecomputerizer.sleepless.util.AddedEnums;
 import mods.thecomputerizer.sleepless.world.SleepLessCommands;
 import mods.thecomputerizer.theimpossiblelibrary.TheImpossibleLibrary;
@@ -25,7 +27,8 @@ public class SleepLess {
         Constants.LOGGER.info("Started constructing mod class");
         AddedEnums.load();
         if(Constants.IS_DEV) TheImpossibleLibrary.enableDevLog();
-        NetworkHandler.queueClientPacketRegistries(PacketRenderTests.class,PacketUpdateClientEffects.class);
+        NetworkHandler.queueClientPacketRegistries(PacketRenderTests.class,PacketUpdateClientEffects.class,
+                PacketUpdateNightTerrorClient.class,PacketWorldSound.class);
         Constants.LOGGER.info("Constructed mod class");
     }
 

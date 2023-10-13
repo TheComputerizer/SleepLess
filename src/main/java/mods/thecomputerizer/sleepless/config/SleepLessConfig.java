@@ -25,6 +25,10 @@ public class SleepLessConfig {
     @LangKey("config.sleepless.statuseffects")
     public static StatusEffects STATUS_EFFECTS = new StatusEffects();
 
+    @Name("nightterror")
+    @LangKey("config.sleepless.nightterror")
+    public static NightTerror NIGHT_TERROR = new NightTerror();
+
     @Name("client")
     @LangKey("config.sleepless.client")
     public static ClientEffects CLIENT_EFFECTS = new ClientEffects();
@@ -42,7 +46,7 @@ public class SleepLessConfig {
 
     public static class Napping {
 
-        @Name("napTime")
+        @Name("disableNapping")
         @LangKey("config.sleepless.napping.disableNapping")
         public boolean disableNapping = false;
 
@@ -80,6 +84,33 @@ public class SleepLessConfig {
         @Name("disableFasterDrowning")
         @LangKey("config.sleepless.statuseffects.disableFasterDrowning")
         public boolean disableFasterDrowning = false;
+    }
+
+    public static class NightTerror {
+
+        @Name("disableNightTerrors")
+        @LangKey("config.sleepless.nightterror.disableNightTerrors")
+        public boolean disableNightTerrors = false;
+
+        @Name("minSleepDebt")
+        @LangKey("config.sleepless.nightterror.minSleepDebt")
+        public float minSleepDebt = 10f;
+
+        @Name("minChance")
+        @LangKey("config.sleepless.nightterror.minChance")
+        public float minChance = 50f;
+
+        @Name("chanceIncrement")
+        @LangKey("config.sleepless.nightterror.chanceIncrement")
+        public float chanceIncrement = 10f;
+
+        @Name("sleepDebtIncrement")
+        @LangKey("config.sleepless.nightterror.sleepDebtIncrement")
+        public float sleepDebtIncrement = 1f;
+
+        @Name("serverChanceFormula")
+        @LangKey("config.sleepless.nightterror.serverChanceFormula")
+        public String serverChanceFormula = "AVERAGE";
     }
 
     public static class ClientEffects {

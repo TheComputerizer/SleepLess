@@ -43,7 +43,7 @@ public class ClientEffects {
     }
 
     public static float getScreenShake(boolean positive) {
-        float factor = (1f-SCREEN_SHAKE)/2f;
+        float factor = SCREEN_SHAKE/2f;
         return positive ? factor : factor*-1;
     }
 

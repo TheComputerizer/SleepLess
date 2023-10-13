@@ -11,7 +11,7 @@ import java.util.List;
 public final class SoundRegistry {
 
     private static final List<SoundEvent> ALL_SOUNDS = new ArrayList<>();
-    public static final SoundEvent TEST_SOUND = makeSoundEvent("test");
+    public static final SoundEvent BELL_SOUND = makeSoundEvent("bell");
 
     private static SoundEvent makeSoundEvent(final String name) {
         ResourceLocation id = Constants.res(name);
