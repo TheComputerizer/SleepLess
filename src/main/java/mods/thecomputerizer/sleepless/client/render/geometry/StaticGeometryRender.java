@@ -41,6 +41,10 @@ public class StaticGeometryRender {
         this.renderVec = renderVec;
     }
 
+    public void setRenderXZ(double x, double z) {
+        this.renderVec = new Vec3d(x,this.renderVec.y,z);
+    }
+
     public void render(float partialTick) {
         Entity entity = Minecraft.getMinecraft().getRenderViewEntity();
         if(Objects.nonNull(entity) && Objects.nonNull(this.renderVec)) {

@@ -8,12 +8,14 @@ import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
 import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.world.nightterror.NightTerrorClient;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.FOVUpdateEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import net.minecraftforge.fml.relauncher.Side;
 
 import java.util.Objects;
@@ -62,7 +64,7 @@ public class ClientEvents {
                 }
             }
             if(Objects.nonNull(NightTerrorClient.GEOMETRY_RENDER))
-                NightTerrorClient.GEOMETRY_RENDER.setRenderVec(mc.player.getPositionVector());
+                NightTerrorClient.GEOMETRY_RENDER.setRenderXZ(mc.player.posX,mc.player.posZ);
         }
     }
 
@@ -82,8 +84,10 @@ public class ClientEvents {
 
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if(event.phase==TickEvent.Phase.END && Objects.nonNull(Minecraft.getMinecraft().world))
+        if(event.phase==TickEvent.Phase.END && Objects.nonNull(Minecraft.getMinecraft().world)) {
             RenderTests.onClientTick();
+            NightTerrorClient.checkRenderCache();
+        }
     }
 
     @SubscribeEvent
@@ -92,5 +96,10 @@ public class ClientEvents {
             for(StaticGeometryRender staticRender : STATIC_RENDERS)
                 staticRender.render(event.getPartialTicks());
         }
+    }
+
+    @SubscribeEvent
+    public static void onClientDisconnted(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
+        NightTerrorClient.onClientDisconnected();
     }
 }

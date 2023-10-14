@@ -5,6 +5,7 @@ import net.minecraft.nbt.NBTTagCompound;
 
 public interface ISleepDebt {
 
+    void of(EntityPlayerMP player, SleepDebt cap);
     boolean onTicksSlept(long ticks);
     float getDebt();
     void setDebt(EntityPlayerMP player, float debt);

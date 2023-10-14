@@ -1,6 +1,7 @@
 package mods.thecomputerizer.sleepless.world.nightterror;
 
-import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
+import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
+import mods.thecomputerizer.sleepless.config.SleepLessConfig;
 import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.network.PacketUpdateNightTerrorClient;
 import mods.thecomputerizer.sleepless.network.PacketWorldSound;
@@ -8,6 +9,7 @@ import mods.thecomputerizer.sleepless.registry.PotionRegistry;
 import mods.thecomputerizer.sleepless.registry.SoundRegistry;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.ITextComponent;
@@ -15,89 +17,78 @@ import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
 public class NightTerror {
 
-    public static NightTerror INSTANCE;
-    private static int cooldown = 0;
-
-    public static void checkInstance(WorldServer world) {
-        long time = world.getWorldTime()%24000L;
-        if(time<13000L) {
-            if(Objects.nonNull(INSTANCE)) INSTANCE.finish();
-            INSTANCE = null;
-        } else {
-            if(cooldown>0) cooldown--;
-            if(Objects.isNull(INSTANCE) && cooldown<=0 && time<16000L) {
-                cooldown = 300;
-                List<Float> chances = new ArrayList<>();
-                for(EntityPlayer player : world.playerEntities) {
-                    float chance = SleepLessConfigHelper.nightTerrorChance((EntityPlayerMP)player);
-                    if(chance>0) chances.add(chance);
-                }
-                if(!chances.isEmpty() && world.rand.nextFloat()<SleepLessConfigHelper.calculateFinalChance(chances))
-                    createInstance(world);
-            }
-        }
-    }
-
-    public static void createInstance(WorldServer world) {
-        INSTANCE = new NightTerror(world);
-    }
-
+    private static final int START_BELLS = 240;
+    private static final int FINISH_BELLS = 240+(11*60);
     private final WorldServer world;
     private int activeTicks;
-    private float bellVolume = 0.1f;
+    private float bellVolume;
+    private int maxColIndex;
 
-    private NightTerror(WorldServer world) {
+    public NightTerror(WorldServer world) {
         this.world = world;
+        this.activeTicks = 0;
+        this.bellVolume = 0.1f;
+        this.maxColIndex = -1;
+    }
+
+    public NightTerror(NBTTagCompound tag) {
+        this.world = FMLCommonHandler.instance().getMinecraftServerInstance().getWorld(tag.getInteger("worldDimension"));
+        this.activeTicks = tag.getInteger("activeTicks");
+        this.bellVolume = tag.getFloat("bellVolume");
+        this.maxColIndex = tag.getInteger("maxColumnIndex");
     }
 
     public void onTick() {
-        if(this.activeTicks==0) initialize();
-        else if(this.activeTicks>=240) {
-            if(this.activeTicks==360) sendUpdate(player -> player.sendStatusMessage(createMessage(new Style()
-                    .setColor(TextFormatting.DARK_RED).setItalic(true),lang("toolate1")),true));
-            if(this.activeTicks==540) sendUpdate(player -> player.sendStatusMessage(createMessage(new Style()
-                    .setColor(TextFormatting.DARK_RED).setItalic(true),lang("toolate2")),true));
-            if(this.activeTicks==720) sendUpdate(player -> player.sendStatusMessage(createMessage(new Style()
-                    .setColor(TextFormatting.DARK_RED).setItalic(true),lang("toolate3")),true));
-            if(this.activeTicks==900) sendUpdate(player -> player.sendStatusMessage(createMessage(new Style()
-                    .setColor(TextFormatting.DARK_RED).setItalic(true),lang("toolate4")),true));
-            if(this.activeTicks<=900 && (this.activeTicks==240 || (this.activeTicks-240)%60==0))
-                playSound();
-            if(this.activeTicks>=900) sendUpdate(player -> player.addPotionEffect(new PotionEffect(PotionRegistry.INSOMNIA,60)));
+        if(hasValidPlayer()) {
+            if (this.activeTicks == 0) initialize();
+            else if (this.activeTicks>=START_BELLS && this.activeTicks<=FINISH_BELLS) {
+                boolean isThirdSecond = this.activeTicks == START_BELLS || (this.activeTicks-START_BELLS)%60==0;
+                if(isThirdSecond) {
+                    sendBellMessage();
+                    onBell();
+                    if(this.activeTicks==FINISH_BELLS) onFinalBell();
+                }
+            } else if(this.activeTicks>FINISH_BELLS) {
+                sendUpdate(player -> player.addPotionEffect(new PotionEffect(PotionRegistry.INSOMNIA, 60)));
+            }
+            this.activeTicks++;
         }
-        this.activeTicks++;
     }
 
     private void initialize() {
-        PacketUpdateNightTerrorClient packet = new PacketUpdateNightTerrorClient(true,0f,0f,-1);
+        PacketUpdateNightTerrorClient packet = new PacketUpdateNightTerrorClient(true,0f,0f,-1,false);
         sendUpdate(player -> {
             player.sendStatusMessage(createMessage(new Style()
                     .setColor(TextFormatting.DARK_RED),lang("start")),true);
             packet.addPlayers((EntityPlayerMP)player);
         });
         packet.send();
-        playSound();
+        onBell();
     }
 
-    private void playSound() {
-        int columnIndex = (int)((this.bellVolume-0.1f)*20f);
+    private void onFinalBell() {
+        long time = this.world.getWorldTime()%24000L;
+        if(time<18000L) this.world.setWorldTime(this.world.getWorldTime()+(18000L-time));
+        else if(time>18000L) this.world.setWorldTime(this.world.getWorldTime()-(time-18000L));
+    }
+
+    private void onBell() {
+        this.maxColIndex = this.activeTicks<START_BELLS ? -1 : Math.min((this.activeTicks-START_BELLS)/60,11);
         float fog = 0f;
         float color = 0f;
-        if(columnIndex>=12) {
-            columnIndex = -1;
-            fog = 10f;
+        if(this.maxColIndex==11) {
+            fog = 20f;
             color = 1f;
         }
-        PacketUpdateNightTerrorClient packet = new PacketUpdateNightTerrorClient(true,fog,color,columnIndex);
+        PacketUpdateNightTerrorClient packet = new PacketUpdateNightTerrorClient(true,fog,color,this.maxColIndex,false);
         PacketWorldSound packetSound = new PacketWorldSound(SoundRegistry.BELL_SOUND.getRegistryName(),SoundCategory.AMBIENT,this.bellVolume,1f);
         sendUpdate(player -> {
             EntityPlayerMP player1 = (EntityPlayerMP)player;
@@ -107,6 +98,14 @@ public class NightTerror {
         packet.send();
         packetSound.send();
         this.bellVolume+=0.05f;
+    }
+
+    private void sendBellMessage() {
+        int offset = this.activeTicks-START_BELLS-120;
+        if(offset<0 || (offset>0 && offset%180!=0)) return;
+        final int index = offset==0 ? 1 : 1+(offset/180);
+        sendUpdate(player -> player.sendStatusMessage(createMessage(new Style()
+                .setColor(TextFormatting.DARK_RED).setItalic(true), lang("toolate"+index)), true));
     }
 
     private String lang(String extra) {
@@ -119,7 +118,7 @@ public class NightTerror {
     }
 
     public void finish() {
-        PacketUpdateNightTerrorClient packet = new PacketUpdateNightTerrorClient(false,0f,0f,-1);
+        PacketUpdateNightTerrorClient packet = new PacketUpdateNightTerrorClient(false,0f,0f,-1,false);
         sendUpdate(player -> {
             player.removePotionEffect(PotionRegistry.INSOMNIA);
             packet.addPlayers((EntityPlayerMP)player);
@@ -129,5 +128,36 @@ public class NightTerror {
 
     private void sendUpdate(Consumer<EntityPlayer> perPlayer) {
         for(EntityPlayer player : this.world.playerEntities) perPlayer.accept(player);
+    }
+
+    private boolean hasValidPlayer() {
+        for(EntityPlayer player : this.world.playerEntities)
+            if(CapabilityHandler.getSleepDebt((EntityPlayerMP)player)>=SleepLessConfig.NIGHT_TERROR.minSleepDebt)
+                return true;
+        return false;
+    }
+
+    public boolean shoudlDaylightCycle() {
+        return this.activeTicks<FINISH_BELLS;
+    }
+
+    public void catchUpJoiningPlayer(EntityPlayerMP player) {
+        float fog = 0f;
+        float color = 0f;
+        if(this.maxColIndex==11) {
+            fog = 50f;
+            color = 1f;
+        }
+        new PacketUpdateNightTerrorClient(true,fog,color,this.maxColIndex,true).addPlayers(player).send();
+    }
+
+    public NBTTagCompound writeToNBT(NBTTagCompound tag) {
+        NBTTagCompound instanceTag = new NBTTagCompound();
+        instanceTag.setInteger("worldDimension",this.world.provider.getDimension());
+        instanceTag.setInteger("activeTicks",this.activeTicks);
+        instanceTag.setFloat("bellVolume",this.bellVolume);
+        instanceTag.setInteger("maxColumnIndex",this.maxColIndex);
+        tag.setTag("instance",instanceTag);
+        return tag;
     }
 }

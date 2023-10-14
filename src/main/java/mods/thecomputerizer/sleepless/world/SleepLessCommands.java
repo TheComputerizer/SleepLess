@@ -65,14 +65,11 @@ public class SleepLessCommands extends CommandBase {
                         return;
                     }
                     case "nightterror": {
-                        nightTerror(server, sender, getOrNull(1, args));
+                        nightTerror(sender,getOrNull(1, args));
                         resetParameters();
                         return;
                     }
-                    default: {
-                        resetParameters();
-                        sendMessage(sender, true, false, "usage");
-                    }
+                    default: sendMessage(sender, true, false, "usage");
                 }
             }
         } catch (CommandException ex) {
@@ -112,26 +109,27 @@ public class SleepLessCommands extends CommandBase {
         }
     }
 
-    private void nightTerror(MinecraftServer server, ICommandSender sender, @Nullable String subType) throws CommandException {
+    private void nightTerror(ICommandSender sender, @Nullable String subType) throws CommandException {
         if(Objects.isNull(subType) || subType.isEmpty())
             sendMessage(sender, true, false, "usage");
         else {
+            WorldServer world = (WorldServer)sender.getEntityWorld();
             switch(subType) {
                 case "begin": {
-                    WorldServer overworld = server.getWorld(0);
-                    if(Objects.nonNull(NightTerror.INSTANCE))
+                    if(CapabilityHandler.worldHasNightTerror(world))
                         sendMessage(sender,false,false,"fail.begin.active");
-                    else if(overworld.isDaytime())
+                    else if(world.isDaytime())
                         sendMessage(sender,false,false,"fail.begin.time");
                     else {
-                        NightTerror.createInstance(overworld);
+                        CapabilityHandler.getNightTerrorCapability(world).setInstance(new NightTerror(world));
                         sendMessage(sender, false, false, "success.begin");
                     }
                     return;
                 }
                 case "stop": {
-                    if(Objects.nonNull(NightTerror.INSTANCE)) {
-                        NightTerror.INSTANCE.finish();
+                    if(CapabilityHandler.worldHasNightTerror(world)) {
+                        CapabilityHandler.getNightTerrorCapability(world).finish();
+                        CapabilityHandler.getNightTerrorCapability(world).setInstance(null);
                         sendMessage(sender, false, false, "success.stop");
                     }
                     else sendMessage(sender, false, false, "fail.stop");
@@ -149,7 +147,7 @@ public class SleepLessCommands extends CommandBase {
             this.curPlayerSelector = getPlayer(server,sender,unparsedPlayer);
         } catch (CommandException ignored) {}
         if(Objects.isNull(this.curPlayerSelector))
-            sendMessage(sender,true,false,"player.fail");
+            sendMessage(sender,true,false,"player");
     }
 
     private double parseDouble(ICommandSender sender, double defVal, @Nullable String unparsed) throws CommandException {

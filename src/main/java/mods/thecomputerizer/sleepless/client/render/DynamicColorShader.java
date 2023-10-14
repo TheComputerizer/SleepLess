@@ -1,6 +1,7 @@
 package mods.thecomputerizer.sleepless.client.render;
 
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
+import mods.thecomputerizer.sleepless.world.nightterror.NightTerrorClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.shader.Framebuffer;
@@ -21,11 +22,14 @@ public class DynamicColorShader extends Shader {
     public void render(float partialTicks) {
         if(Objects.nonNull(Minecraft.getMinecraft().player)) {
             if(SleepLessConfigHelper.shouldLoseColor()) {
-                this.getShaderManager().getShaderUniformOrDefault("Prominence").set(ClientEffects.COLOR_CORRECTION);
-                this.getShaderManager().getShaderUniformOrDefault("ColorAdjust").set(1f - ClientEffects.COLOR_CORRECTION / 2f);
+                this.getShaderManager().getShaderUniformOrDefault("Prominence").set(
+                        NightTerrorClient.overrideProminence(ClientEffects.COLOR_CORRECTION));
+                this.getShaderManager().getShaderUniformOrDefault("ColorAdjust").set(
+                        NightTerrorClient.overrideGrayscale(1f-ClientEffects.COLOR_CORRECTION/2f));
             }
             if(SleepLessConfigHelper.shouldDimLight())
-                this.getShaderManager().getShaderUniformOrDefault("LumaAdjust").set(1f - ClientEffects.LIGHT_DIMMING);
+                this.getShaderManager().getShaderUniformOrDefault("LumaAdjust").set(
+                        NightTerrorClient.overrideBrightness(1f-ClientEffects.LIGHT_DIMMING));
         }
         super.render(partialTicks);
     }

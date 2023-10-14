@@ -21,6 +21,13 @@ public class SleepDebt implements ISleepDebt {
     private float miningSpeed = 1f;
     private float phantomVisibility = 0f;
 
+
+    @Override
+    public void of(EntityPlayerMP player, SleepDebt cap) {
+        this.debt = cap.debt;
+        sync(player);
+    }
+
     @Override
     public boolean onTicksSlept(long ticks) {
         boolean shouldAdjust = ticks<5000 || this.debt>0;

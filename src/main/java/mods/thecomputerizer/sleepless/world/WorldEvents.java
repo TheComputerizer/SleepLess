@@ -4,12 +4,14 @@ import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
 import mods.thecomputerizer.sleepless.client.render.ClientEffects;
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
 import mods.thecomputerizer.sleepless.core.Constants;
+import mods.thecomputerizer.sleepless.network.PacketUpdateNightTerrorClient;
 import mods.thecomputerizer.sleepless.registry.PotionRegistry;
 import mods.thecomputerizer.sleepless.util.AddedEnums;
 import mods.thecomputerizer.sleepless.world.nightterror.NightTerror;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -31,7 +33,10 @@ public class WorldEvents {
 
     @SubscribeEvent
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        if(event.player instanceof EntityPlayerMP) CapabilityHandler.sync(event.player);
+        if(event.player instanceof EntityPlayerMP) {
+            EntityPlayerMP player = (EntityPlayerMP)event.player;
+            CapabilityHandler.sync(player);
+        }
     }
 
     @SubscribeEvent
@@ -47,12 +52,24 @@ public class WorldEvents {
     @SubscribeEvent
     public static void onWorldTick(TickEvent.WorldTickEvent event) {
         if(event.phase==TickEvent.Phase.END && event.world.provider.getDimension()==0 && event.world instanceof WorldServer) {
+            WorldServer world = (WorldServer)event.world;
             tickTimer++;
             if(tickTimer>20) {
-                NightTerror.checkInstance((WorldServer)event.world);
+                CapabilityHandler.checkNightTerror(world);
                 tickTimer=0;
             }
-            if(Objects.nonNull(NightTerror.INSTANCE)) NightTerror.INSTANCE.onTick();
+            CapabilityHandler.tickNightTerror(world);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerJoinWorld(EntityJoinWorldEvent event) {
+        if(event.getEntity() instanceof EntityPlayerMP) {
+            EntityPlayerMP player = (EntityPlayerMP)event.getEntity();
+            WorldServer world = player.getServerWorld();
+            if(CapabilityHandler.worldHasNightTerror(world)) CapabilityHandler.syncNightTerror(world,player);
+            else new PacketUpdateNightTerrorClient(false,0f,0f,-1,false)
+                    .addPlayers(player).send();
         }
     }
 }

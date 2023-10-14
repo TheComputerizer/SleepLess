@@ -16,6 +16,7 @@
     "MixinEntityRenderer",
     "MixinMinecraft",
     "MixinShaderGroup",
-    "MixinSoundSystemStarterThread"
+    "MixinSoundSystemStarterThread",
+    "MixinWorldClient"
   ]
 }

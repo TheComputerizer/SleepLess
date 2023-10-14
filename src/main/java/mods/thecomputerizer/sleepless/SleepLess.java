@@ -1,5 +1,8 @@
 package mods.thecomputerizer.sleepless;
 
+import mods.thecomputerizer.sleepless.capability.nightterror.INightTerrorCap;
+import mods.thecomputerizer.sleepless.capability.nightterror.NightTerrorCap;
+import mods.thecomputerizer.sleepless.capability.nightterror.NightTerrorCapStorage;
 import mods.thecomputerizer.sleepless.capability.sleepdebt.ISleepDebt;
 import mods.thecomputerizer.sleepless.capability.sleepdebt.SleepDebt;
 import mods.thecomputerizer.sleepless.capability.sleepdebt.SleepDebtStorage;
@@ -36,6 +39,7 @@ public class SleepLess {
     public static void preInit(FMLPreInitializationEvent event) {
         Constants.LOGGER.info("Starting common pre-init");
         CapabilityManager.INSTANCE.register(ISleepDebt.class,new SleepDebtStorage(),SleepDebt::new);
+        CapabilityManager.INSTANCE.register(INightTerrorCap.class,new NightTerrorCapStorage(),NightTerrorCap::new);
         if(isClient()) SleepLessClient.preInit(event);
         Constants.LOGGER.info("Completed common pre-init");
     }

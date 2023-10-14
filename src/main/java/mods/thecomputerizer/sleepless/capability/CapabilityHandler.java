@@ -1,6 +1,9 @@
 package mods.thecomputerizer.sleepless.capability;
 
+import mods.thecomputerizer.sleepless.capability.nightterror.INightTerrorCap;
+import mods.thecomputerizer.sleepless.capability.nightterror.NightTerrorCapProvider;
 import mods.thecomputerizer.sleepless.capability.sleepdebt.ISleepDebt;
+import mods.thecomputerizer.sleepless.capability.sleepdebt.SleepDebt;
 import mods.thecomputerizer.sleepless.capability.sleepdebt.SleepDebtProvider;
 import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.registry.PotionRegistry;
@@ -11,11 +14,14 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 
 import java.util.Objects;
 
@@ -27,8 +33,16 @@ public class CapabilityHandler {
     public static final Capability<ISleepDebt> SLEEP_DEBT_CAPABILITY = null;
     public static final ResourceLocation SLEEP_DEBT = Constants.res("sleep_debt");
 
+    @CapabilityInject(INightTerrorCap.class)
+    public static final Capability<INightTerrorCap> NIGHT_TERROR_CAPABILITY = null;
+    public static final ResourceLocation NIGHT_TERROR = Constants.res("night_terror");
+
     public static ISleepDebt getSleepDebtCapability(EntityPlayer player) {
         return player.getCapability(SLEEP_DEBT_CAPABILITY,null);
+    }
+
+    public static INightTerrorCap getNightTerrorCapability(WorldServer world) {
+        return world.getCapability(NIGHT_TERROR_CAPABILITY,null);
     }
 
     public static void setSleepDebt(EntityPlayerMP player, float debt) {
@@ -74,10 +88,52 @@ public class CapabilityHandler {
         getSleepDebtCapability(player).sync((EntityPlayerMP)player);
     }
 
+    public static boolean worldHasNightTerror(WorldServer world) {
+        INightTerrorCap cap = getNightTerrorCapability(world);
+        return Objects.nonNull(cap) && Objects.nonNull(cap.getInstance());
+    }
+
+    public static void checkNightTerror(WorldServer world) {
+        INightTerrorCap cap = getNightTerrorCapability(world);
+        if(Objects.nonNull(cap)) cap.checkInstance(world);
+    }
+
+    public static void tickNightTerror(WorldServer world) {
+        INightTerrorCap cap = getNightTerrorCapability(world);
+        if(Objects.nonNull(cap) && Objects.nonNull(cap.getInstance())) cap.getInstance().onTick();
+    }
+
+    public static void syncNightTerror(WorldServer world, EntityPlayerMP player) {
+        getNightTerrorCapability(world).onPlayerJoinWorld(player);
+    }
+
+    public static boolean shouldDaylightCycle(WorldServer world) {
+        INightTerrorCap cap = getNightTerrorCapability(world);
+        return Objects.nonNull(cap) && cap.shoudlDaylightCycle();
+    }
+
     @SubscribeEvent
     public static void onAttachEntityCapabilities(AttachCapabilitiesEvent<Entity> event) {
         Entity entity = event.getObject();
-        if(entity instanceof EntityPlayerMP)
-            event.addCapability(SLEEP_DEBT,new SleepDebtProvider());
+        if(entity instanceof EntityPlayerMP) event.addCapability(SLEEP_DEBT,new SleepDebtProvider());
+    }
+
+    @SubscribeEvent
+    public static void onAttachWorldCapabilities(AttachCapabilitiesEvent<World> event) {
+        World world = event.getObject();
+        if(world instanceof WorldServer) event.addCapability(NIGHT_TERROR,new NightTerrorCapProvider());
+    }
+
+    @SubscribeEvent
+    public static void onPlayerClone(net.minecraftforge.event.entity.player.PlayerEvent.Clone event) {
+        if(event.getEntityPlayer() instanceof EntityPlayerMP) {
+            EntityPlayerMP to = (EntityPlayerMP) event.getEntityPlayer();
+            ISleepDebt capTo = CapabilityHandler.getSleepDebtCapability(to);
+            if(Objects.nonNull(capTo)) {
+                EntityPlayerMP from = (EntityPlayerMP) event.getOriginal();
+                ISleepDebt capFrom = CapabilityHandler.getSleepDebtCapability(from);
+                if(Objects.nonNull(capFrom)) capTo.of(to,(SleepDebt)capFrom);
+            }
+        }
     }
 }
