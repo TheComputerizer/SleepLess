@@ -21,6 +21,7 @@ public class NightTerrorEntity extends EntityLiving {
 
     public NightTerrorEntity(World world) {
         super(world);
+        this.ignoreFrustumCheck = true;
     }
 
     @Override

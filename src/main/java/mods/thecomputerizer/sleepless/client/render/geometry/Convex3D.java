@@ -12,13 +12,16 @@ import java.util.Random;
 
 public class Convex3D {
 
+    private final double radius;
     private final TriangleMapper[] triangles;
-    private final float[] color = new float[]{1f,1f,1f,1f};
+    private final float[] color = new float[]{1f,1f,1f,1f,0f,0f,0f,0f};
     private final float[] scale = new float[]{1f,1f,1f};
     private final double[] translationOffset = new double[]{0d,0d,0d};
     private final double[] rotationSpeed = new double[]{0d,0d,0d};
     private final float[] currentRotation = new float[]{0f,0f,0f};
     private boolean showOutlines = true;
+    private boolean enableCull = false;
+    private boolean pushMatrix = true;
     private Vec3d previousRenderPos;
     private Vec3d orbitVec;
     private Orbit orbit;
@@ -26,14 +29,26 @@ public class Convex3D {
     public Convex3D(Vec3d ... relativeCoords) {
         if(Objects.isNull(relativeCoords) || relativeCoords.length<=3)
             throw new RuntimeException("Only convex polygons with more than 3 vertices are supported for Convex3D objects");
+        this.radius = relativeCoords[0].distanceTo(Vec3d.ZERO);
         this.triangles = new TriangleMapper[relativeCoords.length];
         for(int i=0; i<relativeCoords.length; i++)
             this.triangles[i] = new TriangleMapper(relativeCoords[i],relativeCoords);
     }
 
+    public double getRadius() {
+        return this.radius;
+    }
+
+    public double getScaledHeight() {
+        return this.radius/this.scale[1];
+    }
+
     public void setColor(float ... newColor) {
-        for(int i=0; i<this.color.length; i++)
+        for(int i=0; i<4; i++) {
             this.color[i] = newColor.length>i ? newColor[i] : 1f;
+            int oi = i+4; //outline index
+            this.color[oi] = newColor.length>oi ? newColor[oi] : (i<3 ? 1f-this.color[i] : this.color[i]);
+        }
     }
 
     public void setScale(float ... newScale) {
@@ -71,13 +86,21 @@ public class Convex3D {
         this.showOutlines = showOutlines;
     }
 
+    public void setEnableCull(boolean disableCull) {
+        this.enableCull = disableCull;
+    }
+
+    public void setPushMatrix(boolean pushMatrix) {
+        this.pushMatrix = pushMatrix;
+    }
+
     private void preRender() {
-        GlStateManager.pushMatrix();
+        if(this.pushMatrix) GlStateManager.pushMatrix();
         GlStateManager.enableBlend();
         GlStateManager.disableTexture2D();
         GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA,GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-        GlStateManager.depthMask(false);
+        if(!this.enableCull) GlStateManager.depthMask(false);
         GlStateManager.alphaFunc(GL11.GL_GREATER,0.003921569f);
         GlStateManager.disableCull();
         GlStateManager.disableLighting();
@@ -88,9 +111,9 @@ public class Convex3D {
         GlStateManager.disableBlend();
         GlStateManager.enableLighting();
         GlStateManager.enableCull();
-        GlStateManager.depthMask(true);
+        if(!this.enableCull) GlStateManager.depthMask(true);
         GlStateManager.alphaFunc(GL11.GL_GREATER,0.1f);
-        GlStateManager.popMatrix();
+        if(this.pushMatrix) GlStateManager.popMatrix();
     }
 
     public void render(double x, double y, double z) {
@@ -150,7 +173,7 @@ public class Convex3D {
     }
 
     public void renderOutlines() {
-        GlStateManager.color(1f-this.color[0],1f-this.color[1],1f-this.color[2],this.color[3]);
+        GlStateManager.color(this.color[4],this.color[5],this.color[6],this.color[7]);
         for(TriangleMapper triangle : this.triangles)
             for(int i=0; i<triangle.length; i++)
                 renderTriangleOutline(triangle,i);

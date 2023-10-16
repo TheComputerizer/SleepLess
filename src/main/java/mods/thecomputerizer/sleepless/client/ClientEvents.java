@@ -2,13 +2,11 @@ package mods.thecomputerizer.sleepless.client;
 
 
 import mods.thecomputerizer.sleepless.client.render.ClientEffects;
-import mods.thecomputerizer.sleepless.client.render.RenderTests;
 import mods.thecomputerizer.sleepless.client.render.geometry.StaticGeometryRender;
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
 import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.world.nightterror.NightTerrorClient;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.FOVUpdateEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
@@ -85,7 +83,6 @@ public class ClientEvents {
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if(event.phase==TickEvent.Phase.END && Objects.nonNull(Minecraft.getMinecraft().world)) {
-            RenderTests.onClientTick();
             NightTerrorClient.checkRenderCache();
         }
     }

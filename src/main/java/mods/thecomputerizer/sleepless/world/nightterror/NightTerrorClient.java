@@ -104,7 +104,7 @@ public class NightTerrorClient {
     }
 
     public static float overrideFarplane(float original) {
-        return fogOverride==0f ? original : 72f;
+        return fogOverride==0f ? original : 64f;
     }
 
     public static float overrideRed(float original) {

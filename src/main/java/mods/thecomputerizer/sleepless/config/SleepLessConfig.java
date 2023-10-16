@@ -149,7 +149,7 @@ public class SleepLessConfig {
 
         @Name("disableHeavyBreathing")
         @LangKey("config.sleepless.client.disableHeavyBreathing")
-        public boolean disableHeavyBreathing = false;
+        public boolean disableHeavyBreathing = true;
 
         @Name("disableFog")
         @LangKey("config.sleepless.client.disableFog")
