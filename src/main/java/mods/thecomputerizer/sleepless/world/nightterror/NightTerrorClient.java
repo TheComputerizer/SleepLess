@@ -3,7 +3,6 @@ package mods.thecomputerizer.sleepless.world.nightterror;
 import mods.thecomputerizer.sleepless.client.render.ClientEffects;
 import mods.thecomputerizer.sleepless.client.render.geometry.Column;
 import mods.thecomputerizer.sleepless.client.render.geometry.StaticGeometryRender;
-import mods.thecomputerizer.sleepless.core.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.MathHelper;
@@ -30,6 +29,7 @@ public class NightTerrorClient {
     private static boolean silenceMusicTicker = false;
     private static float fogOverride;
     private static float colorOverride;
+    private static float endingOverride;
 
     public static void onClientDisconnected() {
         hasCachedRenders = false;
@@ -46,10 +46,14 @@ public class NightTerrorClient {
         ((SoundSystem)mc.getSoundHandler().sndManager.sndSystem).setMasterVolume(mc.gameSettings.getSoundLevel(SoundCategory.MASTER));
     }
 
-    public static void setClientEffect(boolean silenceMusic, float fog, float color, int columnRender, boolean isCatchUp) {
+    public static void setClientEffect(boolean silenceMusic, float fog, float color, float ending,int columnRender, boolean isCatchUp) {
         silenceMusicTicker = silenceMusic;
         fogOverride = fog;
         colorOverride = color;
+        endingOverride = ending;
+        if(ending>0) {
+            ClientEffects.SCREEN_SHAKE= ending>0.98f ? 0f : ending*5f;
+        }
         Minecraft mc = Minecraft.getMinecraft();
         ((SoundSystem)mc.getSoundHandler().sndManager.sndSystem).setMasterVolume(mc.gameSettings.getSoundLevel(SoundCategory.MASTER));
         if(columnRender>=0) {
@@ -104,7 +108,7 @@ public class NightTerrorClient {
     }
 
     public static float overrideFarplane(float original) {
-        return fogOverride==0f ? original : 64f;
+        return fogOverride==0f ? original : 64f/(1f+(endingOverride*3f));
     }
 
     public static float overrideRed(float original) {
@@ -112,7 +116,7 @@ public class NightTerrorClient {
     }
 
     public static float overrideNotRed(float original) {
-        return colorOverride==0f ? original : 1f-colorOverride;
+        return colorOverride==0f ? original : Math.max(1f-colorOverride,endingOverride);
     }
 
     public static float overrideProminence(float original) {

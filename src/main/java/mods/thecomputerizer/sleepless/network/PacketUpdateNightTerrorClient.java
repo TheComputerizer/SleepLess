@@ -12,23 +12,26 @@ public class PacketUpdateNightTerrorClient extends MessageImpl {
     private boolean silenceMusic;
     private float fogOverride;
     private float colorOverride;
+    private float endingOverride;
     private int columnIndex;
     private boolean isCatchUp;
 
     public PacketUpdateNightTerrorClient() {}
 
     public PacketUpdateNightTerrorClient(boolean silenceMusic, float fogOverride, float colorOverride,
-                                         int columnIndex, boolean isCatchUp) {
+                                         float endingOverride, int columnIndex, boolean isCatchUp) {
         this.silenceMusic = silenceMusic;
         this.fogOverride = fogOverride;
         this.colorOverride = colorOverride;
+        this.endingOverride = endingOverride;
         this.columnIndex = columnIndex;
         this.isCatchUp = isCatchUp;
     }
 
     @Override
     public IMessage handle(MessageContext messageContext) {
-        NightTerrorClient.setClientEffect(this.silenceMusic,this.fogOverride,this.colorOverride,this.columnIndex,this.isCatchUp);
+        NightTerrorClient.setClientEffect(this.silenceMusic,this.fogOverride,this.colorOverride,this.endingOverride,
+                this.columnIndex,this.isCatchUp);
         return null;
     }
 
@@ -42,6 +45,7 @@ public class PacketUpdateNightTerrorClient extends MessageImpl {
         this.silenceMusic = buf.readBoolean();
         this.fogOverride = buf.readFloat();
         this.colorOverride = buf.readFloat();
+        this.endingOverride = buf.readFloat();
         this.columnIndex = buf.readInt();
         this.isCatchUp = buf.readBoolean();
     }
@@ -51,6 +55,7 @@ public class PacketUpdateNightTerrorClient extends MessageImpl {
         buf.writeBoolean(this.silenceMusic);
         buf.writeFloat(this.fogOverride);
         buf.writeFloat(this.colorOverride);
+        buf.writeFloat(this.endingOverride);
         buf.writeInt(this.columnIndex);
         buf.writeBoolean(this.isCatchUp);
     }

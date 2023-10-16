@@ -7,7 +7,6 @@ import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.network.PacketUpdateNightTerrorClient;
 import mods.thecomputerizer.sleepless.registry.PotionRegistry;
 import mods.thecomputerizer.sleepless.util.AddedEnums;
-import mods.thecomputerizer.sleepless.world.nightterror.NightTerror;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.WorldServer;
@@ -68,7 +67,7 @@ public class WorldEvents {
             EntityPlayerMP player = (EntityPlayerMP)event.getEntity();
             WorldServer world = player.getServerWorld();
             if(CapabilityHandler.worldHasNightTerror(world)) CapabilityHandler.syncNightTerror(world,player);
-            else new PacketUpdateNightTerrorClient(false,0f,0f,-1,false)
+            else new PacketUpdateNightTerrorClient(false,0f,0f,0f,-1,false)
                     .addPlayers(player).send();
         }
     }

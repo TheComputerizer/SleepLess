@@ -7,6 +7,7 @@ import mods.thecomputerizer.sleepless.network.PacketUpdateNightTerrorClient;
 import mods.thecomputerizer.sleepless.network.PacketWorldSound;
 import mods.thecomputerizer.sleepless.registry.PotionRegistry;
 import mods.thecomputerizer.sleepless.registry.SoundRegistry;
+import mods.thecomputerizer.sleepless.registry.entities.NightTerrorEntity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
@@ -25,12 +26,14 @@ import java.util.function.Consumer;
 
 public class NightTerror {
 
-    private static final int START_BELLS = 240;
-    private static final int FINISH_BELLS = 240+(11*60);
+    private static final int FINISH_BELLS = 1540;
+    private static final int START_BELLS = FINISH_BELLS-(11*60);
     private final WorldServer world;
     private int activeTicks;
     private float bellVolume;
     private int maxColIndex;
+    private NightTerrorEntity entity;
+    private int endingTicks;
 
     public NightTerror(WorldServer world) {
         this.world = world;
@@ -44,6 +47,7 @@ public class NightTerror {
         this.activeTicks = tag.getInteger("activeTicks");
         this.bellVolume = tag.getFloat("bellVolume");
         this.maxColIndex = tag.getInteger("maxColumnIndex");
+        this.entity = this.activeTicks>FINISH_BELLS ? (NightTerrorEntity)this.world.getEntityByID(tag.getInteger("entityID")) : null;
     }
 
     public void onTick() {
@@ -58,13 +62,20 @@ public class NightTerror {
                 }
             } else if(this.activeTicks>FINISH_BELLS) {
                 sendUpdate(player -> player.addPotionEffect(new PotionEffect(PotionRegistry.INSOMNIA, 60)));
+                if(Objects.nonNull(this.entity)) {
+                    if(this.entity.getAnimationData().currentAnimation==NightTerrorEntity.AnimationType.DEATH && !this.entity.isDead) {
+                        this.endingTicks++;
+                        sendEndingPacket();
+                    }
+                    if(this.entity.isDead) CapabilityHandler.getNightTerrorCapability(this.world).finish();
+                } else CapabilityHandler.getNightTerrorCapability(this.world).finish();
             }
             this.activeTicks++;
         }
     }
 
     private void initialize() {
-        PacketUpdateNightTerrorClient packet = new PacketUpdateNightTerrorClient(true,0f,0f,-1,false);
+        PacketUpdateNightTerrorClient packet = new PacketUpdateNightTerrorClient(true,0f,0f,0f,-1,false);
         sendUpdate(player -> {
             player.sendStatusMessage(createMessage(new Style()
                     .setColor(TextFormatting.DARK_RED),lang("start")),true);
@@ -78,6 +89,10 @@ public class NightTerror {
         long time = this.world.getWorldTime()%24000L;
         if(time<18000L) this.world.setWorldTime(this.world.getWorldTime()+(18000L-time));
         else if(time>18000L) this.world.setWorldTime(this.world.getWorldTime()-(time-18000L));
+        EntityPlayer player = this.world.playerEntities.get(this.world.rand.nextInt(this.world.playerEntities.size()));
+        this.entity = new NightTerrorEntity(this.world);
+        this.entity.setPosition(player.posX,player.posY+20d,player.posZ);
+        this.world.spawnEntity(this.entity);
     }
 
     private void onBell() {
@@ -88,7 +103,7 @@ public class NightTerror {
             fog = 20f;
             color = 1f;
         }
-        PacketUpdateNightTerrorClient packet = new PacketUpdateNightTerrorClient(true,fog,color,this.maxColIndex,false);
+        PacketUpdateNightTerrorClient packet = new PacketUpdateNightTerrorClient(true,fog,color,0f,this.maxColIndex,false);
         PacketWorldSound packetSound = new PacketWorldSound(SoundRegistry.BELL_SOUND.getRegistryName(),SoundCategory.AMBIENT,this.bellVolume,1f);
         sendUpdate(player -> {
             EntityPlayerMP player1 = (EntityPlayerMP)player;
@@ -117,8 +132,19 @@ public class NightTerror {
         return Objects.nonNull(style) ? text.setStyle(style) : text;
     }
 
+    private void sendEndingPacket() {
+        float ending = 1f-(((float)(NightTerrorEntity.AnimationType.DEATH.getTotalTime()-this.endingTicks))/
+                ((float)NightTerrorEntity.AnimationType.DEATH.getTotalTime()));
+        PacketUpdateNightTerrorClient packet = new PacketUpdateNightTerrorClient(true,20f,1f,ending,this.maxColIndex,false);
+        sendUpdate(player -> {
+            EntityPlayerMP player1 = (EntityPlayerMP)player;
+            packet.addPlayers(player1);
+        });
+        packet.send();
+    }
+
     public void finish() {
-        PacketUpdateNightTerrorClient packet = new PacketUpdateNightTerrorClient(false,0f,0f,-1,false);
+        PacketUpdateNightTerrorClient packet = new PacketUpdateNightTerrorClient(false,0f,0f,0f,-1,false);
         sendUpdate(player -> {
             player.removePotionEffect(PotionRegistry.INSOMNIA);
             packet.addPlayers((EntityPlayerMP)player);
@@ -142,13 +168,15 @@ public class NightTerror {
     }
 
     public void catchUpJoiningPlayer(EntityPlayerMP player) {
+        float ending = 1f-(((float)(NightTerrorEntity.AnimationType.DEATH.getTotalTime()-this.endingTicks))/
+                ((float)NightTerrorEntity.AnimationType.DEATH.getTotalTime()));
         float fog = 0f;
         float color = 0f;
         if(this.maxColIndex==11) {
-            fog = 50f;
+            fog = 20f;
             color = 1f;
         }
-        new PacketUpdateNightTerrorClient(true,fog,color,this.maxColIndex,true).addPlayers(player).send();
+        new PacketUpdateNightTerrorClient(true,fog,color,ending,this.maxColIndex,true).addPlayers(player).send();
     }
 
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
@@ -157,6 +185,7 @@ public class NightTerror {
         instanceTag.setInteger("activeTicks",this.activeTicks);
         instanceTag.setFloat("bellVolume",this.bellVolume);
         instanceTag.setInteger("maxColumnIndex",this.maxColIndex);
+        if(Objects.nonNull(this.entity)) instanceTag.setInteger("entityID",this.entity.getEntityId());
         tag.setTag("instance",instanceTag);
         return tag;
     }

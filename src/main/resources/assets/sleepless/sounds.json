@@ -4,6 +4,11 @@
       "sleepless:bell"
     ]
   },
+  "reversebell": {
+    "sounds": [
+      "sleepless:reversebell"
+    ]
+  },
   "boostedtp": {
     "sounds": [
       "sleepless:boostedtp"
@@ -12,6 +17,19 @@
   "boostedtpreverse": {
     "sounds": [
       "sleepless:boostedtpreverse"
+    ]
+  },
+  "static": {
+    "sounds": [
+      "sleepless:static"
+    ]
+  },
+  "battle": {
+    "category": "music",
+    "stream": true,
+    "volume": 0.75,
+    "sounds": [
+      "sleepless:battle"
     ]
   }
 }

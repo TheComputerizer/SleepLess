@@ -2,8 +2,10 @@ package mods.thecomputerizer.sleepless.registry.entities;
 
 import mods.thecomputerizer.sleepless.client.render.geometry.ShapeHolder;
 import mods.thecomputerizer.sleepless.client.render.geometry.Shapes;
+import mods.thecomputerizer.sleepless.config.SleepLessConfig;
 import mods.thecomputerizer.sleepless.network.PacketSendNightTerrorAnimtion;
 import mods.thecomputerizer.sleepless.registry.SoundRegistry;
+import mods.thecomputerizer.sleepless.world.ai.EntityWatchClosestWithSleepDebt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.entity.EntityLiving;
@@ -12,12 +14,14 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +40,11 @@ public class NightTerrorEntity extends EntityLiving {
         super(world);
         this.ignoreFrustumCheck = true;
         this.animationData = new AnimationData();
+    }
+
+    @Override
+    protected void initEntityAI() {
+        this.tasks.addTask(6,new EntityWatchClosestWithSleepDebt(this,64f,SleepLessConfig.NIGHT_TERROR.minSleepDebt));
     }
 
     @Override
@@ -77,6 +86,9 @@ public class NightTerrorEntity extends EntityLiving {
         super.damageEntity(source,damageAmount);
         if(this.getHealth()<health)
             this.animationData.setAnimation(this.getHealth()<=0 ? AnimationType.DEATH : AnimationType.DAMAGE);
+        if(this.getHealth()<=0f) {
+            this.setHealth(0.01f);
+        }
     }
 
     @Override
@@ -93,6 +105,22 @@ public class NightTerrorEntity extends EntityLiving {
         this.animationData.readFromNBT(tag.getCompoundTag("nightTerrorAnimationData"));
         if(this.animationData.currentAnimation==AnimationType.SPAWN && this.ticksAlive>=200)
             this.animationData.setAnimation(AnimationType.IDLE);
+    }
+
+    @Override
+    protected void onDeathUpdate() {
+        this.deathTime = Math.max(this.deathTime,19);
+        super.onDeathUpdate();
+    }
+
+    @Override
+    protected @Nullable SoundEvent getDeathSound() {
+        return null;
+    }
+
+    @Override
+    protected @Nullable SoundEvent getHurtSound(DamageSource source) {
+        return this.animationData.currentAnimation!=AnimationType.DEATH ? SoundRegistry.STATIC_SOUND : null;
     }
 
     @Override
@@ -126,7 +154,6 @@ public class NightTerrorEntity extends EntityLiving {
         }
 
         private void tickAnimations(boolean isClient) {
-            if(this.currentAnimationTime==0L) this.currentAnimation.onStart.accept(NightTerrorEntity.this);
             this.currentAnimationTime++;
             if(this.currentAnimationTime>this.currentAnimation.time)
                 setAnimation(this.currentAnimation.nextTypeName);
@@ -137,8 +164,10 @@ public class NightTerrorEntity extends EntityLiving {
         }
 
         public void setAnimation(AnimationType type) {
-            if(type!=this.currentAnimation) this.currentAnimation.onFinish.accept(NightTerrorEntity.this);
+            if(type!=this.currentAnimation)
+                this.currentAnimation.onFinish.accept(NightTerrorEntity.this);
             this.currentAnimation = type;
+            this.currentAnimation.onStart.accept(NightTerrorEntity.this);
             this.currentAnimationTime = 0L;
             checkSync();
         }
@@ -170,10 +199,14 @@ public class NightTerrorEntity extends EntityLiving {
 
     public enum AnimationType {
 
-        DAMAGE("damage",false,20,"teleport",entity -> {},entity -> {}),
-        DEATH("death",true,100,"death",entity -> {},entity -> {}),
+        DAMAGE("damage",false,15,"teleport",entity -> entity.setEntityInvulnerable(true),entity -> {}),
+        DEATH("death",true,123,"idle",entity -> {
+            entity.setEntityInvulnerable(true);
+            entity.playSound(SoundRegistry.BELL_REVERSE_SOUND,entity.getSoundVolume(),entity.getSoundPitch());
+        },entity -> entity.setHealth(0f)),
         IDLE("idle",false,Long.MAX_VALUE,"idle",entity -> {},entity -> {}),
-        SPAWN("spawn",true,200,"idle",entity -> {},entity -> {}),
+        SPAWN("spawn",true,200,"idle",entity -> entity.setEntityInvulnerable(true),
+                entity -> entity.setEntityInvulnerable(false)),
         TELEPORT("teleport",true,100,"idle",entity -> {
             if(entity.world.isRemote) Minecraft.getMinecraft().getSoundHandler().playSound(new PositionedSoundRecord(
                     SoundRegistry.BOOSTED_TP_SOUND,SoundCategory.HOSTILE,1f,0.5f,
@@ -182,6 +215,7 @@ public class NightTerrorEntity extends EntityLiving {
             if(entity.world.isRemote) Minecraft.getMinecraft().getSoundHandler().playSound(new PositionedSoundRecord(
                     SoundRegistry.BOOSTED_TP_REVERSE_SOUND,SoundCategory.HOSTILE,1f,0.5f,
                     (float)entity.posX,(float)entity.posY,(float)entity.posZ));
+            entity.setEntityInvulnerable(false);
         });
 
         private static final Map<String,AnimationType> BY_NAME = new HashMap<>();
@@ -200,6 +234,10 @@ public class NightTerrorEntity extends EntityLiving {
             this.nextTypeName = next;
             this.onStart = onStart;
             this.onFinish = onFinish;
+        }
+
+        public long getTotalTime() {
+            return this.time;
         }
 
         static {

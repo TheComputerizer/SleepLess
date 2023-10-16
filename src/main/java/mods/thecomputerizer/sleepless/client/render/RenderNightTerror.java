@@ -29,6 +29,8 @@ public class RenderNightTerror extends RenderLivingBase<NightTerrorEntity> {
 
     private ShapeHolder spawnRender;
     private boolean isTextured = false;
+    private float animationAngle = 0f;
+    private Vec3d animationAngleScales = Vec3d.ZERO;
 
     public RenderNightTerror(RenderManager manager) {
         super(manager,new ModelBaseCapture(new ModelPlayer(0f,true)),0f);
@@ -48,7 +50,9 @@ public class RenderNightTerror extends RenderLivingBase<NightTerrorEntity> {
             double sneakOffset = entity.isSneaking() ? y-0.125d : y;
             this.setModelVisibilities(entity);
             GlStateManager.enableBlendProfile(GlStateManager.Profile.PLAYER_SKIN);
+            GlStateManager.disableLighting();
             super.doRender(entity,x,sneakOffset,z,entityYaw, partialTick);
+            GlStateManager.enableLighting();
             GlStateManager.disableBlendProfile(GlStateManager.Profile.PLAYER_SKIN);
         }
     }
@@ -58,6 +62,7 @@ public class RenderNightTerror extends RenderLivingBase<NightTerrorEntity> {
         switch(data.currentAnimation) {
             case SPAWN: {
                 entity.renderMode = 0;
+                this.animationAngle = 0f;
                 float size = (float)Math.min((data.currentAnimationTime+partialTick)/190d,1d);
                 if(data.currentAnimationTime>190) size*=Math.max(((data.currentAnimationTime-190f)/5f),1f);
                 final float finalScale = size/2f;
@@ -69,26 +74,65 @@ public class RenderNightTerror extends RenderLivingBase<NightTerrorEntity> {
             }
             case DAMAGE: {
                 entity.renderMode = entity.world.rand.nextFloat()<0.8f ? 2 : 1;
+                this.animationAngle = (((float)data.currentAnimationTime+partialTick)/(float)data.currentAnimation.getTotalTime())*-25f;
+                if(entity.world.rand.nextFloat()<0.2f) this.animationAngle*=2f;
+                this.animationAngleScales = entity.getPositionVector().crossProduct(entity.getLook(partialTick)).normalize();
+                ModelPlayer playerModel = getPlayerModel();
+                playerModel.bipedLeftArm.rotateAngleX+=45f;
+                playerModel.bipedLeftArm.rotateAngleZ+=45f;
+                playerModel.bipedRightArm.rotateAngleX+=45f;
+                playerModel.bipedRightArm.rotateAngleZ+=45f;
                 return;
             }
             case TELEPORT: {
                 entity.renderMode = 0;
-                float size = Math.abs((data.currentAnimationTime%10)-5.5f)+partialTick;
-                data.applyAltRenderSettings(altRender -> altRender.setScale(0.5f/size,0.5f/size,0.5f/size)
-                        .setRotations(0.5d,0.5d,0.5d).setColor(0f,0f,0f,size/5.5f,1f,1f,1f,size/5.5f));
+                this.animationAngle = 0f;
+                float size = data.currentAnimationTime<4 ? (4f-(float)data.currentAnimationTime-partialTick)/4f :
+                        (data.currentAnimationTime+2>=data.currentAnimation.getTotalTime() ?
+                                (2f-((data.currentAnimation.getTotalTime()-data.currentAnimationTime-partialTick)))/4f : 0.1f);
+                data.applyAltRenderSettings(altRender -> altRender.setScale(size,size,size)
+                        .setRotations(0.5d,0.5d,0.5d).setColor(0f,0f,0f,1f/size,1f,1f,1f,1f/size));
                 return;
             }
             case DEATH: {
-                entity.renderMode = 2;
+                entity.renderMode = entity.world.rand.nextFloat()<0.8f ? 2 : 1;
+                this.animationAngle = (((float)data.currentAnimationTime+partialTick)/(float)data.currentAnimation.getTotalTime())*-75f;
+                if(entity.world.rand.nextFloat()<0.2f) this.animationAngle*=2f;
+                if(entity.world.rand.nextFloat()<0.1f) this.animationAngle*=-1f;
+                this.animationAngleScales = entity.getPositionVector().crossProduct(entity.getLook(partialTick)).normalize();
+                ModelPlayer playerModel = getPlayerModel();
+                playerModel.bipedLeftArm.rotateAngleX+=45f;
+                playerModel.bipedLeftArm.rotateAngleZ+=45f;
+                playerModel.bipedRightArm.rotateAngleX+=45f;
+                playerModel.bipedRightArm.rotateAngleZ+=45f;
                 return;
             }
-            default: entity.renderMode = 1;
+            default: {
+                entity.renderMode = 1;
+                this.animationAngle = 0f;
+            }
         }
+    }
+
+    @Override
+    protected void renderModel(NightTerrorEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks,
+                               float netHeadYaw, float headPitch, float scaleFactor) {
+        if(this.animationAngle!=0f) {
+            GlStateManager.rotate(this.animationAngle,(float)this.animationAngleScales.x,0f,0f);
+            GlStateManager.rotate(this.animationAngle,0f,(float)this.animationAngleScales.y,0f);
+            GlStateManager.rotate(this.animationAngle,0f,0f,(float)this.animationAngleScales.z);
+        }
+        super.renderModel(entity,limbSwing,limbSwingAmount,ageInTicks,netHeadYaw,headPitch,scaleFactor);
     }
 
     @Override
     protected void applyRotations(NightTerrorEntity entity, float ageInTicks, float rotationYaw, float partialTick) {
         super.applyRotations(entity,ageInTicks,rotationYaw,partialTick);
+    }
+
+    @Override
+    protected boolean setBrightness(NightTerrorEntity entity, float partialTick, boolean combineTextures) {
+        return false;
     }
 
     /**
