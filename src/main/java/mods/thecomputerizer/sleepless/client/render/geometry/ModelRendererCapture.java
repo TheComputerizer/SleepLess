@@ -58,7 +58,7 @@ public class ModelRendererCapture {
 
     public void render(float scale) {
         if(this.isVisible) {
-            GlStateManager.translate(this.parentRenderer.offsetX,this.parentRenderer.offsetY+scale,this.parentRenderer.offsetZ);
+            GlStateManager.translate(this.parentRenderer.offsetX,this.parentRenderer.offsetY,this.parentRenderer.offsetZ);
             if(hasNoRotationAngles()) {
                 if(!hasRotationPoints()) renderInner(scale,true);
                 else {
@@ -73,7 +73,7 @@ public class ModelRendererCapture {
                 renderInner(scale,true);
                 GlStateManager.popMatrix();
             }
-            GlStateManager.translate(-this.parentRenderer.offsetX,-this.parentRenderer.offsetY-scale,-this.parentRenderer.offsetZ);
+            GlStateManager.translate(-this.parentRenderer.offsetX,-this.parentRenderer.offsetY,-this.parentRenderer.offsetZ);
         } else {
             ((ModelRendererAccess)this.parentRenderer).sleepless$setSkipCapture(true);
             this.parentRenderer.render(scale);

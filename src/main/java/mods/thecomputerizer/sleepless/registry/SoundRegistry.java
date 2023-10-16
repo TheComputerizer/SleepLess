@@ -12,6 +12,8 @@ public final class SoundRegistry {
 
     private static final List<SoundEvent> ALL_SOUNDS = new ArrayList<>();
     public static final SoundEvent BELL_SOUND = makeSoundEvent("bell");
+    public static final SoundEvent BOOSTED_TP_SOUND = makeSoundEvent("boostedtp");
+    public static final SoundEvent BOOSTED_TP_REVERSE_SOUND = makeSoundEvent("boostedtpreverse");
 
     private static SoundEvent makeSoundEvent(final String name) {
         ResourceLocation id = Constants.res(name);

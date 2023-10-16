@@ -1,12 +1,17 @@
 {
-  "test": {
-    "sounds": [
-      "sleepless:static"
-    ]
-  },
   "bell": {
     "sounds": [
       "sleepless:bell"
+    ]
+  },
+  "boostedtp": {
+    "sounds": [
+      "sleepless:boostedtp"
+    ]
+  },
+  "boostedtpreverse": {
+    "sounds": [
+      "sleepless:boostedtpreverse"
     ]
   }
 }
