@@ -1,35 +1,42 @@
 {
-  "bell": {
+  "sounds.bell": {
     "sounds": [
       "sleepless:bell"
     ]
   },
-  "reversebell": {
+  "sounds.reversebell": {
     "sounds": [
       "sleepless:reversebell"
     ]
   },
-  "boostedtp": {
+  "sounds.boostedtp": {
     "sounds": [
       "sleepless:boostedtp"
     ]
   },
-  "boostedtpreverse": {
+  "sounds.boostedtpreverse": {
     "sounds": [
       "sleepless:boostedtpreverse"
     ]
   },
-  "static": {
+  "sounds.static": {
     "sounds": [
       "sleepless:static"
     ]
   },
-  "battle": {
+  "music.badnight": {
     "category": "music",
-    "stream": true,
-    "volume": 0.75,
-    "sounds": [
-      "sleepless:battle"
-    ]
+    "sounds": [{
+      "name": "sleepless:battle",
+      "stream": true,
+      "volume": 0.75
+    }]
+  },
+  "music.quiet": {
+    "category": "music",
+    "sounds": [{
+      "name": "sleepless:silent30",
+      "stream": true
+    }]
   }
 }

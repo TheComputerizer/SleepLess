@@ -27,8 +27,8 @@ public class SleepLess {
         Constants.LOGGER.info("Started constructing mod class");
         AddedEnums.load();
         if(Constants.IS_DEV) TheImpossibleLibrary.enableDevLog();
-        NetworkHandler.queueClientPacketRegistries(PacketRenderTests.class, PacketSendNightTerrorAnimtion.class,
-                PacketUpdateClientEffects.class,PacketUpdateNightTerrorClient.class,PacketWorldSound.class);
+        NetworkHandler.queueClientPacketRegistries(PacketRenderTests.class,PacketUpdateClientEffects.class,
+                PacketUpdateNightTerrorClient.class, PacketSendWorldSound.class);
         Constants.LOGGER.info("Constructed mod class");
     }
 

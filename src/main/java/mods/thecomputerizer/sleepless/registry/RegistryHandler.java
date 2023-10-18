@@ -15,6 +15,7 @@ import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.registries.DataSerializerEntry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import javax.annotation.Nonnull;
@@ -34,6 +35,11 @@ public final class RegistryHandler {
     public static void registerBlocks(RegistryEvent.Register<Block> event) {
         register(event,BlockRegistry.getBlocks());
         GameRegistry.registerTileEntity(TestBlockEntity.class,Constants.res("tile.test_block"));
+    }
+
+    @SubscribeEvent
+    public static void registerDataSerializers(RegistryEvent.Register<DataSerializerEntry> event) {
+        register(event,DataSerializerRegistry.getSerializers());
     }
 
     @SubscribeEvent

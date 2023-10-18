@@ -1,11 +1,13 @@
 package mods.thecomputerizer.sleepless.client.render;
 
 import mods.thecomputerizer.sleepless.client.render.geometry.ModelBaseCapture;
-import mods.thecomputerizer.sleepless.client.render.geometry.ShapeHolder;
+import mods.thecomputerizer.sleepless.client.render.geometry.ModelRendererCapture;
 import mods.thecomputerizer.sleepless.core.Constants;
+import mods.thecomputerizer.sleepless.mixin.access.ModelRendererAccess;
 import mods.thecomputerizer.sleepless.registry.entities.NightTerrorEntity;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.model.ModelPlayer;
+import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -20,6 +22,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 @ParametersAreNonnullByDefault
 @SideOnly(Side.CLIENT)
@@ -27,14 +30,15 @@ public class RenderNightTerror extends RenderLivingBase<NightTerrorEntity> {
 
     private static final ResourceLocation SKIN_TEXTURE = Constants.res("textures/entity/night_terror.png");
 
-    private ShapeHolder spawnRender;
-    private boolean isTextured = false;
     private float animationAngle = 0f;
     private Vec3d animationAngleScales = Vec3d.ZERO;
 
     public RenderNightTerror(RenderManager manager) {
         super(manager,new ModelBaseCapture(new ModelPlayer(0f,true)),0f);
-        getPlayerModel().isChild = false;
+        ModelPlayer playerModel = getPlayerModel();
+        playerModel.isChild = false;
+        setPartAnimations(playerModel.bipedRightLeg,anim -> anim.setMirrored(true),true);
+        setPartAnimations(playerModel.bipedRightArm,anim -> anim.setMirrored(true),true);
     }
 
     private ModelPlayer getPlayerModel() {
@@ -43,6 +47,7 @@ public class RenderNightTerror extends RenderLivingBase<NightTerrorEntity> {
 
     @Override
     public void doRender(NightTerrorEntity entity, double x, double y, double z, float entityYaw, float partialTick) {
+        if(entity.renderMode<0 || entity.renderMode>2) return;
         applyCustomAnimations(entity,partialTick);
         if(entity.renderMode==0) entity.getAnimationData().renderAlt(new Vec3d(x,y+1.5d,z));
         else {
@@ -55,6 +60,30 @@ public class RenderNightTerror extends RenderLivingBase<NightTerrorEntity> {
             GlStateManager.enableLighting();
             GlStateManager.disableBlendProfile(GlStateManager.Profile.PLAYER_SKIN);
         }
+    }
+
+    private void setPartAnimations(ModelRenderer part, Consumer<ModelRendererCapture.ModelPartAnimation> animationFunc,
+                                   boolean createNew) {
+        ModelRendererCapture capture = ((ModelRendererAccess)part).sleepless$getCapture();
+        if(Objects.nonNull(capture)) {
+            if(Objects.isNull(capture.additionalAnimations) && createNew)
+                capture.additionalAnimations = new ModelRendererCapture.ModelPartAnimation();
+            if(Objects.nonNull(capture.additionalAnimations)) animationFunc.accept(capture.additionalAnimations);
+        }
+    }
+
+    private void resetPartAnimations() {
+        for(ModelRenderer part : getMainModel().boxList)
+            setPartAnimations(part,ModelRendererCapture.ModelPartAnimation::reset,false);
+    }
+
+    private void setLimbAnimations(Consumer<ModelRendererCapture.ModelPartAnimation> armAnimations,
+                                   Consumer<ModelRendererCapture.ModelPartAnimation> legAnimations) {
+        ModelPlayer playerModel = getPlayerModel();
+        setPartAnimations(playerModel.bipedLeftArm,armAnimations,true);
+        setPartAnimations(playerModel.bipedRightArm,armAnimations,true);
+        setPartAnimations(playerModel.bipedLeftLeg,legAnimations,true);
+        setPartAnimations(playerModel.bipedRightLeg,legAnimations,true);
     }
 
     private void applyCustomAnimations(NightTerrorEntity entity, float partialTick) {
@@ -73,15 +102,15 @@ public class RenderNightTerror extends RenderLivingBase<NightTerrorEntity> {
                 return;
             }
             case DAMAGE: {
-                entity.renderMode = entity.world.rand.nextFloat()<0.8f ? 2 : 1;
-                this.animationAngle = (((float)data.currentAnimationTime+partialTick)/(float)data.currentAnimation.getTotalTime())*-25f;
-                if(entity.world.rand.nextFloat()<0.2f) this.animationAngle*=2f;
+                float rand = entity.world.rand.nextFloat();
+                entity.renderMode = rand<0.8f ? 2 : 1;
+                float scaledTime = ((float)data.currentAnimationTime+partialTick)/((float)data.currentAnimation.getTotalTime());
+                if(rand<0.2f) scaledTime*=2f;
+                this.animationAngle = scaledTime*-25f;
                 this.animationAngleScales = entity.getPositionVector().crossProduct(entity.getLook(partialTick)).normalize();
-                ModelPlayer playerModel = getPlayerModel();
-                playerModel.bipedLeftArm.rotateAngleX+=45f;
-                playerModel.bipedLeftArm.rotateAngleZ+=45f;
-                playerModel.bipedRightArm.rotateAngleX+=45f;
-                playerModel.bipedRightArm.rotateAngleZ+=45f;
+                final double scaledOffset = scaledTime*2d;
+                setLimbAnimations(anim -> anim.setRotationDegrees(false,0d,10d,0d).setOffset(scaledOffset),
+                        anim -> anim.setOffset(scaledOffset));
                 return;
             }
             case TELEPORT: {
@@ -95,21 +124,22 @@ public class RenderNightTerror extends RenderLivingBase<NightTerrorEntity> {
                 return;
             }
             case DEATH: {
-                entity.renderMode = entity.world.rand.nextFloat()<0.8f ? 2 : 1;
-                this.animationAngle = (((float)data.currentAnimationTime+partialTick)/(float)data.currentAnimation.getTotalTime())*-75f;
-                if(entity.world.rand.nextFloat()<0.2f) this.animationAngle*=2f;
-                if(entity.world.rand.nextFloat()<0.1f) this.animationAngle*=-1f;
+                float rand = entity.world.rand.nextFloat();
+                entity.renderMode = rand<0.8f ? 2 : 1;
+                float scaledTime = ((float)data.currentAnimationTime+partialTick)/((float)data.currentAnimation.getTotalTime());
+                if(rand<0.2f) scaledTime*=2f;
+                if(rand<0.1f) scaledTime*=1.5f;
+                this.animationAngle = scaledTime*-75f;
                 this.animationAngleScales = entity.getPositionVector().crossProduct(entity.getLook(partialTick)).normalize();
-                ModelPlayer playerModel = getPlayerModel();
-                playerModel.bipedLeftArm.rotateAngleX+=45f;
-                playerModel.bipedLeftArm.rotateAngleZ+=45f;
-                playerModel.bipedRightArm.rotateAngleX+=45f;
-                playerModel.bipedRightArm.rotateAngleZ+=45f;
+                final double scaledOffset = scaledTime*2d;
+                setLimbAnimations(anim -> anim.setRotationDegrees(false,30d,0d,30d).setOffset(scaledOffset),
+                        anim -> anim.setRotationDegrees(false,15d,0d,15d).setOffset(scaledOffset));
                 return;
             }
-            default: {
+            case IDLE: {
                 entity.renderMode = 1;
                 this.animationAngle = 0f;
+                resetPartAnimations();
             }
         }
     }

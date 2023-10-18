@@ -97,10 +97,9 @@ public class ShapeHolder {
         for(ShapeHolder child : this.childHolders) child.render(relativeCenter);
     }
 
-    public void renderScaledRelative(float scale) {
-        Vec3d center = this.relativePosVec.scale(scale);
-        this.shape.render(center);
+    public void renderScaledRelative(Vec3d relativeCenter, float scale) {
+        this.shape.render(relativeCenter.add(this.relativePosVec.scale(scale)));
         if(this.isMoving) setRelativePosition(this.relativePosVec.add(this.dirVec));
-        for(ShapeHolder child : this.childHolders) child.render(center);
+        for(ShapeHolder child : this.childHolders) child.render(relativeCenter);
     }
 }

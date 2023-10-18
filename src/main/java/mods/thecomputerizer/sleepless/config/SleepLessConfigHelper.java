@@ -83,12 +83,12 @@ public class SleepLessConfigHelper {
 
     public static boolean shouldPlaySounds() {
         SleepLessConfig.ClientEffects client = SleepLessConfig.CLIENT_EFFECTS;
-        return !NightTerrorClient.isSilencingMusic() && !client.disableClientEffects && !client.disableAudioEffects && !client.disableAmbientSounds;
+        return NightTerrorClient.overrideQuietSound(!client.disableClientEffects && !client.disableAudioEffects && !client.disableAmbientSounds);
     }
 
     public static boolean shouldMuffleSounds() {
         SleepLessConfig.ClientEffects client = SleepLessConfig.CLIENT_EFFECTS;
-        return !NightTerrorClient.isSilencingMusic() && !client.disableClientEffects && !client.disableAudioEffects && !client.disableSoundMuffler;
+        return NightTerrorClient.overrideQuietSound(!client.disableClientEffects && !client.disableAudioEffects && !client.disableSoundMuffler);
     }
 
     public static boolean shouldIncreaseFog() {

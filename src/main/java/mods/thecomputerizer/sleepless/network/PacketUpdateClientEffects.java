@@ -2,12 +2,10 @@ package mods.thecomputerizer.sleepless.network;
 
 import io.netty.buffer.ByteBuf;
 import mods.thecomputerizer.sleepless.client.ClientPacketHandlers;
-import mods.thecomputerizer.theimpossiblelibrary.network.MessageImpl;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
 
-public class PacketUpdateClientEffects extends MessageImpl {
+public class PacketUpdateClientEffects extends PacketToClient {
 
     private float grayscale;
     private float ambientChance;
@@ -40,11 +38,6 @@ public class PacketUpdateClientEffects extends MessageImpl {
         ClientPacketHandlers.updateClientEffects(this.grayscale,this.ambientChance,this.quietSounds,this.lightDim,
                 this.fogDensity,this.walkSpeed,this.breathingFactor,this.miningSpeed,this.phantomVisibility);
         return null;
-    }
-
-    @Override
-    public Side getSide() {
-        return Side.CLIENT;
     }
 
     @Override

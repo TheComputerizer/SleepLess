@@ -3,7 +3,9 @@ package mods.thecomputerizer.sleepless.world.nightterror;
 import mods.thecomputerizer.sleepless.client.render.ClientEffects;
 import mods.thecomputerizer.sleepless.client.render.geometry.Column;
 import mods.thecomputerizer.sleepless.client.render.geometry.StaticGeometryRender;
+import mods.thecomputerizer.sleepless.util.AddedEnums;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.MusicTicker;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -69,8 +71,12 @@ public class NightTerrorClient {
         }
     }
 
-    public static boolean isSilencingMusic() {
-        return silenceMusicTicker;
+    public static MusicTicker.MusicType getMusicOverride(MusicTicker.MusicType originalType) {
+        return silenceMusicTicker ? (fogOverride<=0 ? AddedEnums.NIGHT_TERROR_BEGINNING : MusicTicker.MusicType.END) : originalType;
+    }
+
+    public static boolean overrideQuietSound(boolean original) {
+        return original && !silenceMusicTicker;
     }
 
     private static void addColumn(int columnRender) {
