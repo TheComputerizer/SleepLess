@@ -1,4 +1,4 @@
-package mods.thecomputerizer.sleepless.world.nightterror;
+package mods.thecomputerizer.sleepless.registry.entities.nightterror;
 
 import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
 import mods.thecomputerizer.sleepless.config.SleepLessConfig;
@@ -8,7 +8,6 @@ import mods.thecomputerizer.sleepless.network.PacketUpdateNightTerrorClient;
 import mods.thecomputerizer.sleepless.network.PacketSendWorldSound;
 import mods.thecomputerizer.sleepless.registry.PotionRegistry;
 import mods.thecomputerizer.sleepless.registry.SoundRegistry;
-import mods.thecomputerizer.sleepless.registry.entities.NightTerrorEntity;
 import mods.thecomputerizer.sleepless.util.SoundUtil;
 import mods.thecomputerizer.theimpossiblelibrary.network.NetworkHandler;
 import net.minecraft.entity.player.EntityPlayer;
@@ -75,8 +74,8 @@ public class NightTerror {
                         sendWorldPacket(new PacketUpdateNightTerrorClient(true,20f,1f,
                                 ending,this.maxColIndex,false));
                     }
-                    if(this.entity.isDead) CapabilityHandler.getNightTerrorCapability(this.world).finish();
-                } else CapabilityHandler.getNightTerrorCapability(this.world).finish();
+                    if(this.entity.isDead) CapabilityHandler.finishNightTerror(this.world);
+                } else CapabilityHandler.finishNightTerror(this.world);
             }
             this.activeTicks++;
         }
@@ -145,7 +144,7 @@ public class NightTerror {
 
     private boolean hasValidPlayer() {
         for(EntityPlayer player : this.world.playerEntities)
-            if(CapabilityHandler.getSleepDebt((EntityPlayerMP)player)>=SleepLessConfig.NIGHT_TERROR.minSleepDebt)
+            if(CapabilityHandler.getSleepDebt(player)>=SleepLessConfig.NIGHT_TERROR.minSleepDebt)
                 return true;
         return false;
     }

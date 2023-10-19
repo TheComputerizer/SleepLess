@@ -1,7 +1,7 @@
 package mods.thecomputerizer.sleepless.registry;
 
 import mcp.MethodsReturnNonnullByDefault;
-import mods.thecomputerizer.sleepless.registry.entities.NightTerrorEntity;
+import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerrorEntity;
 import mods.thecomputerizer.theimpossiblelibrary.Constants;
 import mods.thecomputerizer.theimpossiblelibrary.util.NetworkUtil;
 import net.minecraft.network.PacketBuffer;

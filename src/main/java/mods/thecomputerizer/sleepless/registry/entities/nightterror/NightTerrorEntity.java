@@ -1,4 +1,4 @@
-package mods.thecomputerizer.sleepless.registry.entities;
+package mods.thecomputerizer.sleepless.registry.entities.nightterror;
 
 import mcp.MethodsReturnNonnullByDefault;
 import mods.thecomputerizer.sleepless.client.render.geometry.ShapeHolder;
@@ -6,8 +6,8 @@ import mods.thecomputerizer.sleepless.client.render.geometry.Shapes;
 import mods.thecomputerizer.sleepless.config.SleepLessConfig;
 import mods.thecomputerizer.sleepless.registry.DataSerializerRegistry;
 import mods.thecomputerizer.sleepless.registry.SoundRegistry;
+import mods.thecomputerizer.sleepless.registry.entities.ai.EntityWatchClosestWithSleepDebt;
 import mods.thecomputerizer.sleepless.util.SoundUtil;
-import mods.thecomputerizer.sleepless.world.ai.EntityWatchClosestWithSleepDebt;
 import mods.thecomputerizer.theimpossiblelibrary.util.NetworkUtil;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.nbt.NBTTagCompound;
@@ -54,7 +54,7 @@ public class NightTerrorEntity extends EntityLiving {
 
     @Override
     protected void initEntityAI() {
-        this.tasks.addTask(6,new EntityWatchClosestWithSleepDebt(this,64f,SleepLessConfig.NIGHT_TERROR.minSleepDebt));
+        this.tasks.addTask(6,new EntityWatchClosestWithSleepDebt(this,64f,SleepLessConfig.NIGHT_TERROR.minSleepDebt,1f));
     }
 
     @Override

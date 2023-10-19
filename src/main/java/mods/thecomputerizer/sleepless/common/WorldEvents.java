@@ -1,4 +1,4 @@
-package mods.thecomputerizer.sleepless.world;
+package mods.thecomputerizer.sleepless.common;
 
 import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
 import mods.thecomputerizer.sleepless.client.render.ClientEffects;

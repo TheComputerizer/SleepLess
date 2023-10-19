@@ -1,4 +1,4 @@
-package mods.thecomputerizer.sleepless.world.nightterror;
+package mods.thecomputerizer.sleepless.registry.entities.nightterror;
 
 import mods.thecomputerizer.sleepless.client.render.ClientEffects;
 import mods.thecomputerizer.sleepless.client.render.geometry.Column;

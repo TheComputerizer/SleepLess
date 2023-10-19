@@ -1,7 +1,7 @@
 package mods.thecomputerizer.sleepless.network;
 
 import io.netty.buffer.ByteBuf;
-import mods.thecomputerizer.sleepless.world.nightterror.NightTerrorClient;
+import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerrorClient;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 

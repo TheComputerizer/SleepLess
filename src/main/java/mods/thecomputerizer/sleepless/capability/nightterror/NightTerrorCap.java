@@ -2,7 +2,7 @@ package mods.thecomputerizer.sleepless.capability.nightterror;
 
 import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
-import mods.thecomputerizer.sleepless.world.nightterror.NightTerror;
+import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerror;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
@@ -20,7 +20,7 @@ public class NightTerrorCap implements INightTerrorCap {
     @Override
     public void checkInstance(WorldServer world) {
         long time = world.getWorldTime()%24000L;
-        if(time<13000L) CapabilityHandler.getNightTerrorCapability(world).finish();
+        if(time<13000L) CapabilityHandler.finishNightTerror(world);
         else {
             if(this.cooldown>0) this.cooldown--;
             if(Objects.isNull(this.instance) && this.cooldown<=0 && time<16000L) {

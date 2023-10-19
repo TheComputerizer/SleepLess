@@ -1,7 +1,7 @@
 package mods.thecomputerizer.sleepless.client.render.geometry;
 
 import mods.thecomputerizer.sleepless.mixin.access.ModelRendererAccess;
-import mods.thecomputerizer.sleepless.registry.entities.NightTerrorEntity;
+import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerrorEntity;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.model.ModelRenderer;

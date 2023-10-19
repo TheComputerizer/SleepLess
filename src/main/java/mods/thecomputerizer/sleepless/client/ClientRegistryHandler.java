@@ -4,7 +4,7 @@ import mods.thecomputerizer.sleepless.client.render.RenderNightTerror;
 import mods.thecomputerizer.sleepless.client.render.RenderPhantomEntity;
 import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.registry.ItemRegistry;
-import mods.thecomputerizer.sleepless.registry.entities.NightTerrorEntity;
+import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerrorEntity;
 import mods.thecomputerizer.sleepless.registry.entities.PhantomEntity;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;

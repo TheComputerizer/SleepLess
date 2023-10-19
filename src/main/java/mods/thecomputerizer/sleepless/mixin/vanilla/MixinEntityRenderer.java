@@ -2,7 +2,7 @@ package mods.thecomputerizer.sleepless.mixin.vanilla;
 
 import mods.thecomputerizer.sleepless.client.render.ClientEffects;
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
-import mods.thecomputerizer.sleepless.world.nightterror.NightTerrorClient;
+import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerrorClient;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.settings.GameSettings;
 import org.objectweb.asm.Opcodes;

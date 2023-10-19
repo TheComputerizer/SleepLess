@@ -1,7 +1,7 @@
 package mods.thecomputerizer.sleepless.config;
 
 import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
-import mods.thecomputerizer.sleepless.world.nightterror.NightTerrorClient;
+import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerrorClient;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.math.MathHelper;
 

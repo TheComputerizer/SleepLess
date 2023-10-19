@@ -1,6 +1,6 @@
 package mods.thecomputerizer.sleepless.mixin.vanilla;
 
-import mods.thecomputerizer.sleepless.world.nightterror.NightTerrorClient;
+import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerrorClient;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.world.GameRules;
 import org.spongepowered.asm.mixin.Mixin;

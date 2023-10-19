@@ -1,7 +1,7 @@
 package mods.thecomputerizer.sleepless.registry;
 
 import mods.thecomputerizer.sleepless.core.Constants;
-import mods.thecomputerizer.sleepless.registry.entities.NightTerrorEntity;
+import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerrorEntity;
 import mods.thecomputerizer.sleepless.registry.entities.PhantomEntity;
 import net.minecraft.entity.Entity;
 import net.minecraftforge.fml.common.registry.EntityEntry;

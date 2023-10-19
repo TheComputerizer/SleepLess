@@ -1,10 +1,9 @@
-package mods.thecomputerizer.sleepless.world;
+package mods.thecomputerizer.sleepless.common;
 
 import mcp.MethodsReturnNonnullByDefault;
 import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
 import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.network.PacketRenderTests;
-import mods.thecomputerizer.sleepless.world.nightterror.NightTerror;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -121,17 +120,14 @@ public class SleepLessCommands extends CommandBase {
                     else if(world.isDaytime())
                         sendMessage(sender,false,false,"fail.begin.time");
                     else {
-                        CapabilityHandler.getNightTerrorCapability(world).setInstance(new NightTerror(world));
+                        CapabilityHandler.setNewNightTerror(world);
                         sendMessage(sender, false, false, "success.begin");
                     }
                     return;
                 }
                 case "stop": {
-                    if(CapabilityHandler.worldHasNightTerror(world)) {
-                        CapabilityHandler.getNightTerrorCapability(world).finish();
-                        CapabilityHandler.getNightTerrorCapability(world).setInstance(null);
+                    if(CapabilityHandler.finishNightTerror(world))
                         sendMessage(sender, false, false, "success.stop");
-                    }
                     else sendMessage(sender, false, false, "fail.stop");
                     return;
                 }

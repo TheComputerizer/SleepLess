@@ -10,7 +10,7 @@ import mods.thecomputerizer.sleepless.client.SleepLessClient;
 import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.network.*;
 import mods.thecomputerizer.sleepless.util.AddedEnums;
-import mods.thecomputerizer.sleepless.world.SleepLessCommands;
+import mods.thecomputerizer.sleepless.common.SleepLessCommands;
 import mods.thecomputerizer.theimpossiblelibrary.TheImpossibleLibrary;
 import mods.thecomputerizer.theimpossiblelibrary.network.NetworkHandler;
 import net.minecraftforge.common.capabilities.CapabilityManager;

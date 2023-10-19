@@ -1,6 +1,6 @@
 package mods.thecomputerizer.sleepless.capability.nightterror;
 
-import mods.thecomputerizer.sleepless.world.nightterror.NightTerror;
+import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerror;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.WorldServer;

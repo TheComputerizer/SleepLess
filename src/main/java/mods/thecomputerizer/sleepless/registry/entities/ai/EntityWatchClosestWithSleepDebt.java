@@ -1,26 +1,39 @@
-package mods.thecomputerizer.sleepless.world.ai;
+package mods.thecomputerizer.sleepless.registry.entities.ai;
 
+import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
-import mods.thecomputerizer.sleepless.registry.entities.NightTerrorEntity;
+import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerrorEntity;
+import mods.thecomputerizer.sleepless.util.EntityUtil;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.EntitySelectors;
 
 import java.util.Objects;
 
+@SuppressWarnings("Guava")
 public class EntityWatchClosestWithSleepDebt extends EntityAIWatchClosest {
 
-
     private final float minSleepDebt;
-    public EntityWatchClosestWithSleepDebt(EntityLiving entity, float distance, float sleepDebt) {
-        super(entity,EntityPlayer.class,distance,1f);
+    private final Predicate<Entity> defaultPredicate;
+
+    public EntityWatchClosestWithSleepDebt(EntityLiving entity, float distance, float sleepDebt, float chance) {
+        super(entity,EntityPlayer.class,distance,chance);
         this.minSleepDebt = sleepDebt;
+        this.defaultPredicate = setDefaultPredicate();
     }
 
-    @SuppressWarnings({"unchecked", "Guava"})
+    public EntityWatchClosestWithSleepDebt(EntityAIWatchClosest instance, float minSleepDebt) {
+        super(instance.entity,instance.watchedClass,instance.maxDistance,instance.chance);
+        this.minSleepDebt = minSleepDebt;
+        this.defaultPredicate = setDefaultPredicate();
+    }
+
+    private Predicate<Entity> setDefaultPredicate() {
+        return Predicates.and(EntitySelectors.NOT_SPECTATING,EntitySelectors.notRiding(this.entity));
+    }
+
     @Override
     public boolean shouldExecute() {
         if(this.entity instanceof NightTerrorEntity && ((NightTerrorEntity)this.entity).getAnimationData()
@@ -29,10 +42,8 @@ public class EntityWatchClosestWithSleepDebt extends EntityAIWatchClosest {
         else {
             if(Objects.nonNull(this.entity.getAttackTarget())) this.closestEntity = this.entity.getAttackTarget();
             if(this.watchedClass==EntityPlayer.class)
-                this.closestEntity = this.entity.world.getClosestPlayer(this.entity.posX,this.entity.posY,this.entity.posZ,
-                        this.maxDistance,Predicates.and(EntitySelectors.NOT_SPECTATING,EntitySelectors.notRiding(this.entity),
-                                input -> input instanceof EntityPlayerMP &&
-                                        CapabilityHandler.getSleepDebt((EntityPlayerMP)input)>=minSleepDebt));
+                this.closestEntity = EntityUtil.getClosestPlayerWithSleepDebt(this.minSleepDebt,this.entity.world,
+                        this.entity.getPositionVector(),this.maxDistance,this.defaultPredicate);
             return Objects.nonNull(this.closestEntity);
         }
     }

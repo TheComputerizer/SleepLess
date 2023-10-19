@@ -7,6 +7,7 @@ import mods.thecomputerizer.sleepless.capability.sleepdebt.SleepDebt;
 import mods.thecomputerizer.sleepless.capability.sleepdebt.SleepDebtProvider;
 import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.registry.PotionRegistry;
+import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerror;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -21,11 +22,10 @@ import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 
 import java.util.Objects;
 
-@SuppressWarnings("DataFlowIssue")
+@SuppressWarnings({"DataFlowIssue", "ConstantValue"})
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public class CapabilityHandler {
 
@@ -38,19 +38,26 @@ public class CapabilityHandler {
     public static final ResourceLocation NIGHT_TERROR = Constants.res("night_terror");
 
     public static ISleepDebt getSleepDebtCapability(EntityPlayer player) {
+        if(Objects.isNull(SLEEP_DEBT_CAPABILITY)) return null; //Probably unreachable but sometimes weird things happen
         return player.getCapability(SLEEP_DEBT_CAPABILITY,null);
     }
 
-    public static INightTerrorCap getNightTerrorCapability(WorldServer world) {
-        return world.getCapability(NIGHT_TERROR_CAPABILITY,null);
+    public static INightTerrorCap getNightTerrorCapability(World world) {
+        if(Objects.isNull(NIGHT_TERROR_CAPABILITY)) return null; //Probably unreachable but sometimes weird things happen
+        return world instanceof WorldServer ? world.getCapability(NIGHT_TERROR_CAPABILITY,null) : null;
     }
 
     public static void setSleepDebt(EntityPlayerMP player, float debt) {
         getSleepDebtCapability(player).setDebt(player,debt);
     }
 
-    public static float getSleepDebt(EntityPlayerMP player) {
-        return getSleepDebtCapability(player).getDebt();
+    /**
+     * The more abstracted input makes some other checks require less syntax sugar
+     */
+    public static float getSleepDebt(Entity potentialPlayer) {
+        if(!(potentialPlayer instanceof EntityPlayerMP)) return -1f;
+        ISleepDebt cap = getSleepDebtCapability((EntityPlayerMP)potentialPlayer);
+        return Objects.nonNull(cap) ? cap.getDebt() : -1f;
     }
 
     public static float getHungerAmplifier(EntityPlayerMP player, float exhaustion) {
@@ -88,7 +95,13 @@ public class CapabilityHandler {
         getSleepDebtCapability(player).sync((EntityPlayerMP)player);
     }
 
-    public static boolean worldHasNightTerror(WorldServer world) {
+    public static void setNewNightTerror(WorldServer world) {
+        INightTerrorCap cap = getNightTerrorCapability(world);
+        if(Objects.nonNull(cap) && Objects.isNull(cap.getInstance()))
+            cap.setInstance(new NightTerror(world));
+    }
+
+    public static boolean worldHasNightTerror(World world) {
         INightTerrorCap cap = getNightTerrorCapability(world);
         return Objects.nonNull(cap) && Objects.nonNull(cap.getInstance());
     }
@@ -98,18 +111,28 @@ public class CapabilityHandler {
         if(Objects.nonNull(cap)) cap.checkInstance(world);
     }
 
-    public static void tickNightTerror(WorldServer world) {
+    public static void tickNightTerror(World world) {
         INightTerrorCap cap = getNightTerrorCapability(world);
         if(Objects.nonNull(cap) && Objects.nonNull(cap.getInstance())) cap.getInstance().onTick();
     }
 
-    public static void syncNightTerror(WorldServer world, EntityPlayerMP player) {
+    public static void syncNightTerror(World world, EntityPlayerMP player) {
         getNightTerrorCapability(world).onPlayerJoinWorld(player);
     }
 
-    public static boolean shouldDaylightCycle(WorldServer world) {
+    public static boolean shouldDaylightCycle(World world) {
         INightTerrorCap cap = getNightTerrorCapability(world);
         return Objects.nonNull(cap) && cap.shoudlDaylightCycle();
+    }
+
+    public static boolean finishNightTerror(World world) {
+        INightTerrorCap cap = getNightTerrorCapability(world);
+        if(Objects.nonNull(cap) && Objects.nonNull(cap.getInstance())) {
+            cap.finish();
+            cap.setInstance(null);
+            return true;
+        }
+        return false;
     }
 
     @SubscribeEvent
