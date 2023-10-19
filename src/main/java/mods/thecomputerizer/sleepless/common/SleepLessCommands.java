@@ -16,10 +16,8 @@ import net.minecraft.world.WorldServer;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
@@ -175,7 +173,8 @@ public class SleepLessCommands extends CommandBase {
      */
     private double parseExternalCoord(ICommandSender sender, double original, String unparsed) throws CommandException {
         if(!unparsed.contains("~")) return parseDouble(sender,Float.NaN,unparsed);
-        return (float)original+parseDouble(sender,Float.NaN,unparsed.replaceAll("~",""));
+        String replaced = unparsed.replaceAll("~","");
+        return (float)original+parseDouble(sender,Float.NaN,replaced.isEmpty() ? "0" : replaced);
     }
 
     private void sendMessage(ICommandSender sender, boolean isException, boolean isStatusMsg,
@@ -198,12 +197,6 @@ public class SleepLessCommands extends CommandBase {
             this.curPlayerSelector.sendStatusMessage(new TextComponentTranslation(lang,args),true);
     }
 
-    private String buildCommandString(boolean withSlash, Object ... args) {
-        StringBuilder builder = withSlash ? new StringBuilder("/") : new StringBuilder();
-        for(Object arg : args) builder.append(arg).append(" ");
-        return builder.toString().trim();
-    }
-
     private void resetParameters() {
         this.curSubName = null;
         this.curPlayerSelector = null;
@@ -212,10 +205,14 @@ public class SleepLessCommands extends CommandBase {
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args,
                                           @Nullable BlockPos targetPos) {
-        if(args.length==0) return Arrays.asList("setsleepdebt","testrenders","nightterror");
-        if(Objects.nonNull(this.curSubName)) {
-            if(this.curSubName.matches("testrenders")) return testRendersTabCompletions(args.length-1);
-            if(this.curSubName.matches("nightterror")) return Arrays.asList("start","stop");
+        if(args.length==0) return Collections.emptyList();
+        String subCmd = args[0];
+        if(args.length==1) return filteredTabsCompletions(subCmd,false,"setsleepdebt","nightterror","testrenders");
+        if(Objects.nonNull(subCmd) && !subCmd.isEmpty()) {
+            if(subCmd.matches("testrenders"))
+                return testRendersTabCompletions(args[args.length-1].isEmpty() ? args.length-2 : args.length-1);
+            if(subCmd.matches("nightterror"))
+                return filteredTabsCompletions(args[args.length-1],true,"start","stop");
         }
         return Collections.emptyList();
     }
@@ -225,5 +222,18 @@ public class SleepLessCommands extends CommandBase {
         for(int i=length; i<this.testRenderTab.length; i++)
             builder.append(this.testRenderTab[i]).append(" ");
         return Collections.singletonList(builder.toString().trim());
+    }
+
+    private List<String> filteredTabsCompletions(String current, boolean checkSuffix, String ... potentials) {
+        List<String> filteredCompletions = new ArrayList<>();
+        addIf(filteredCompletions,str -> current.isEmpty() || str.startsWith(current),potentials);
+        if(checkSuffix) addIf(filteredCompletions,str -> current.isEmpty() || str.endsWith(current),potentials);
+        return filteredCompletions;
+    }
+
+    private void addIf(List<String> filtered, Function<String,Boolean> checkFunc, String ... potentials) {
+        for(String potential : potentials)
+            if(!filtered.contains(potential) && checkFunc.apply(potential))
+                filtered.add(potential);
     }
 }
