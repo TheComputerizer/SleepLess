@@ -2,17 +2,23 @@ package mods.thecomputerizer.sleepless.registry.entities;
 
 import mods.thecomputerizer.sleepless.client.render.ClientEffects;
 import mods.thecomputerizer.sleepless.registry.PotionRegistry;
+import mods.thecomputerizer.sleepless.registry.entities.ai.EntityWatchClosestWithSleepDebt;
+import mods.thecomputerizer.sleepless.registry.entities.ai.PhantomNearestAttackableTarget;
+import mods.thecomputerizer.sleepless.registry.entities.pathfinding.PhantomPathNavigateGround;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.EntityAIAttackMelee;
 import net.minecraft.entity.monster.EntityEnderman;
+import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.pathfinding.PathNavigate;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
@@ -20,9 +26,11 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Objects;
 
-public class PhantomEntity extends EntityLiving {
+@ParametersAreNonnullByDefault
+public class PhantomEntity extends EntityMob {
 
     private static final Class<?>[] VALID_SHADOWS = new Class<?>[]{EntityZombie.class,EntitySkeleton.class,
             EntityEnderman.class,EntityPlayer.class};
@@ -41,6 +49,27 @@ public class PhantomEntity extends EntityLiving {
         this.addPotionEffect(new PotionEffect(PotionRegistry.PHASED,Integer.MAX_VALUE));
         this.ignoreFrustumCheck = true;
         tryAssignShadowClass(VALID_SHADOWS[0]);
+    }
+
+    @Override
+    protected void applyEntityAttributes() {
+        super.applyEntityAttributes();
+        this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(64d);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.15d);
+        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(2d);
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(10d);
+    }
+
+    @Override
+    protected void initEntityAI() {
+        this.tasks.addTask(3,new EntityAIAttackMelee(this,1d,false));
+        this.tasks.addTask(6,new EntityWatchClosestWithSleepDebt(this,64f,5f,1f));
+        this.targetTasks.addTask(1, new PhantomNearestAttackableTarget<>(this,EntityPlayer.class,1, false,false,7f));
+    }
+
+    @Override
+    protected @Nonnull PathNavigate createNavigator(World world) {
+        return new PhantomPathNavigateGround(this,world);
     }
 
     @SuppressWarnings("unchecked")
