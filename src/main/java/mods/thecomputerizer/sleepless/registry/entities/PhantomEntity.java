@@ -26,6 +26,7 @@ public class PhantomEntity extends EntityLiving {
 
     private static final Class<?>[] VALID_SHADOWS = new Class<?>[]{EntityZombie.class,EntitySkeleton.class,
             EntityEnderman.class,EntityPlayer.class};
+
     protected Class<? extends Entity> shadowEntityClass;
 
     /**
@@ -38,6 +39,8 @@ public class PhantomEntity extends EntityLiving {
         this.setHealth(this.getMaxHealth());
         this.setSize(1f, 1.875f);
         this.addPotionEffect(new PotionEffect(PotionRegistry.PHASED,Integer.MAX_VALUE));
+        this.ignoreFrustumCheck = true;
+        tryAssignShadowClass(VALID_SHADOWS[0]);
     }
 
     @SuppressWarnings("unchecked")
@@ -117,5 +120,11 @@ public class PhantomEntity extends EntityLiving {
         if(Objects.isNull(render) && this.shadowEntityClass!=Entity.class)
             render = getNonPlayerShadowRender(manager,(Class<? extends Entity>)entityClass.getSuperclass());
         return render;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public boolean isInRangeToRender3d(double x, double y, double z) {
+        return true;
     }
 }

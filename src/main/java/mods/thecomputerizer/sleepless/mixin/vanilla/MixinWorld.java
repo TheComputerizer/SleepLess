@@ -19,7 +19,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
-import java.util.Objects;
 
 @Mixin(World.class)
 public abstract class MixinWorld {
@@ -45,6 +44,6 @@ public abstract class MixinWorld {
             opcode = Opcodes.GETFIELD), method = "checkNoEntityCollision")
     private boolean sleepless$noPhantomCollisions(Entity entity, boolean original) {
         return original && (!(entity instanceof EntityLivingBase) ||
-                Objects.isNull(((EntityLivingBase)entity).getActivePotionEffect(PotionRegistry.PHASED)));
+                !((EntityLivingBase)entity).isPotionActive(PotionRegistry.PHASED));
     }
 }
