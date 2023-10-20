@@ -190,8 +190,8 @@ public abstract class MixinEntity {
         double storedZ = z;
         this.setEntityBoundingBox(this.getEntityBoundingBox().offset(x,0d,z));
         Entity self = sleepless$cast();
-        if(y>=0d) this.setEntityBoundingBox(this.getEntityBoundingBox().offset(0d,y,0d));
-        else if(y<0d && !self.isSneaking()) {
+        if(y>0d || (y<0d && self.isSneaking())) this.setEntityBoundingBox(this.getEntityBoundingBox().offset(0d,y,0d));
+        else if(y<0d) {
             List<AxisAlignedBB> collisions = this.world.getCollisionBoxes(self,this.getEntityBoundingBox().expand(0,y,0));
             for(AxisAlignedBB aabb : collisions)
                 y = aabb.calculateYOffset(this.getEntityBoundingBox(),y);
