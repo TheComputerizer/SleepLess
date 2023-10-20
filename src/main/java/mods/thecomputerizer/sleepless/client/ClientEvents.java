@@ -5,10 +5,12 @@ import mods.thecomputerizer.sleepless.client.render.ClientEffects;
 import mods.thecomputerizer.sleepless.client.render.geometry.StaticGeometryRender;
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
 import mods.thecomputerizer.sleepless.core.Constants;
+import mods.thecomputerizer.sleepless.registry.PotionRegistry;
 import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerrorClient;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.FOVUpdateEvent;
+import net.minecraftforge.client.event.PlayerSPPushOutOfBlocksEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -98,5 +100,10 @@ public class ClientEvents {
     @SubscribeEvent
     public static void onClientDisconnted(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
         NightTerrorClient.onClientDisconnected();
+    }
+
+    @SubscribeEvent
+    public static void onPlayerSPPushOutOfBlocksEvent(PlayerSPPushOutOfBlocksEvent event) {
+        if(event.getEntityPlayer().isPotionActive(PotionRegistry.PHASED)) event.setCanceled(true);
     }
 }

@@ -7,13 +7,17 @@
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "MixinBlockBed",
+    "MixinEntity",
+    "MixinEntityLivingBase",
     "MixinModelRenderer",
+    "MixinNetHandlerPlayServer",
     "MixinPlayer",
     "MixinWorld",
     "MixinWorldServer"
   ],
   "client": [
     "InvokerRender",
+    "MixinEntityPlayerSP",
     "MixinEntityRenderer",
     "MixinMinecraft",
     "MixinShaderGroup",

@@ -1,6 +1,7 @@
 package mods.thecomputerizer.sleepless.registry.entities;
 
 import mods.thecomputerizer.sleepless.client.render.ClientEffects;
+import mods.thecomputerizer.sleepless.registry.PotionRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.entity.Render;
@@ -12,6 +13,7 @@ import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -35,6 +37,7 @@ public class PhantomEntity extends EntityLiving {
         super(world);
         this.setHealth(this.getMaxHealth());
         this.setSize(1f, 1.875f);
+        this.addPotionEffect(new PotionEffect(PotionRegistry.PHASED,Integer.MAX_VALUE));
     }
 
     @SuppressWarnings("unchecked")
