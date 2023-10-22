@@ -2,13 +2,24 @@ package mods.thecomputerizer.sleepless.config;
 
 import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
 import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerrorClient;
+import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 
 public class SleepLessConfigHelper {
+
+    private static Block[] PHASED_BLOCK_BLACKLIST = new Block[]{Blocks.BEDROCK,Blocks.BARRIER};
+    private static Block[] PHANTOM_PATHFIND_BLACKLIST = new Block[]{Blocks.BEDROCK,Blocks.BARRIER};
+    private static boolean NEEDS_CACHING = true;
+
+    public static void onConfigReloaded() {
+        NEEDS_CACHING = true;
+    }
 
     private static float getMaxPaid() {
         return -1f*SleepLessConfig.SLEEP_DEBT_TIMINGS.maxDaysPaid;
@@ -104,5 +115,31 @@ public class SleepLessConfigHelper {
     public static boolean shouldDimLight() {
         SleepLessConfig.ClientEffects client = SleepLessConfig.CLIENT_EFFECTS;
         return !client.disableClientEffects && !client.disableVisualEffects;
+    }
+
+    private static void cacheBlocks() {
+        SleepLessConfig.Phantom phantom = SleepLessConfig.PHANTOM;
+        Set<Block> cachedBlocks = new HashSet<>();
+        PHASED_BLOCK_BLACKLIST = addToBlockCache(cachedBlocks,phantom.phasedBlacklist).toArray(new Block[0]);
+        PHANTOM_PATHFIND_BLACKLIST = addToBlockCache(cachedBlocks,phantom.pathfindBlacklist).toArray(new Block[0]);
+        NEEDS_CACHING = false;
+    }
+
+    private static Set<Block> addToBlockCache(Set<Block> blocks, String ... blockNames) {
+        for(String blockName : blockNames) {
+            ResourceLocation blockRes = new ResourceLocation(blockName);
+            if(ForgeRegistries.BLOCKS.containsKey(blockRes)) blocks.add(ForgeRegistries.BLOCKS.getValue(blockRes));
+        }
+        return blocks;
+    }
+
+    public static Block[] getPhasedBlockBlacklist() {
+        if(NEEDS_CACHING) cacheBlocks();
+        return Arrays.copyOf(PHASED_BLOCK_BLACKLIST,PHASED_BLOCK_BLACKLIST.length);
+    }
+
+    public static Block[] getPhantomPathfindBlacklist() {
+        if(NEEDS_CACHING) cacheBlocks();
+        return Arrays.copyOf(PHANTOM_PATHFIND_BLACKLIST,PHANTOM_PATHFIND_BLACKLIST.length);
     }
 }

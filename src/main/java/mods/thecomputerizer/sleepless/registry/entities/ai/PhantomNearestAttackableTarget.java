@@ -8,11 +8,11 @@ import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
 public class PhantomNearestAttackableTarget<T extends EntityLivingBase> extends EntityAINearestAttackableTarget<T> {
 
     public PhantomNearestAttackableTarget(EntityCreature creature, Class<T> targetClass, int chance, boolean checkSight,
-                                          boolean onlyNearby,
-                                          float minSleepDebt) {
+                                          boolean onlyNearby, float minSleepDebt) {
         super(creature,targetClass,chance,checkSight,onlyNearby,EntityUtil.getSleepDebtPredicate(minSleepDebt));
     }
 
+    @SuppressWarnings("unused")
     public PhantomNearestAttackableTarget(EntityAINearestAttackableTarget<T> instance, float minSleepDebt) {
         super(instance.taskOwner,instance.targetClass,instance.targetChance,instance.shouldCheckSight,
                 instance.nearbyOnly,EntityUtil.getSleepDebtPredicate(minSleepDebt));

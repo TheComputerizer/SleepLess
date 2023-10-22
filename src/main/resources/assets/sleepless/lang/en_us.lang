@@ -64,6 +64,13 @@ config.sleepless.nightterror.sleepDebtIncrement.tooltip=The increment above the 
 config.sleepless.nightterror.serverChanceFormula=Server Chance formula
 config.sleepless.nightterror.serverChanceFormula.tooltip=Decides the formula to use when calculating the chance for a night terror to occur in multiplayer. Accepted values are AVERAGE, HIGHEST, or LOWEST.\nAVERAGE is the default and takes the average of the chance values for all players that meet the minimum requirements.\nHIGHEST means the chance will be equivalent to the highest player's chance value of all players that meet the minimum requirements in a world.\n LOWEST means the chance will be equivalent to the lowest player's chance value of all players that meet the minimum requirements in a world
 
+config.sleepless.phantom=Phantoms
+config.sleepless.phantom.tooltip=Configurations regarding phantoms and the phased effect
+config.sleepless.phantom.phasedBlacklist=Phased Blacklist
+config.sleepless.phantom.phasedBlacklist.tooltip=Determines which blocks entities with the phased effect will not be able to move through
+config.sleepless.phantom.pathfindBlacklist=Pathfind Blacklist
+config.sleepless.phantom.pathfindBlacklist.tooltip=Determines which blocks phantoms will not be able to pathfind through. Blocks blacklisted from the phased effect will be applied regardless.
+
 config.sleepless.client=Client Effects
 config.sleepless.client.tooltip=Configurations regarding visual and audio effects on the client side
 config.sleepless.client.disableClientEffects=Disable All Client Effects

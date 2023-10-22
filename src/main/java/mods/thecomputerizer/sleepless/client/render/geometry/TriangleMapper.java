@@ -42,7 +42,7 @@ public class TriangleMapper {
             }
         }
         if(firstClosest.size()<2) firstClosest.addAll(secondClosest);
-        return firstClosest.toArray(new Vec3d[]{});
+        return firstClosest.toArray(new Vec3d[0]);
     }
 
     private void calculatePairs(Vec3d ... potentialClosest) {

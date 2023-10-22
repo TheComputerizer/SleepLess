@@ -29,6 +29,10 @@ public class SleepLessConfig {
     @LangKey("config.sleepless.nightterror")
     public static NightTerror NIGHT_TERROR = new NightTerror();
 
+    @Name("phantom")
+    @LangKey("config.sleepless.phantom")
+    public static Phantom PHANTOM = new Phantom();
+
     @Name("client")
     @LangKey("config.sleepless.client")
     public static ClientEffects CLIENT_EFFECTS = new ClientEffects();
@@ -113,6 +117,17 @@ public class SleepLessConfig {
         public String serverChanceFormula = "AVERAGE";
     }
 
+    public static class Phantom {
+
+        @Name("phasedBlacklist")
+        @LangKey("config.sleepless.phantom.phasedBlacklist")
+        public String[] phasedBlacklist = new String[]{"minecraft:bedrock","minecraft:barrier"};
+
+        @Name("pathfindBlacklist")
+        @LangKey("config.sleepless.phantom.pathfindBlacklist")
+        public String[] pathfindBlacklist = new String[]{};
+    }
+
     public static class ClientEffects {
 
         @Name("disableClientEffects")
@@ -158,7 +173,9 @@ public class SleepLessConfig {
 
     @SubscribeEvent
     public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
-        if(event.getModID().equals(Constants.MODID))
+        if(event.getModID().equals(Constants.MODID)) {
             ConfigManager.sync(event.getModID(),Config.Type.INSTANCE);
+            SleepLessConfigHelper.onConfigReloaded();
+        }
     }
 }

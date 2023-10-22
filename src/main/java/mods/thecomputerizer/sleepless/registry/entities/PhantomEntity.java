@@ -72,6 +72,11 @@ public class PhantomEntity extends EntityMob {
         return new PhantomPathNavigateGround(this,world);
     }
 
+    @Override
+    public float getWaterSlowDown() {
+        return 1f;
+    }
+
     @SuppressWarnings("unchecked")
     private void tryAssignShadowClass(Class<?> potentialClass) {
         Class<? extends Entity> nextClass = Entity.class.isAssignableFrom(potentialClass) ? (Class<? extends Entity>)potentialClass : null;
