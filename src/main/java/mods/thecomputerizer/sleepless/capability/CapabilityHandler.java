@@ -5,6 +5,7 @@ import mods.thecomputerizer.sleepless.capability.nightterror.NightTerrorCapProvi
 import mods.thecomputerizer.sleepless.capability.sleepdebt.ISleepDebt;
 import mods.thecomputerizer.sleepless.capability.sleepdebt.SleepDebt;
 import mods.thecomputerizer.sleepless.capability.sleepdebt.SleepDebtProvider;
+import mods.thecomputerizer.sleepless.client.SleepLessClient;
 import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.registry.PotionRegistry;
 import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerror;
@@ -64,8 +65,14 @@ public class CapabilityHandler {
         return exhaustion*(1f+getSleepDebtCapability(player).getHungerAmplifier());
     }
 
-    public static float getMiningSpeedFactor(EntityPlayerMP player) {
-        return getSleepDebtCapability(player).getMiningSpeedFactor();
+    public static float getMiningSpeedFactor(EntityPlayer player) {
+        if(player instanceof EntityPlayerMP) return getSleepDebtCapability(player).getMiningSpeedFactor();
+        return player.world.isRemote ? SleepLessClient.getClientEffect(9,1f) : 1f;
+    }
+
+    public static float getPhantomFactor(EntityPlayer player) {
+        if(player instanceof EntityPlayerMP) return getSleepDebtCapability(player).getPhantomFactor();
+        return player.world.isRemote ? SleepLessClient.getClientEffect(10,1f) : 1f;
     }
 
     public static void setTicksSlept(EntityPlayerMP player, long ticks, boolean notifyPlayer) {
@@ -82,9 +89,8 @@ public class CapabilityHandler {
     private static void checkTiredEffect(EntityPlayer player, int level) {
         Potion tired = PotionRegistry.TIRED;
         PotionEffect tiredEffect = player.getActivePotionEffect(tired);
-        if(level<1) {
-            if(Objects.nonNull(tiredEffect)) player.removePotionEffect(tired);
-        } else {
+        if(level<1) if(Objects.nonNull(tiredEffect)) player.removePotionEffect(tired);
+        else {
             if(Objects.isNull(tiredEffect))
                 player.addPotionEffect(new PotionEffect(tired,Integer.MAX_VALUE,level));
             else tiredEffect.amplifier = level;

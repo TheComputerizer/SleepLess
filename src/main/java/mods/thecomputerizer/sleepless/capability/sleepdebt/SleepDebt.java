@@ -59,6 +59,11 @@ public class SleepDebt implements ISleepDebt {
         return this.miningSpeed;
     }
 
+    @Override
+    public float getPhantomFactor() {
+        return this.phantomVisibility;
+    }
+
     private void updateEffects() {
         this.grayScale = MathHelper.clamp(this.debt-9f,0f,1f);
         this.hungerAmplifier = this.debt>=2f ? this.debt>=4 ? 1f : 0.5f : 0f;

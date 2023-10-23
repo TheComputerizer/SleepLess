@@ -9,6 +9,7 @@ import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializer;
 import net.minecraftforge.registries.DataSerializerEntry;
 
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +41,36 @@ public class DataSerializerRegistry {
             return data.makeCopy();
         }
     },"animation_data_serializer");
+
+    public static final DataSerializerEntry CLASS_SERIALIZER = makeEntry(new DataSerializer<Class<?>>() {
+        @Override
+        public void write(PacketBuffer buf, Class<?> clazz) {
+            NetworkUtil.writeString(buf,clazz.getName());
+        }
+
+        @SuppressWarnings("NullableProblems")
+        @Override
+        public @Nullable Class<?> read(PacketBuffer buf) {
+            String className = NetworkUtil.readString(buf);
+            Class<?> clazz = null;
+            try {
+                clazz = Class.forName(className);
+            } catch (ClassNotFoundException ex) {
+                Constants.LOGGER.error("Failed to read class from name {} in serializer!",className);
+            }
+            return clazz;
+        }
+
+        @Override
+        public DataParameter<Class<?>> createKey(int id) {
+            return new DataParameter<>(id,this);
+        }
+
+        @Override
+        public Class<?> copyValue(Class<?> clazz) {
+            return clazz;
+        }
+    },"class_serializer");
 
     private static DataSerializerEntry makeEntry(DataSerializer<?> serializer, String name) {
         DataSerializerEntry entry = new DataSerializerEntry(serializer);

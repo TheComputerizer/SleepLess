@@ -1,6 +1,8 @@
 package mods.thecomputerizer.sleepless.client.render.geometry;
 
 import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +10,7 @@ import java.util.List;
 /**
  * This is basically just a better implementation of Map<Vec3d,Collection<Tuple<Vec3d,Vec3d>>>
  */
+@SideOnly(Side.CLIENT)
 public class TriangleMapper {
 
     private final Vec3d original;

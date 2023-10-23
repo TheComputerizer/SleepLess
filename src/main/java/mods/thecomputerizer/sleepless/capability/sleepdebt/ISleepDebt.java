@@ -11,6 +11,7 @@ public interface ISleepDebt {
     void setDebt(EntityPlayerMP player, float debt);
     float getHungerAmplifier();
     float getMiningSpeedFactor();
+    float getPhantomFactor();
     void sync(EntityPlayerMP player);
     NBTTagCompound writeToNBT();
     void readFromNBT(NBTTagCompound tag);

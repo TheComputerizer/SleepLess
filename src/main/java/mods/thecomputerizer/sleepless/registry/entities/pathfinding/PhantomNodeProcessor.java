@@ -106,10 +106,9 @@ public abstract class PhantomNodeProcessor extends NodeProcessor {
     @Override
     public PathNodeType getPathNodeType(IBlockAccess cache, int x, int y, int z) {
         BlockPos pos = new BlockPos(x,y,z);
-        if(isAir(pos)) return PathNodeType.OPEN;
         if(isWater(pos)) return PathNodeType.WATER;
         if(isLava(pos)) return PathNodeType.LAVA;
-        if(cache.getBlockState(pos).getBlock().isPassable(cache,pos)) return PathNodeType.OPEN;
+        if(isAirOrPassable(pos)) return PathNodeType.OPEN;
         return !isPassable(pos) || y<this.entity.getPosition().getY() ? PathNodeType.BLOCKED : PathNodeType.OPEN;
     }
 

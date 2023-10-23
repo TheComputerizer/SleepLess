@@ -2,6 +2,8 @@ package mods.thecomputerizer.sleepless.client.render.geometry;
 
 import net.minecraft.client.model.ModelBox;
 import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +12,7 @@ import java.util.function.Consumer;
 /**
  * Used for standalone renders like the column
  */
+@SideOnly(Side.CLIENT)
 public class ShapeHolder {
 
     public static ShapeHolder fromModelBox(ModelBox boxModel, double inherentScaling, Consumer<Convex3D> shapeSettings,

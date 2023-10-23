@@ -1,7 +1,10 @@
 package mods.thecomputerizer.sleepless.client.render.geometry;
 
 import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
+@SideOnly(Side.CLIENT)
 public class Orbit {
 
     private final double radius;

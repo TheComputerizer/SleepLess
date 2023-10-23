@@ -39,25 +39,23 @@ public class RenderPhantomEntity extends RenderLiving<PhantomEntity> {
     }
 
     private void makeReferenceEntity(@Nonnull PhantomEntity entity) {
-        if(entity.isInitialized()) {
-            Render<?> nextRender = entity.getShadowRender(this.renderManager);
-            if(Objects.isNull(this.currentRender) || (Objects.nonNull(nextRender) && this.currentRender!=nextRender)) {
-                this.currentRender = nextRender;
-                if(this.currentRender instanceof RenderPlayer) {
-                    this.mainModel = ((RenderPlayer)this.currentRender).getMainModel();
-                    this.referenceEntity = Minecraft.getMinecraft().player;
-                }
-                else if(this.currentRender instanceof RenderLivingBase<?>) {
-                    this.mainModel = ((RenderLivingBase<?>)this.currentRender).getMainModel();
-                    try {
-                        this.referenceEntity = (EntityLivingBase)entity.getShadowEntityClass()
-                                .getConstructor(World.class).newInstance(entity.world);
-                    } catch (Exception e) {
-                        Constants.LOGGER.error("FAILED TO INSTANTIATE REFERENCE ENTITY! ", e);
-                    }
-                }
-                updateShadowSize();
+        Render<?> nextRender = entity.getShadowRender(this.renderManager);
+        if(Objects.isNull(this.currentRender) || (Objects.nonNull(nextRender) && this.currentRender!=nextRender)) {
+            this.currentRender = nextRender;
+            if(this.currentRender instanceof RenderPlayer) {
+                this.mainModel = ((RenderPlayer)this.currentRender).getMainModel();
+                this.referenceEntity = Minecraft.getMinecraft().player;
             }
+            else if(this.currentRender instanceof RenderLivingBase<?>) {
+                this.mainModel = ((RenderLivingBase<?>)this.currentRender).getMainModel();
+                try {
+                    this.referenceEntity = (EntityLivingBase)entity.getShadowEntityClass()
+                            .getConstructor(World.class).newInstance(entity.world);
+                } catch (Exception e) {
+                    Constants.LOGGER.error("FAILED TO INSTANTIATE REFERENCE ENTITY! ", e);
+                }
+            }
+            updateShadowSize();
         }
     }
 

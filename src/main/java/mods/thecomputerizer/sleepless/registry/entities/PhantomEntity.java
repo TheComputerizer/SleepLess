@@ -1,6 +1,8 @@
 package mods.thecomputerizer.sleepless.registry.entities;
 
+import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
 import mods.thecomputerizer.sleepless.client.render.ClientEffects;
+import mods.thecomputerizer.sleepless.registry.DataSerializerRegistry;
 import mods.thecomputerizer.sleepless.registry.PotionRegistry;
 import mods.thecomputerizer.sleepless.registry.entities.ai.EntityWatchClosestWithSleepDebt;
 import mods.thecomputerizer.sleepless.registry.entities.ai.PhantomNearestAttackableTarget;
@@ -12,35 +14,41 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIAttackMelee;
-import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.monster.EntityMob;
-import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializer;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.pathfinding.PathNavigate;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Objects;
+import java.util.function.Consumer;
 
+@SuppressWarnings("unchecked")
 @ParametersAreNonnullByDefault
 public class PhantomEntity extends EntityMob {
 
-    private static final Class<?>[] VALID_SHADOWS = new Class<?>[]{EntityZombie.class,EntitySkeleton.class,
-            EntityEnderman.class,EntityPlayer.class};
+    private static final DataParameter<Class<?>> CLASS_TYPE_SYNC = EntityDataManager.createKey(PhantomEntity.class,
+            (DataSerializer<Class<?>>)DataSerializerRegistry.CLASS_SERIALIZER.getSerializer());
 
-    protected Class<? extends Entity> shadowEntityClass;
+    public static void spawnPhantom(World world, Consumer<PhantomEntity> spawnSettings) {
+        PhantomEntity phantom = new PhantomEntity(world);
+        spawnSettings.accept(phantom);
+        world.spawnEntity(phantom);
+    }
 
-    /**
-     * Stored class name for caching purposes
-     */
-    private String shadowEntityClassName;
+    private boolean isAggressive = false;
+    private int lifespan = -1;
+    private float minPlayerDistance = 0f;
 
     public PhantomEntity(World world) {
         super(world);
@@ -48,7 +56,18 @@ public class PhantomEntity extends EntityMob {
         this.setSize(1f, 1.875f);
         this.addPotionEffect(new PotionEffect(PotionRegistry.PHASED,Integer.MAX_VALUE));
         this.ignoreFrustumCheck = true;
-        tryAssignShadowClass(VALID_SHADOWS[0]);
+    }
+
+    public void markAggressive() {
+        this.isAggressive = true;
+    }
+
+    public void setLifespan(int lifespan) {
+        this.lifespan = lifespan;
+    }
+
+    public void setDespawnDistance(float dist) {
+        this.minPlayerDistance = dist;
     }
 
     @Override
@@ -61,10 +80,17 @@ public class PhantomEntity extends EntityMob {
     }
 
     @Override
+    protected void entityInit() {
+        super.entityInit();
+        this.dataManager.register(CLASS_TYPE_SYNC,EntityZombie.class);
+    }
+
+    @Override
     protected void initEntityAI() {
         this.tasks.addTask(3,new EntityAIAttackMelee(this,1d,false));
         this.tasks.addTask(6,new EntityWatchClosestWithSleepDebt(this,64f,5f,1f));
-        this.targetTasks.addTask(1, new PhantomNearestAttackableTarget<>(this,EntityPlayer.class,1, false,false,7f));
+        this.targetTasks.addTask(1,new PhantomNearestAttackableTarget<>(this,EntityPlayer.class,1, false,
+                false,7f,this::isAggressive));
     }
 
     @Override
@@ -77,53 +103,59 @@ public class PhantomEntity extends EntityMob {
         return 1f;
     }
 
-    @SuppressWarnings("unchecked")
-    private void tryAssignShadowClass(Class<?> potentialClass) {
-        Class<? extends Entity> nextClass = Entity.class.isAssignableFrom(potentialClass) ? (Class<? extends Entity>)potentialClass : null;
-        boolean isDifferent = this.shadowEntityClass!=nextClass;
-        this.shadowEntityClass = nextClass;
-        if(isDifferent)
-            this.shadowEntityClassName = Objects.nonNull(this.shadowEntityClass) ? this.shadowEntityClass.getName() : null;
-    }
-
-    protected void setRandomShadow() {
-        tryAssignShadowClass(VALID_SHADOWS[this.world.rand.nextInt(VALID_SHADOWS.length)]);
-    }
-
-    public boolean isInitialized() {
-        return Objects.nonNull(this.shadowEntityClass);
+    public boolean isAggressive() {
+        return this.isAggressive;
     }
 
     @Override
-    protected void damageEntity(@Nonnull DamageSource source, float amount) {
-        super.damageEntity(source,amount);
-        setRandomShadow();
+    public void onLivingUpdate() {
+        super.onLivingUpdate();
+        if(this.isDead) return;
+        if(this.lifespan>0) this.lifespan--;
+        if(this.lifespan==0) this.setDead();
+        else if(this.lifespan%5==0 && this.minPlayerDistance>0f) {
+            for(EntityPlayer player : this.world.playerEntities) {
+                if(player.getPosition().getDistance((int)this.posX,(int)this.posY,(int)this.posZ)<=this.minPlayerDistance &&
+                        CapabilityHandler.getPhantomFactor(player)>0f) {
+                    this.setDead();
+                    break;
+                }
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public void tryAssignShadowClass(@Nullable Class<?> potentialClass) {
+        Class<? extends Entity> nextClass = Objects.nonNull(potentialClass) && Entity.class.isAssignableFrom(potentialClass) ?
+                (Class<? extends Entity>)potentialClass : null;
+        if(Objects.nonNull(nextClass)) this.dataManager.set(CLASS_TYPE_SYNC,nextClass);
+    }
+
+    private Class<? extends Entity> getSyncedClass() {
+        return (Class<? extends Entity>)this.dataManager.get(CLASS_TYPE_SYNC);
     }
 
     @Override
     public void writeEntityToNBT(@Nonnull NBTTagCompound tag) {
         super.writeEntityToNBT(tag);
         NBTTagCompound shadowTag = new NBTTagCompound();
-        if(Objects.nonNull(this.shadowEntityClassName))
-            shadowTag.setString("EntityClassName",this.shadowEntityClassName);
+        shadowTag.setString("EntityClassName",this.dataManager.get(CLASS_TYPE_SYNC).getName());
+        shadowTag.setBoolean("IsPhantomAggressive",this.isAggressive);
+        shadowTag.setInteger("PhantomLifeSpawn",this.lifespan);
+        shadowTag.setFloat("DespawnDistance",this.minPlayerDistance);
         tag.setTag("SleepLessShadowData",shadowTag);
     }
 
     @Override
     public void readEntityFromNBT(@Nonnull NBTTagCompound tag) {
         super.writeEntityToNBT(tag);
-        if(Objects.isNull(this.shadowEntityClassName)) {
-            readEntityClass(tag.getCompoundTag("SleepLessShadowData").getString("EntityClassName"));
-            if(Objects.isNull(this.shadowEntityClassName)) setRandomShadow();
-        }
-    }
-
-    private void readEntityClass(String className) {
-        if(!className.isEmpty()) {
-            try {
-                tryAssignShadowClass(Class.forName(className));
-            } catch (ClassNotFoundException ignored) {}
-        }
+        NBTTagCompound shadowTag = tag.getCompoundTag("SleepLessShadowData");
+        try {
+            tryAssignShadowClass(Class.forName(shadowTag.getString("EntityClassName")));
+        } catch (ClassNotFoundException ignored) {}
+        this.isAggressive = shadowTag.getBoolean("IsPhantomAggressive");
+        this.lifespan = shadowTag.getInteger("PhantomLifeSpawn");
+        this.minPlayerDistance = shadowTag.getFloat("DespawnDistance");
     }
 
     @Override
@@ -134,24 +166,24 @@ public class PhantomEntity extends EntityMob {
 
     @SideOnly(Side.CLIENT)
     public Class<? extends Entity> getShadowEntityClass() {
-        return this.shadowEntityClass;
+        return (Class<? extends Entity>)this.dataManager.get(CLASS_TYPE_SYNC);
     }
 
     @SideOnly(Side.CLIENT)
     public Render<?> getShadowRender(@Nonnull RenderManager manager) {
-        if(Objects.isNull(this.shadowEntityClass)) return null;
-        if(EntityPlayer.class.isAssignableFrom(this.shadowEntityClass)) {
+        Class<? extends Entity> shadowClass = getShadowEntityClass();
+        if(EntityPlayer.class.isAssignableFrom(shadowClass)) {
             EntityPlayerSP player = Minecraft.getMinecraft().player;
             return Objects.nonNull(player) ? manager.getEntityRenderObject(Minecraft.getMinecraft().player) : null;
         }
-        return getNonPlayerShadowRender(manager,this.shadowEntityClass);
+        return getNonPlayerShadowRender(manager,shadowClass);
     }
 
     @SuppressWarnings("unchecked")
     @SideOnly(Side.CLIENT)
     private Render<?> getNonPlayerShadowRender(@Nonnull RenderManager manager, Class<? extends Entity> entityClass) {
-        Render<?> render = manager.entityRenderMap.get(this.shadowEntityClass);
-        if(Objects.isNull(render) && this.shadowEntityClass!=Entity.class)
+        Render<?> render = manager.entityRenderMap.get(entityClass);
+        if(Objects.isNull(render) && entityClass!=Entity.class)
             render = getNonPlayerShadowRender(manager,(Class<? extends Entity>)entityClass.getSuperclass());
         return render;
     }

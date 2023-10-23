@@ -1,9 +1,12 @@
 package mods.thecomputerizer.sleepless.client.render.geometry;
 
 import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.*;
 
+@SideOnly(Side.CLIENT)
 public class Column {
 
     private final Random random;
