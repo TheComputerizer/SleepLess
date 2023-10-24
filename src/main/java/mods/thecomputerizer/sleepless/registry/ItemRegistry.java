@@ -2,6 +2,7 @@ package mods.thecomputerizer.sleepless.registry;
 
 import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.registry.items.EpicItem;
+import mods.thecomputerizer.sleepless.registry.items.TesseractItem;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
@@ -19,8 +20,8 @@ import static mods.thecomputerizer.sleepless.registry.RegistryHandler.SLEEPLESS_
 public final class ItemRegistry {
 
     private static final List<Item> ALL_ITEMS = new ArrayList<>();
-    public static final Item TEST_ITEM = makeItem("test_item", EpicItem::new,
-            item -> item.setCreativeTab(SLEEPLESS_TAB));
+    public static final Item TESSERACT = makeItem("tesseract", TesseractItem::new,
+            item -> item.setCreativeTab(SLEEPLESS_TAB).setMaxStackSize(1));
     public static final Item TEST_ITEM_BLOCK = makeEpicItemBlock(BlockRegistry.TEST_BLOCK,
             item -> item.setCreativeTab(SLEEPLESS_TAB).setMaxStackSize(1));
 

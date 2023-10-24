@@ -19,6 +19,8 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.BossInfo;
+import net.minecraft.world.BossInfoServer;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
@@ -36,6 +38,7 @@ public class NightTerror {
     private int maxColIndex;
     private NightTerrorEntity entity;
     private int endingTicks;
+    private BossInfoServer bossBar;
 
     public NightTerror(WorldServer world) {
         this.world = world;
@@ -50,6 +53,7 @@ public class NightTerror {
         this.bellVolume = tag.getFloat("bellVolume");
         this.maxColIndex = tag.getInteger("maxColumnIndex");
         this.entity = this.activeTicks>FINISH_BELLS ? (NightTerrorEntity)this.world.getEntityByID(tag.getInteger("entityID")) : null;
+        if(this.maxColIndex==11 && Objects.nonNull(this.entity)) instantiateBossBar();
     }
 
     public void onTick() {
@@ -65,6 +69,7 @@ public class NightTerror {
             } else if(this.activeTicks>FINISH_BELLS) {
                 sendUpdate(player -> player.addPotionEffect(new PotionEffect(PotionRegistry.INSOMNIA, 60)));
                 if(Objects.nonNull(this.entity)) {
+                    if(Objects.nonNull(this.bossBar)) this.bossBar.setPercent(this.entity.getHealth()/this.entity.getMaxHealth());
                     if(this.entity.getAnimationData().currentAnimation==NightTerrorEntity.AnimationType.DEATH && !this.entity.isDead) {
                         if(this.endingTicks==0) SoundUtil.playRemoteGlobalSound(true,this.world,
                                 SoundRegistry.BELL_REVERSE_SOUND,SoundCategory.MASTER,1f,1f);
@@ -96,6 +101,12 @@ public class NightTerror {
         this.entity = new NightTerrorEntity(this.world);
         this.entity.setPosition(player.posX,player.posY+20d,player.posZ);
         this.world.spawnEntity(this.entity);
+        instantiateBossBar();
+    }
+
+    private void instantiateBossBar() {
+        this.bossBar = new BossInfoServer(this.entity.getDisplayName(),BossInfo.Color.RED,BossInfo.Overlay.NOTCHED_10);
+        sendUpdate(player -> this.bossBar.addPlayer((EntityPlayerMP)player));
     }
 
     private void onBell(boolean isInit) {
@@ -132,6 +143,7 @@ public class NightTerror {
 
     public void finish() {
         sendWorldPacket(new PacketUpdateNightTerrorClient(false,0f,0f,0f,-1,false));
+        if(Objects.nonNull(this.bossBar)) this.bossBar.setVisible(false);
     }
 
     private void sendWorldPacket(PacketToClient packet) {
@@ -163,6 +175,7 @@ public class NightTerror {
             color = 1f;
         }
         new PacketUpdateNightTerrorClient(true,fog,color,ending,this.maxColIndex,true).addPlayers(player).send();
+        if(Objects.nonNull(this.bossBar)) this.bossBar.addPlayer(player);
     }
 
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {

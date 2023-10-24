@@ -54,11 +54,11 @@ public class ClientEvents {
                 float adder = (ClientEffects.BREATHING_FACTOR/100f)*factor;
                 ClientEffects.FOV_ADJUST = ClientEffects.FOV_ADJUST+adder;
                 if(ClientEffects.FOV_ADJUST<=0) breathingIn = true;
-                else if (ClientEffects.FOV_ADJUST>=ClientEffects.BREATHING_FACTOR) breathingIn = false;
+                else if(ClientEffects.FOV_ADJUST>=ClientEffects.BREATHING_FACTOR) breathingIn = false;
             }
             if(SleepLessConfigHelper.shouldPlaySounds()) {
                 secondTimer++;
-                if (secondTimer > 19) {
+                if(secondTimer>19) {
                     ClientEffects.tryAmbientSound();
                     secondTimer = 0;
                 }
@@ -91,9 +91,11 @@ public class ClientEvents {
 
     @SubscribeEvent
     public static void onRenderWorld(RenderWorldLastEvent event) {
-        synchronized (STATIC_RENDERS) {
-            for(StaticGeometryRender staticRender : STATIC_RENDERS)
-                staticRender.render(event.getPartialTicks());
+        if(ClientEffects.PHANTOM_VISIBILITY>0f) {
+            synchronized (STATIC_RENDERS) {
+                for(StaticGeometryRender staticRender : STATIC_RENDERS)
+                    staticRender.render(event.getPartialTicks());
+            }
         }
     }
 

@@ -16,8 +16,8 @@ public class AddedEnums {
     public static MusicTicker.MusicType NIGHT_TERROR_BEGINNING = EnumHelperClient.addMusicType("NIGHT_TERROR_BEGINNING",
             SoundRegistry.BAD_NIGHT_MUSIC,0,0);
     @SideOnly(Side.CLIENT)
-    public static MusicTicker.MusicType NIGHT_TERROR_QUIET = EnumHelperClient.addMusicType("NIGHT_TERROR_QUIET",
-            SoundRegistry.QUIET_MUSIC,20000,20000);
+    public static MusicTicker.MusicType NIGHT_TERROR_EERIE = EnumHelperClient.addMusicType("NIGHT_TERROR_EERIE",
+            SoundRegistry.EERIE_MUSIC,0,0);
 
     public static void load() {}
 }

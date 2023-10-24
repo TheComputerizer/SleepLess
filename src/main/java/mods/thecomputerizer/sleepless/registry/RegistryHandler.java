@@ -20,14 +20,14 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import javax.annotation.Nonnull;
 
-import static mods.thecomputerizer.sleepless.registry.ItemRegistry.TEST_ITEM;
+import static mods.thecomputerizer.sleepless.registry.ItemRegistry.TESSERACT;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public final class RegistryHandler {
     public static final CreativeTabs SLEEPLESS_TAB = new CreativeTabs(Constants.MODID) {
         @SideOnly(Side.CLIENT)
         public @Nonnull ItemStack createIcon() {
-            return new ItemStack(TEST_ITEM);
+            return new ItemStack(TESSERACT);
         }
     };
 

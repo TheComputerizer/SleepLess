@@ -7,9 +7,12 @@ import mods.thecomputerizer.sleepless.config.SleepLessConfig;
 import mods.thecomputerizer.sleepless.registry.DataSerializerRegistry;
 import mods.thecomputerizer.sleepless.registry.SoundRegistry;
 import mods.thecomputerizer.sleepless.registry.entities.ai.EntityWatchClosestWithSleepDebt;
+import mods.thecomputerizer.sleepless.registry.entities.ai.PhantomNearestAttackableTarget;
 import mods.thecomputerizer.sleepless.util.SoundUtil;
 import mods.thecomputerizer.theimpossiblelibrary.util.NetworkUtil;
+import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.datasync.DataParameter;
@@ -32,7 +35,7 @@ import java.util.function.Consumer;
 @SuppressWarnings("unchecked")
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class NightTerrorEntity extends EntityLiving {
+public class NightTerrorEntity extends EntityCreature {
 
     private static final DataParameter<AnimationData> ANIMATION_SYNC = EntityDataManager.createKey(NightTerrorEntity.class,
             (DataSerializer<AnimationData>)DataSerializerRegistry.ANIMATION_SERIALIZER.getSerializer());
@@ -55,6 +58,8 @@ public class NightTerrorEntity extends EntityLiving {
     @Override
     protected void initEntityAI() {
         this.tasks.addTask(6,new EntityWatchClosestWithSleepDebt(this,64f,SleepLessConfig.NIGHT_TERROR.minSleepDebt,1f));
+        this.targetTasks.addTask(1,new PhantomNearestAttackableTarget<>(this, EntityPlayer.class,
+                1,false,false,7f,null));
     }
 
     @Override

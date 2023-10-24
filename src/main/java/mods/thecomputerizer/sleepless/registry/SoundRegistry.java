@@ -17,7 +17,7 @@ public final class SoundRegistry {
     public static final SoundEvent BOOSTED_TP_REVERSE_SOUND = makeSoundEvent("sounds.boostedtpreverse");
     public static final SoundEvent STATIC_SOUND = makeSoundEvent("sounds.static");
     public static final SoundEvent BAD_NIGHT_MUSIC = makeSoundEvent("music.badnight");
-    public static final SoundEvent QUIET_MUSIC = makeSoundEvent("music.quiet");
+    public static final SoundEvent EERIE_MUSIC = makeSoundEvent("music.eerie");
 
     private static SoundEvent makeSoundEvent(final String name) {
         ResourceLocation id = Constants.res(name);

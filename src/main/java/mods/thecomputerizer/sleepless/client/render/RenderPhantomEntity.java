@@ -2,7 +2,7 @@ package mods.thecomputerizer.sleepless.client.render;
 
 import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.mixin.vanilla.InvokerRender;
-import mods.thecomputerizer.sleepless.registry.entities.PhantomEntity;
+import mods.thecomputerizer.sleepless.registry.entities.phantom.PhantomEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;

@@ -5,7 +5,7 @@ import mods.thecomputerizer.sleepless.client.render.RenderPhantomEntity;
 import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.registry.ItemRegistry;
 import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerrorEntity;
-import mods.thecomputerizer.sleepless.registry.entities.PhantomEntity;
+import mods.thecomputerizer.sleepless.registry.entities.phantom.PhantomEntity;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
@@ -33,7 +33,7 @@ public final class ClientRegistryHandler {
     }
 
     private static void registerItemModels() {
-        registerItemModel(ItemRegistry.TEST_ITEM,0,"inventory");
+        registerItemModel(ItemRegistry.TESSERACT,0,"inventory");
     }
 
     private static void registerItemModel(Item item, int meta, String modelState) {

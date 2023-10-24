@@ -5,25 +5,36 @@ import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
 import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.network.PacketUpdateNightTerrorClient;
 import mods.thecomputerizer.sleepless.registry.PotionRegistry;
-import mods.thecomputerizer.sleepless.registry.entities.PhantomEntity;
+import mods.thecomputerizer.sleepless.registry.entities.phantom.PhantomEntity;
+import mods.thecomputerizer.sleepless.registry.entities.phantom.PhantomSpawnEntry;
 import mods.thecomputerizer.sleepless.util.AddedEnums;
+import net.minecraft.entity.EnumCreatureType;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.WeightedRandom;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.biome.Biome;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
+import java.util.List;
 import java.util.Objects;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public class WorldEvents {
 
+    private static final double SQUARED_SPAWN_RANGE = Math.pow(144d,2d);
+    public static final float MAX_PHANTOM_DESPAWN_RANGE = 16f;
     private static int tickTimer=0;
 
     @SubscribeEvent
@@ -72,7 +83,7 @@ public class WorldEvents {
 
     @SubscribeEvent
     public static void onEntityKilled(LivingDeathEvent event) {
-        if(event.getSource().getTrueSource() instanceof EntityPlayerMP) {
+        if(event.getSource().getTrueSource() instanceof EntityPlayerMP && !(event.getEntity() instanceof PhantomEntity)) {
             EntityPlayerMP player = (EntityPlayerMP)event.getSource().getTrueSource();
             float phantomChance = CapabilityHandler.getPhantomFactor(player);
             if(phantomChance>0f && player.world.rand.nextFloat()<=phantomChance/2f) {
@@ -81,7 +92,7 @@ public class WorldEvents {
                     phantom.setPosition(pos.getX(),pos.getY(),pos.getZ());
                     if(phantomChance>0.5f) phantom.markAggressive();
                     phantom.setLifespan(Math.max(10,(int)(phantomChance*50f))*4);
-                    phantom.tryAssignShadowClass(event.getEntity().getClass());
+                    phantom.presetClass(event.getEntity().getClass());
                 });
             }
         }
@@ -90,5 +101,41 @@ public class WorldEvents {
     @SubscribeEvent
     public static void onEntityHurt(LivingHurtEvent event) {
         if(event.getSource().getTrueSource() instanceof PhantomEntity) event.getSource().getTrueSource().setDead();
+    }
+
+    @SubscribeEvent
+    public static void onGetPotentialSpawns(WorldEvent.PotentialSpawns event) {
+        if(event.getType()==EnumCreatureType.MONSTER) {
+            World world = event.getWorld();
+            if(CapabilityHandler.worldHasNightTerror(world)) event.getList().clear();
+            else {
+                BlockPos pos = event.getPos();
+                float phantomChance = getPhantomSpawnChance(world, pos);
+                if(phantomChance>0) {
+                    List<Biome.SpawnListEntry> spawnEntries = event.getList();
+                    int maxGroup = Math.min(3, MathHelper.ceil(phantomChance * 3f));
+                    spawnEntries.add(makePhantomSpawnEntry(WeightedRandom.getTotalWeight(spawnEntries), phantomChance, maxGroup));
+                }
+            }
+        }
+    }
+
+    private static float getPhantomSpawnChance(World world, BlockPos pos) {
+        if(CapabilityHandler.worldHasNightTerror(world)) return 0f;
+        float totalChance = 0f;
+        int numPlayers = 0;
+        for(EntityPlayer player : world.playerEntities) {
+            if(player.getDistanceSq(pos)<=SQUARED_SPAWN_RANGE) {
+                totalChance+=CapabilityHandler.getPhantomFactor(player);
+                numPlayers++;
+            }
+        }
+        return totalChance/numPlayers;
+    }
+
+    private static Biome.SpawnListEntry makePhantomSpawnEntry(int previousTotalWeight, float chance, int maxGroup) {
+        int newWeight = (int)((float)previousTotalWeight/(1f-chance))-previousTotalWeight;
+        return new PhantomSpawnEntry(PhantomEntity.class,newWeight,1,maxGroup,
+                MAX_PHANTOM_DESPAWN_RANGE-(MAX_PHANTOM_DESPAWN_RANGE*chance));
     }
 }

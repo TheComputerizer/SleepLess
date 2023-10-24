@@ -53,9 +53,7 @@ public class NightTerrorClient {
         fogOverride = fog;
         colorOverride = color;
         endingOverride = ending;
-        if(ending>0) {
-            ClientEffects.SCREEN_SHAKE= ending>0.98f ? 0f : ending*5f;
-        }
+        if(ending>0) ClientEffects.SCREEN_SHAKE = ending>0.98f ? 0f : ending*5f;
         Minecraft mc = Minecraft.getMinecraft();
         ((SoundSystem)mc.getSoundHandler().sndManager.sndSystem).setMasterVolume(mc.gameSettings.getSoundLevel(SoundCategory.MASTER));
         if(columnRender>=0) {
@@ -72,7 +70,8 @@ public class NightTerrorClient {
     }
 
     public static MusicTicker.MusicType getMusicOverride(MusicTicker.MusicType originalType) {
-        return silenceMusicTicker ? (fogOverride<=0 ? AddedEnums.NIGHT_TERROR_BEGINNING : MusicTicker.MusicType.END) : originalType;
+        return silenceMusicTicker ? (fogOverride<=0 ? AddedEnums.NIGHT_TERROR_BEGINNING :
+                AddedEnums.NIGHT_TERROR_EERIE) : originalType;
     }
 
     public static boolean overrideQuietSound(boolean original) {
@@ -87,7 +86,7 @@ public class NightTerrorClient {
             return;
         }
         synchronized (STATIC_RENDERS) {
-            if (Objects.isNull(GEOMETRY_RENDER)) {
+            if(Objects.isNull(GEOMETRY_RENDER)) {
                 GEOMETRY_RENDER = new StaticGeometryRender(Minecraft.getMinecraft().getRenderManager(),
                         mc.player.getPositionVector());
                 STATIC_RENDERS.add(GEOMETRY_RENDER);
