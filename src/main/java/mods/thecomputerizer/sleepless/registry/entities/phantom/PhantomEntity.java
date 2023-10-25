@@ -2,22 +2,21 @@ package mods.thecomputerizer.sleepless.registry.entities.phantom;
 
 import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
 import mods.thecomputerizer.sleepless.client.render.ClientEffects;
+import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.registry.DataSerializerRegistry;
 import mods.thecomputerizer.sleepless.registry.PotionRegistry;
 import mods.thecomputerizer.sleepless.registry.entities.ai.EntityWatchClosestWithSleepDebt;
+import mods.thecomputerizer.sleepless.registry.entities.ai.PhantomAttackMelee;
 import mods.thecomputerizer.sleepless.registry.entities.ai.PhantomNearestAttackableTarget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EnumCreatureType;
-import net.minecraft.entity.IEntityLivingData;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIAttackMelee;
+import net.minecraft.entity.*;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.MobEffects;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializer;
@@ -54,6 +53,12 @@ public class PhantomEntity extends EntityMob {
     private boolean isAggressive = false;
     private int lifespan = -1;
     private float minPlayerDistance = 0f;
+    private int attackSpawnCooldown = 0;
+
+    @SideOnly(Side.CLIENT)
+    public Render<?> currentRender;
+    @SideOnly(Side.CLIENT)
+    public EntityLivingBase referenceEntity;
 
     public PhantomEntity(World world) {
         super(world);
@@ -61,6 +66,11 @@ public class PhantomEntity extends EntityMob {
         this.setSize(1f,1.875f);
         this.addPotionEffect(new PotionEffect(PotionRegistry.PHASED,Integer.MAX_VALUE));
         this.ignoreFrustumCheck = true;
+        this.moveHelper = new PhantomMoveHelper<>(this);
+    }
+
+    public void updateSize(float width, float height) {
+        this.setSize(width,height);
     }
 
     public void presetClass(@Nullable Class<?> potentialClass) {
@@ -88,7 +98,7 @@ public class PhantomEntity extends EntityMob {
                 Biome.SpawnListEntry entry = WeightedRandom.getRandomItem(this.rand,spawnEntryHooks);
                 if(!PhantomEntity.class.isAssignableFrom(entry.entityClass)) tryAssignShadowClass(entry.entityClass);
             }
-        }
+        } else this.attackSpawnCooldown = 10;
         if(this.lifespan<0) this.lifespan = 1200;
         return data;
     }
@@ -99,6 +109,7 @@ public class PhantomEntity extends EntityMob {
         this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(64d);
         this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.25d);
         this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(2d);
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(2d);
     }
 
     @Override
@@ -109,18 +120,11 @@ public class PhantomEntity extends EntityMob {
 
     @Override
     protected void initEntityAI() {
-        this.tasks.addTask(3,new EntityAIAttackMelee(this,1d,false));
+        this.tasks.addTask(3,new PhantomAttackMelee<>(this,1d,true));
         this.tasks.addTask(6,new EntityWatchClosestWithSleepDebt(this,64f,5f,1f));
         this.targetTasks.addTask(1,new PhantomNearestAttackableTarget<>(this,EntityPlayer.class,1, false,
                 false,7f,this::isAggressive));
     }
-
-    /*
-    @Override
-    protected @Nonnull PathNavigate createNavigator(World world) {
-        return new PhantomPathNavigateGround(this,world);
-    }
-     */
 
     @Override
     public float getWaterSlowDown() {
@@ -133,7 +137,15 @@ public class PhantomEntity extends EntityMob {
     }
 
     public boolean isAggressive() {
-        return this.isAggressive;
+        return this.isAggressive && this.attackSpawnCooldown<=0;
+    }
+
+    public double getJumpMotion() {
+        double ret = getJumpUpwardsMotion();
+        PotionEffect jumpEffect = getActivePotionEffect(MobEffects.JUMP_BOOST);
+        if(Objects.nonNull(jumpEffect))
+            ret+=((float)jumpEffect.getAmplifier()+1)*0.1d;
+        return ret;
     }
 
     @Override
@@ -141,8 +153,12 @@ public class PhantomEntity extends EntityMob {
         super.onLivingUpdate();
         if(this.isDead) return;
         if(this.lifespan>0) this.lifespan--;
-        if(this.lifespan==0) this.setDead();
-        else if(this.lifespan%5==0 && this.minPlayerDistance>0f && !this.isAggressive) {
+        if(this.lifespan==0) {
+            this.setDead();
+            return;
+        }
+        if(this.attackSpawnCooldown>0) this.attackSpawnCooldown--;
+        if(this.lifespan%5==0 && this.minPlayerDistance>0f && !this.isAggressive) {
             for(EntityPlayer player : this.world.playerEntities) {
                 if(player.getPosition().getDistance((int)this.posX,(int)this.posY,(int)this.posZ)<=this.minPlayerDistance &&
                         CapabilityHandler.getPhantomFactor(player)>0f) {
@@ -160,9 +176,20 @@ public class PhantomEntity extends EntityMob {
         if(Objects.nonNull(nextClass) && !PhantomEntity.class.isAssignableFrom(potentialClass)) {
             this.dataManager.set(CLASS_TYPE_SYNC,nextClass);
             this.dataManager.setDirty(CLASS_TYPE_SYNC);
+            trySizeUpdate(nextClass);
             return true;
         }
         return false;
+    }
+
+    private void trySizeUpdate(Class<? extends Entity> entityClass) {
+        Entity entity = null;
+        try {
+            entity = entityClass.getDeclaredConstructor(World.class).newInstance(this.world);
+        } catch (Exception ex) {
+            Constants.LOGGER.error("Could not update size for phantom entity using class {} as reference",entityClass,ex);
+        }
+        if(Objects.nonNull(entity)) setSize(entity.width,entity.height);
     }
 
     @Override

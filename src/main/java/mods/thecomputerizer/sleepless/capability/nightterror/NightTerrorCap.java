@@ -1,5 +1,6 @@
 package mods.thecomputerizer.sleepless.capability.nightterror;
 
+import mods.thecomputerizer.sleepless.SleepLess;
 import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
 import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerror;
@@ -23,14 +24,14 @@ public class NightTerrorCap implements INightTerrorCap {
         if(time<13000L) CapabilityHandler.finishNightTerror(world);
         else {
             if(this.cooldown>0) this.cooldown--;
-            if(Objects.isNull(this.instance) && this.cooldown<=0 && time<16000L) {
-                cooldown = 300;
+            if(Objects.isNull(this.instance) && SleepLess.fudgeInt(this.cooldown,0)<=0 && time<16000L) {
+                this.cooldown = 300;
                 List<Float> chances = new ArrayList<>();
                 for(EntityPlayer player : world.playerEntities) {
                     float chance = SleepLessConfigHelper.nightTerrorChance((EntityPlayerMP)player);
                     if(chance>0) chances.add(chance);
                 }
-                if(!chances.isEmpty() && world.rand.nextFloat()<SleepLessConfigHelper.calculateFinalChance(chances))
+                if(!chances.isEmpty() && SleepLess.fudgeFloat(world.rand.nextFloat(),0f)<SleepLessConfigHelper.calculateFinalChance(chances))
                     setInstance(new NightTerror(world));
             }
         }

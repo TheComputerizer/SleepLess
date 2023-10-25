@@ -23,10 +23,15 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 @Mod(modid = Constants.MODID, name = Constants.NAME, version = Constants.VERSION, dependencies = Constants.DEPENDENCIES)
 public class SleepLess {
 
+    private static boolean GUARUNTEED_RANDOMS = false;
+
     public SleepLess() {
         Constants.LOGGER.info("Started constructing mod class");
         AddedEnums.load();
-        if(Constants.IS_DEV) TheImpossibleLibrary.enableDevLog();
+        if(Constants.IS_DEV) {
+            TheImpossibleLibrary.enableDevLog();
+            GUARUNTEED_RANDOMS = true;
+        }
         NetworkHandler.queueClientPacketRegistries(PacketRenderTests.class,PacketUpdateClientEffects.class,
                 PacketUpdateNightTerrorClient.class, PacketSendWorldSound.class);
         Constants.LOGGER.info("Constructed mod class");
@@ -57,5 +62,17 @@ public class SleepLess {
 
     private static boolean isClient() {
         return FMLCommonHandler.instance().getEffectiveSide().isClient();
+    }
+
+    public static double fudgeDouble(double val, double max) {
+        return GUARUNTEED_RANDOMS ? max : val;
+    }
+
+    public static float fudgeFloat(float val, float max) {
+        return GUARUNTEED_RANDOMS ? max : val;
+    }
+
+    public static int fudgeInt(int val, int max) {
+        return GUARUNTEED_RANDOMS ? max : val;
     }
 }

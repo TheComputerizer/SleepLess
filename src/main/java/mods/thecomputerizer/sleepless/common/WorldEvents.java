@@ -1,5 +1,6 @@
 package mods.thecomputerizer.sleepless.common;
 
+import mods.thecomputerizer.sleepless.SleepLess;
 import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
 import mods.thecomputerizer.sleepless.core.Constants;
@@ -29,6 +30,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 
 @Mod.EventBusSubscriber(modid = Constants.MODID)
 public class WorldEvents {
@@ -86,12 +88,13 @@ public class WorldEvents {
         if(event.getSource().getTrueSource() instanceof EntityPlayerMP && !(event.getEntity() instanceof PhantomEntity)) {
             EntityPlayerMP player = (EntityPlayerMP)event.getSource().getTrueSource();
             float phantomChance = CapabilityHandler.getPhantomFactor(player);
-            if(phantomChance>0f && player.world.rand.nextFloat()<=phantomChance/2f) {
+            Random rand = player.world.rand;
+            if(phantomChance>0f && SleepLess.fudgeFloat(rand.nextFloat(),0f)<=phantomChance/2f) {
                 PhantomEntity.spawnPhantom(player.world,phantom -> {
                     BlockPos pos = event.getEntity().getPosition();
                     phantom.setPosition(pos.getX(),pos.getY(),pos.getZ());
-                    if(phantomChance>0.5f) phantom.markAggressive();
-                    phantom.setLifespan(Math.max(10,(int)(phantomChance*50f))*4);
+                    if(phantomChance>0.5f && SleepLess.fudgeFloat(rand.nextFloat(),0f)<0.5f) phantom.markAggressive();
+                    phantom.setLifespan(SleepLess.fudgeInt(Math.max(10,(int)(phantomChance*50f))*4,1200));
                     phantom.presetClass(event.getEntity().getClass());
                 });
             }

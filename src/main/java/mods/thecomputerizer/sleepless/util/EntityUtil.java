@@ -6,6 +6,7 @@ import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
 import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.registry.entities.ai.EntityWatchClosestWithSleepDebt;
 import mods.thecomputerizer.sleepless.registry.entities.ai.EntityWatchClosestWithSleepDebt2;
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.EntityAITasks;
@@ -13,14 +14,19 @@ import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.ai.EntityAIWatchClosest2;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.Tuple;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraft.world.border.WorldBorder;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
+@SuppressWarnings("unused")
 public class EntityUtil {
 
     private static final Map<Class<? extends EntityAIBase>,Class<? extends EntityAIBase>> MAPPED_PHANTOM_AI = new HashMap<>();
@@ -110,5 +116,54 @@ public class EntityUtil {
     @SuppressWarnings("Guava")
     public static Predicate<Entity> getSleepDebtPredicate(float minSleepDebt) {
         return input -> minSleepDebt<0 ||CapabilityHandler.getSleepDebt(input)>=minSleepDebt;
+    }
+
+    public static double getTotalJumpHeight(double motion, double gravityFactor) {
+        double height = 0;
+        if(motion>0d) {
+            while(motion>gravityFactor) {
+                height+=motion;
+                motion-=gravityFactor;
+            }
+            if(motion>0d) height+=motion;
+        }
+        return height;
+    }
+
+    public static List<BlockPos> getSpecificBlockCollisions(World world, AxisAlignedBB aabb, Block ... badBlocks) {
+        List<BlockPos> ret = new ArrayList<>();
+        int minX = MathHelper.floor(aabb.minX)-1;
+        int maxX = MathHelper.ceil(aabb.maxX)+1;
+        int minY = MathHelper.floor(aabb.minY)-1;
+        int maxY = MathHelper.ceil(aabb.maxY)+1;
+        int minZ = MathHelper.floor(aabb.minZ)-1;
+        int MaxZ = MathHelper.ceil(aabb.maxZ)+1;
+        WorldBorder worldborder = world.getWorldBorder();
+        BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
+        for(int x=minX; x<maxX; x++) {
+            for(int z=minZ; z<MaxZ; z++) {
+                boolean isBorderX = x==minX || x==maxX-1;
+                boolean isBorderZ = z==minZ || z==MaxZ-1;
+                if((!isBorderX || !isBorderZ) && world.isBlockLoaded(mutablePos.setPos(x,64,z))) {
+                    for(int y=minY; y<maxY; y++) {
+                        if(!isBorderX && !isBorderZ || y!=maxY-1) {
+                            mutablePos.setPos(x,y,z);
+                            if(worldborder.contains(mutablePos)) {
+                                ret.add(new BlockPos(mutablePos));
+                                continue;
+                            }
+                            Block block = world.getBlockState(mutablePos).getBlock();
+                            for(Block badBlock : badBlocks) {
+                                if(block==badBlock) {
+                                    ret.add(new BlockPos(mutablePos));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return ret;
     }
 }
