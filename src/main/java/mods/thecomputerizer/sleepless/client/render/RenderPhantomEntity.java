@@ -107,7 +107,7 @@ public class RenderPhantomEntity extends RenderLiving<PhantomEntity> {
                     GlStateManager.enableColorMaterial();
                     GlStateManager.enableOutlineMode(this.getTeamColor(entity));
                     if (!this.renderMarker) renderShadowModel(entity, f6, f5, f8, f2, f7, f4);
-                    renderShadowLayers(entity,f6,f5,partialTick,f8,f2,f7,f4);
+                    renderShadowLayers(entity, f6, f5, partialTick, f8, f2, f7, f4);
                     GlStateManager.disableOutlineMode();
                     GlStateManager.disableColorMaterial();
                     if (flag1) this.unsetScoreTeamColor();
@@ -116,9 +116,12 @@ public class RenderPhantomEntity extends RenderLiving<PhantomEntity> {
                     renderShadowModel(entity, f6, f5, f8, f2, f7, f4);
                     if (flag) this.unsetBrightness();
                     GlStateManager.depthMask(true);
-                    renderShadowLayers(entity,f6,f5,partialTick,f8,f2,f7,f4);
+                    renderShadowLayers(entity, f6, f5, partialTick, f8, f2, f7, f4);
                 }
                 GlStateManager.disableRescaleNormal();
+            } catch (ClassCastException ignored) {
+                entity.referenceEntity = null;
+                entity.currentRender = null;
             } catch (Exception e) {
                 Constants.LOGGER.error("Couldn't render phantom entity", e);
             }

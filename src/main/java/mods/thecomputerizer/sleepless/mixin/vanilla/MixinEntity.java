@@ -1,6 +1,9 @@
 package mods.thecomputerizer.sleepless.mixin.vanilla;
 
+import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
 import mods.thecomputerizer.sleepless.registry.PotionRegistry;
+import mods.thecomputerizer.sleepless.registry.entities.phantom.PhantomEntity;
+import mods.thecomputerizer.sleepless.util.EntityUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFence;
 import net.minecraft.block.BlockFenceGate;
@@ -180,7 +183,7 @@ public abstract class MixinEntity {
         double storedPosZ = this.posZ;
         if(this.isInWeb) {
             this.isInWeb = false;
-            y *= 0.05000000074505806D;
+            y *= 0.05000000074505806d;
             this.motionX = 0d;
             this.motionY = 0d;
             this.motionZ = 0d;
@@ -188,14 +191,31 @@ public abstract class MixinEntity {
         double storedX = x;
         double storedY = y;
         double storedZ = z;
-        this.setEntityBoundingBox(this.getEntityBoundingBox().offset(x,0d,z));
         Entity self = sleepless$cast();
-        if(y>0d || (y<0d && self.isSneaking())) this.setEntityBoundingBox(this.getEntityBoundingBox().offset(0d,y,0d));
-        else if(y<0d) {
-            List<AxisAlignedBB> collisions = this.world.getCollisionBoxes(self,this.getEntityBoundingBox().expand(0,y,0));
-            for(AxisAlignedBB aabb : collisions)
+        boolean normalGround = y<0d && !self.isSneaking();
+        if(normalGround) {
+            List<AxisAlignedBB> normalCollisions = this.world.getCollisionBoxes(self,this.getEntityBoundingBox().expand(0,y,0));
+            for(AxisAlignedBB aabb : normalCollisions)
                 y = aabb.calculateYOffset(this.getEntityBoundingBox(),y);
             this.setEntityBoundingBox(this.getEntityBoundingBox().offset(0d,y,0d));
+        }
+        List<AxisAlignedBB> phantomCollisions = EntityUtil.getSpecificBlockCollisions(this.world,
+                this.getEntityBoundingBox().offset(x,normalGround ? 0d : y,z),self instanceof PhantomEntity ?
+                        SleepLessConfigHelper.getPhantomPathfindBlacklist() : SleepLessConfigHelper.getPhasedBlockBlacklist());
+        if(x!=0d) {
+            for(AxisAlignedBB aabb : phantomCollisions)
+                x = aabb.calculateXOffset(this.getEntityBoundingBox(),x);
+            this.setEntityBoundingBox(this.getEntityBoundingBox().offset(x,0d,0d));
+        }
+        if(y>0d || (y<0d && self.isSneaking())) {
+            for(AxisAlignedBB aabb : phantomCollisions)
+                y = aabb.calculateYOffset(this.getEntityBoundingBox(),y);
+            this.setEntityBoundingBox(this.getEntityBoundingBox().offset(0d,y,0d));
+        }
+        if(z!=0d) {
+            for(AxisAlignedBB aabb : phantomCollisions)
+                z = aabb.calculateZOffset(this.getEntityBoundingBox(),z);
+            this.setEntityBoundingBox(this.getEntityBoundingBox().offset(0d,0d,z));
         }
         this.world.profiler.endSection();
         this.world.profiler.startSection("rest");

@@ -130,8 +130,8 @@ public class EntityUtil {
         return height;
     }
 
-    public static List<BlockPos> getSpecificBlockCollisions(World world, AxisAlignedBB aabb, Block ... badBlocks) {
-        List<BlockPos> ret = new ArrayList<>();
+    public static List<AxisAlignedBB> getSpecificBlockCollisions(World world, AxisAlignedBB aabb, Block ... badBlocks) {
+        List<AxisAlignedBB> ret = new ArrayList<>();
         int minX = MathHelper.floor(aabb.minX)-1;
         int maxX = MathHelper.ceil(aabb.maxX)+1;
         int minY = MathHelper.floor(aabb.minY)-1;
@@ -148,14 +148,14 @@ public class EntityUtil {
                     for(int y=minY; y<maxY; y++) {
                         if(!isBorderX && !isBorderZ || y!=maxY-1) {
                             mutablePos.setPos(x,y,z);
-                            if(worldborder.contains(mutablePos)) {
-                                ret.add(new BlockPos(mutablePos));
+                            if(!worldborder.contains(mutablePos)) {
+                                addBBToList(world,mutablePos,aabb,ret);
                                 continue;
                             }
                             Block block = world.getBlockState(mutablePos).getBlock();
                             for(Block badBlock : badBlocks) {
                                 if(block==badBlock) {
-                                    ret.add(new BlockPos(mutablePos));
+                                    addBBToList(world,mutablePos,aabb,ret);
                                     break;
                                 }
                             }
@@ -165,5 +165,9 @@ public class EntityUtil {
             }
         }
         return ret;
+    }
+
+    private static void addBBToList(World world, BlockPos pos, AxisAlignedBB aabb, List<AxisAlignedBB> list) {
+        world.getBlockState(pos).addCollisionBoxToList(world,pos,aabb,list,null,false);
     }
 }

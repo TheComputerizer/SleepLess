@@ -132,9 +132,7 @@ public class PhantomEntity extends EntityMob {
     }
 
     @Override
-    public int getMaxFallHeight() {
-        return 1000;
-    }
+    public void fall(float distance, float damageMultiplier) {}
 
     public boolean isAggressive() {
         return this.isAggressive && this.attackSpawnCooldown<=0;
