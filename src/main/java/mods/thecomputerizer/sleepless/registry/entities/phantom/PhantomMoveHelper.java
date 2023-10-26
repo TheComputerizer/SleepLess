@@ -9,6 +9,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
+import java.util.List;
+
 @SuppressWarnings("unchecked")
 public class PhantomMoveHelper<P extends PhantomEntity> extends EntityMoveHelper {
 
@@ -73,25 +75,20 @@ public class PhantomMoveHelper<P extends PhantomEntity> extends EntityMoveHelper
             World world = phantom.getEntityWorld();
             BlockPos footPos = getFootPos(phantom.getEntityBoundingBox());
             AxisAlignedBB footBB = world.getBlockState(footPos).getBoundingBox(world,footPos);
-            return findNextSafeHeight(world,phantomBB,footBB,jumpHeight)>footBB.maxY+(phantomBB.maxY-getCenterY(phantomBB));
+            AxisAlignedBB jumpBB = new AxisAlignedBB(phantomBB.minX,footBB.maxY,phantomBB.minZ,phantomBB.maxX,
+                    footBB.maxY+jumpHeight,phantomBB.maxZ);
+            List<AxisAlignedBB> collisionList = EntityUtil.getSpecificBlockCollisions(world,jumpBB,
+                    SleepLessConfigHelper.getPhantomPathfindBlacklist());
+            if(collisionList.isEmpty()) return true;
+            return findNextSafeHeight(collisionList,jumpBB.maxY)>phantomBB.maxY+1d;
         }
         return false;
     }
 
-    private double findNextSafeHeight(World world, AxisAlignedBB phantomBB, AxisAlignedBB footBB, double maxHeight) {
-        double ret = footBB.maxY;
-        AxisAlignedBB jumpBB = new AxisAlignedBB(phantomBB.minX,footBB.maxY,phantomBB.minZ,phantomBB.maxX,
-                footBB.maxY+maxHeight,phantomBB.maxZ);
-        for(AxisAlignedBB aabb : EntityUtil.getSpecificBlockCollisions(world,jumpBB,
-                SleepLessConfigHelper.getPhantomPathfindBlacklist())) {
-            double y = aabb.minY;
-            if(y>ret) ret = y;
-        }
-        return ret;
-    }
-
-    private double getCenterY(AxisAlignedBB aabb) {
-        return aabb.minY+((aabb.maxY-aabb.minY)/2d);
+    private double findNextSafeHeight(List<AxisAlignedBB> collisionList, double height) {
+        for(AxisAlignedBB aabb : collisionList)
+            if(aabb.minY<height) height = aabb.minY;
+        return height;
     }
 
     private BlockPos getFootPos(AxisAlignedBB phantomBB) {
