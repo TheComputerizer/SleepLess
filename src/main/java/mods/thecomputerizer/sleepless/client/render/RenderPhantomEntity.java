@@ -4,6 +4,7 @@ import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.mixin.vanilla.InvokerRender;
 import mods.thecomputerizer.sleepless.registry.entities.phantom.PhantomEntity;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.entity.*;
@@ -42,12 +43,9 @@ public class RenderPhantomEntity extends RenderLiving<PhantomEntity> {
         Render<?> nextRender = entity.getShadowRender(this.renderManager);
         if(Objects.isNull(entity.currentRender) || (Objects.nonNull(nextRender) && entity.currentRender!=nextRender)) {
             entity.currentRender = nextRender;
-            if(entity.currentRender instanceof RenderPlayer) {
-                this.mainModel = ((RenderPlayer)entity.currentRender).getMainModel();
+            if(entity.currentRender instanceof RenderPlayer)
                 entity.referenceEntity = Minecraft.getMinecraft().player;
-            }
             else if(entity.currentRender instanceof RenderLivingBase<?>) {
-                this.mainModel = ((RenderLivingBase<?>)entity.currentRender).getMainModel();
                 try {
                     entity.referenceEntity = (EntityLivingBase)entity.getShadowEntityClass()
                             .getConstructor(World.class).newInstance(entity.world);
@@ -59,69 +57,78 @@ public class RenderPhantomEntity extends RenderLiving<PhantomEntity> {
         }
     }
 
+    @SuppressWarnings("ConstantValue")
+    private @Nullable ModelBase getModel(@Nonnull Render<?> render) {
+        return render instanceof RenderLivingBase<?> ? ((RenderLivingBase<?>)render).getMainModel() :
+                (render instanceof RenderPlayer ? ((RenderPlayer)render).getMainModel() : null);
+    }
+
+    private void setModel(@Nonnull PhantomEntity entity) {
+        this.mainModel = Objects.nonNull(entity.referenceEntity) && Objects.nonNull(entity.currentRender) ?
+                getModel(entity.currentRender) : null;
+    }
+
     @Override
     public void doRender(@Nonnull PhantomEntity entity, double x, double y, double z, float entityYaw, float partialTick) {
         if(MinecraftForge.EVENT_BUS.post(new RenderLivingEvent.Pre<>(entity,this,partialTick,x,y,z))) return;
         makeReferenceEntity(entity);
         GlStateManager.pushMatrix();
         GlStateManager.disableCull();
-        if(Objects.nonNull(entity.referenceEntity) && canYouSeeMe()) {
+        setModel(entity);
+        if(Objects.nonNull(this.mainModel) && canYouSeeMe()) {
             this.mainModel.swingProgress = entity.getSwingProgress(partialTick);
             boolean shouldSit = entity.isRiding() && (Objects.nonNull(entity.getRidingEntity()) && entity.getRidingEntity().shouldRiderSit());
             this.mainModel.isRiding = shouldSit;
             this.mainModel.isChild = entity.isChild();
             try {
-                float f = this.interpolateRotation(entity.prevRenderYawOffset, entity.renderYawOffset, partialTick);
-                float f1 = this.interpolateRotation(entity.prevRotationYawHead, entity.rotationYawHead, partialTick);
-                float f2 = f1 - f;
-                if (shouldSit && entity.getRidingEntity() instanceof EntityLivingBase) {
-                    EntityLivingBase entitylivingbase = (EntityLivingBase) entity.getRidingEntity();
-                    f = this.interpolateRotation(entitylivingbase.prevRenderYawOffset, entitylivingbase.renderYawOffset, partialTick);
-                    f2 = f1 - f;
-                    float f3 = MathHelper.wrapDegrees(f2);
-                    if (f3 < -85.0F) f3 = -85.0F;
-                    if (f3 >= 85.0F) f3 = 85.0F;
-                    f = f1 - f3;
-                    if (f3 * f3 > 2500.0F) f += f3 * 0.2F;
-                    f2 = f1 - f;
+                float yawOffset = this.interpolateRotation(entity.prevRenderYawOffset,entity.renderYawOffset,partialTick);
+                float rotationYaw = this.interpolateRotation(entity.prevRotationYawHead,entity.rotationYawHead,partialTick);
+                float adjustedYaw = rotationYaw-yawOffset;
+                if(shouldSit && entity.getRidingEntity() instanceof EntityLivingBase) {
+                    EntityLivingBase base = (EntityLivingBase)entity.getRidingEntity();
+                    yawOffset = this.interpolateRotation(base.prevRenderYawOffset,base.renderYawOffset,partialTick);
+                    adjustedYaw = rotationYaw-yawOffset;
+                    float wrappedYaw = MathHelper.wrapDegrees(adjustedYaw);
+                    if(wrappedYaw<-85.0f) wrappedYaw = -85.0f;
+                    if(wrappedYaw>=85.0f) wrappedYaw = 85.0f;
+                    yawOffset = rotationYaw-wrappedYaw;
+                    if(wrappedYaw *wrappedYaw>2500f) yawOffset+=wrappedYaw*0.2f;
+                    adjustedYaw = rotationYaw-yawOffset;
                 }
-                float f7 = entity.prevRotationPitch + (entity.rotationPitch - entity.prevRotationPitch) * partialTick;
-                this.renderLivingAt(entity, x, y, z);
-                float f8 = this.handleRotationFloat(entity, partialTick);
-                this.applyRotations(entity, f8, f, partialTick);
-                float f4 = this.prepareScale(entity, partialTick);
-                float f5 = 0.0F;
-                float f6 = 0.0F;
-                if (!entity.isRiding()) {
-                    f5 = entity.prevLimbSwingAmount + (entity.limbSwingAmount - entity.prevLimbSwingAmount) * partialTick;
-                    f6 = entity.limbSwing - entity.limbSwingAmount * (1.0F - partialTick);
-                    if (entity.isChild()) f6 *= 3.0F;
-                    if (f5 > 1.0F) f5 = 1.0F;
-                    f2 = f1 - f;
+                float rotationPitch = entity.prevRotationPitch+(entity.rotationPitch-entity.prevRotationPitch)*partialTick;
+                this.renderLivingAt(entity,x,y,z);
+                float rotationFloat = this.handleRotationFloat(entity,partialTick);
+                this.applyRotations(entity,rotationFloat,yawOffset,partialTick);
+                float scale = this.prepareScale(entity,partialTick);
+                float lingSwingAmountChange = 0.0F;
+                float limbSwingChange = 0.0F;
+                if(!entity.isRiding()) {
+                    lingSwingAmountChange = entity.prevLimbSwingAmount+(entity.limbSwingAmount-entity.prevLimbSwingAmount)*partialTick;
+                    limbSwingChange = entity.limbSwing-entity.limbSwingAmount*(1f-partialTick);
+                    if(entity.isChild()) limbSwingChange*=3f;
+                    if(lingSwingAmountChange>1f) lingSwingAmountChange = 1f;
+                    adjustedYaw = rotationYaw-yawOffset;
                 }
                 GlStateManager.enableAlpha();
-                this.mainModel.setLivingAnimations(entity.referenceEntity, f6, f5, partialTick);
-                this.mainModel.setRotationAngles(f6, f5, f8, f2, f7, f4, entity.referenceEntity);
-                if (this.renderOutlines) {
-                    boolean flag1 = this.setScoreTeamColor(entity);
+                this.mainModel.setLivingAnimations(entity.referenceEntity,limbSwingChange,lingSwingAmountChange,partialTick);
+                this.mainModel.setRotationAngles(limbSwingChange,lingSwingAmountChange,rotationFloat,adjustedYaw,rotationPitch,scale,entity.referenceEntity);
+                if(this.renderOutlines) {
+                    boolean setTeamColor = this.setScoreTeamColor(entity);
                     GlStateManager.enableColorMaterial();
                     GlStateManager.enableOutlineMode(this.getTeamColor(entity));
-                    if (!this.renderMarker) renderShadowModel(entity, f6, f5, f8, f2, f7, f4);
-                    renderShadowLayers(entity, f6, f5, partialTick, f8, f2, f7, f4);
+                    if(!this.renderMarker) renderShadowModel(entity,limbSwingChange,lingSwingAmountChange,rotationFloat,adjustedYaw,rotationPitch,scale);
+                    renderShadowLayers(entity,limbSwingChange,lingSwingAmountChange,partialTick,rotationFloat,adjustedYaw,rotationPitch,scale);
                     GlStateManager.disableOutlineMode();
                     GlStateManager.disableColorMaterial();
-                    if (flag1) this.unsetScoreTeamColor();
+                    if(setTeamColor) this.unsetScoreTeamColor();
                 } else {
-                    boolean flag = this.setDoRenderBrightness(entity, partialTick);
-                    renderShadowModel(entity, f6, f5, f8, f2, f7, f4);
-                    if (flag) this.unsetBrightness();
+                    boolean setBrightness = this.setDoRenderBrightness(entity,partialTick);
+                    renderShadowModel(entity,limbSwingChange,lingSwingAmountChange,rotationFloat,adjustedYaw,rotationPitch,scale);
+                    if(setBrightness) this.unsetBrightness();
                     GlStateManager.depthMask(true);
-                    renderShadowLayers(entity, f6, f5, partialTick, f8, f2, f7, f4);
+                    renderShadowLayers(entity,limbSwingChange,lingSwingAmountChange,partialTick,rotationFloat,adjustedYaw,rotationPitch,scale);
                 }
                 GlStateManager.disableRescaleNormal();
-            } catch (ClassCastException ignored) {
-                entity.referenceEntity = null;
-                entity.currentRender = null;
             } catch (Exception e) {
                 Constants.LOGGER.error("Couldn't render phantom entity", e);
             }
@@ -132,17 +139,17 @@ public class RenderPhantomEntity extends RenderLiving<PhantomEntity> {
         GlStateManager.enableCull();
         GlStateManager.popMatrix();
         if(Objects.nonNull(entity.referenceEntity) && canYouSeeMe()) {
-            if (!this.renderOutlines) this.renderName(entity, x, y, z);
-            MinecraftForge.EVENT_BUS.post(new RenderLivingEvent.Post<>(entity, this, partialTick, x, y, z));
+            if(!this.renderOutlines) this.renderName(entity,x,y,z);
+            MinecraftForge.EVENT_BUS.post(new RenderLivingEvent.Post<>(entity,this,partialTick,x,y,z));
         }
     }
 
     protected void renderShadowModel(@Nonnull PhantomEntity entity, float swing, float swingAmount, float ageInTicks,
                                      float headYaw, float headPitch, float scale) {
-        boolean flag = this.isVisible(entity);
-        boolean flag1 = !flag && !entity.isInvisibleToPlayer(Minecraft.getMinecraft().player);
-        if (flag || flag1) {
-            if (!this.bindEntityTexture(entity)) return;
+        boolean isVisible = this.isVisible(entity);
+        boolean isVisibleAnyways = !isVisible && !entity.isInvisibleToPlayer(Minecraft.getMinecraft().player);
+        if(isVisible || isVisibleAnyways) {
+            if(!this.bindEntityTexture(entity)) return;
             applyColor();
             this.mainModel.render(entity.referenceEntity,swing,swingAmount,ageInTicks,headYaw,headPitch,scale);
             finishColor();
@@ -153,7 +160,7 @@ public class RenderPhantomEntity extends RenderLiving<PhantomEntity> {
     protected void renderShadowLayers(@Nonnull PhantomEntity entity, float swing, float swingAmount, float partialTick,
                                       float ageInTicks, float headYaw, float headPitch, float scale) {
         if(entity.currentRender instanceof RenderLivingBase<?>) {
-            for (LayerRenderer<?> layer : ((RenderLivingBase<?>)entity.currentRender).layerRenderers) {
+            for(LayerRenderer<?> layer : ((RenderLivingBase<?>)entity.currentRender).layerRenderers) {
                 LayerRenderer<EntityLivingBase> baseLayer = (LayerRenderer<EntityLivingBase>)layer;
                 boolean flag = this.setBrightness(entity,partialTick,baseLayer.shouldCombineTextures());
                 baseLayer.doRenderLayer(entity.referenceEntity,swing,swingAmount,partialTick,ageInTicks,headYaw,headPitch,scale);
