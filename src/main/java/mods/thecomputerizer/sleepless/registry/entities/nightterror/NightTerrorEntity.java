@@ -8,10 +8,10 @@ import mods.thecomputerizer.sleepless.registry.DataSerializerRegistry;
 import mods.thecomputerizer.sleepless.registry.SoundRegistry;
 import mods.thecomputerizer.sleepless.registry.entities.ai.EntityWatchClosestWithSleepDebt;
 import mods.thecomputerizer.sleepless.registry.entities.ai.PhantomNearestAttackableTarget;
-import mods.thecomputerizer.sleepless.util.SoundUtil;
+import mods.thecomputerizer.sleepless.registry.entities.nightterror.phase.PhaseBase;
+import mods.thecomputerizer.sleepless.registry.entities.nightterror.phase.PhaseSpawn;
 import mods.thecomputerizer.theimpossiblelibrary.util.NetworkUtil;
 import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
@@ -42,11 +42,16 @@ public class NightTerrorEntity extends EntityCreature {
 
     @SideOnly(Side.CLIENT)
     public int renderMode = 0;
+
     private long ticksAlive;
+    private PhaseBase currentPhase;
+    private Vec3d teleportTarget;
 
     public NightTerrorEntity(World world) {
         super(world);
         this.ignoreFrustumCheck = true;
+        this.moveHelper = new NightTerrorMoveHelper(this);
+        this.currentPhase = new PhaseSpawn(this,1f);
     }
 
     @Override
@@ -81,20 +86,37 @@ public class NightTerrorEntity extends EntityCreature {
         return this.ticksAlive;
     }
 
+    private void setTeleportTarget(double x, double y, double z, boolean isOffset) {
+        this.teleportTarget = isOffset ? this.getPositionVector().add(x,y,z) : new Vec3d(x,y,z);
+    }
+
+    private void setMoveTarget(double speed) {
+        this.moveHelper.setMoveTo(this.teleportTarget.x,this.teleportTarget.y,this.teleportTarget.z,speed);
+    }
+
     public AnimationData getAnimationData() {
         return this.dataManager.get(ANIMATION_SYNC);
     }
 
-    public void setAnimation(AnimationType type) {
-        getAnimationData().setAnimation(type,this);
+    public void setAnimation(AnimationType type, long offset) {
+        getAnimationData().setAnimation(type,offset);
         this.dataManager.setDirty(ANIMATION_SYNC);
+    }
+
+    public void setPhase(PhaseBase phase) {
+        this.currentPhase = phase;
+    }
+
+    public boolean isNotDying() {
+        return this.getAnimationData().currentAnimation!=AnimationType.DEATH;
     }
 
     @Override
     public void onLivingUpdate() {
         if(!this.dead) {
             this.ticksAlive++;
-            this.dataManager.get(ANIMATION_SYNC).tickAnimations(this);
+            this.currentPhase.onTick();
+            this.dataManager.get(ANIMATION_SYNC).tickAnimations();
         }
         super.onLivingUpdate();
     }
@@ -102,12 +124,11 @@ public class NightTerrorEntity extends EntityCreature {
     @Override
     protected void damageEntity(DamageSource source, float damageAmount) {
         if(this.dataManager.get(ANIMATION_SYNC).currentAnimation==AnimationType.DEATH) return;
-        float health = this.getHealth();
         super.damageEntity(source,damageAmount);
-        if(this.getHealth()<health) {
-            this.setAnimation(this.getHealth() <= 0 ? AnimationType.DEATH : AnimationType.DAMAGE);
-        }
-        if(this.getHealth()<=0f) this.setHealth(0.01f);
+        if(this.getHealth()<=0f && this.currentPhase.canDie()) {
+            this.setAnimation(AnimationType.DEATH,0L);
+            this.setHealth(0.01f);
+        } else this.currentPhase.onDamage();
     }
 
     @Override
@@ -115,6 +136,7 @@ public class NightTerrorEntity extends EntityCreature {
         super.writeEntityToNBT(tag);
         tag.setLong("nightTerrorTicksAlive",this.ticksAlive);
         tag.setTag("nightTerrorAnimationData",this.dataManager.get(ANIMATION_SYNC).writeToNBT());
+        tag.setTag("nightTerrorPhaseInfo",this.currentPhase.writeToNBT());
     }
 
     @Override
@@ -182,22 +204,19 @@ public class NightTerrorEntity extends EntityCreature {
             this.currentAnimationTime = tag.getLong("currentAnimationTime");
         }
 
-        private void tickAnimations(NightTerrorEntity entity) {
+        private void tickAnimations() {
             this.currentAnimationTime++;
             if(this.currentAnimationTime>this.currentAnimation.time)
-                setAnimation(this.currentAnimation.nextTypeName,entity);
+                setAnimation(this.currentAnimation.nextTypeName,0L);
         }
 
-        public void setAnimation(String animationType, NightTerrorEntity entity) {
-            setAnimation(AnimationType.BY_NAME.get(animationType),entity);
+        public void setAnimation(String animationType, long offset) {
+            setAnimation(AnimationType.BY_NAME.get(animationType),offset);
         }
 
-        public void setAnimation(AnimationType type, NightTerrorEntity entity) {
-            if(type!=this.currentAnimation)
-                this.currentAnimation.onFinish.accept(entity);
+        public void setAnimation(AnimationType type, long offset) {
             this.currentAnimation = type;
-            this.currentAnimation.onStart.accept(entity);
-            this.currentAnimationTime = 0L;
+            this.currentAnimationTime = offset;
         }
 
         @SideOnly(Side.CLIENT)
@@ -217,29 +236,26 @@ public class NightTerrorEntity extends EntityCreature {
 
     public enum AnimationType {
 
-        DAMAGE("damage",15,"teleport",entity -> entity.setEntityInvulnerable(true),entity -> {}),
-        DEATH("death",123,"idle",entity -> entity.setEntityInvulnerable(true),entity -> entity.setHealth(0f)),
-        IDLE("idle",Long.MAX_VALUE,"idle",entity -> {},entity -> {}),
-        SPAWN("spawn",200,"idle",entity -> entity.setEntityInvulnerable(true),
-                entity -> entity.setEntityInvulnerable(false)),
-        TELEPORT("teleport",100,"idle",
-                entity -> SoundUtil.playRemoteEntitySound(entity,SoundRegistry.BOOSTED_TP_SOUND,false,entity.getSoundVolume(),0.5f),
-                entity -> SoundUtil.playRemoteEntitySound(entity,SoundRegistry.BOOSTED_TP_REVERSE_SOUND,false,entity.getSoundVolume(),0.5f));
+        DAMAGE("damage",15,"teleport"),
+        DEATH("death",123,"idle"),
+        IDLE("idle",Long.MAX_VALUE,"idle"),
+        SPAWN("spawn",200,"idle"),
+        TELEPORT("teleport",100,"idle");
 
         private static final Map<String,AnimationType> BY_NAME = new HashMap<>();
+
+        static {
+            for(AnimationType type : AnimationType.values()) BY_NAME.put(type.name,type);
+        }
+
         private final String name;
         private final long time;
         private final String nextTypeName;
-        private final Consumer<NightTerrorEntity> onStart;
-        private final Consumer<NightTerrorEntity> onFinish;
 
-        AnimationType(String name, long time, String next, Consumer<NightTerrorEntity> onStart,
-                      Consumer<NightTerrorEntity> onFinish) {
+        AnimationType(String name, long time, String next) {
             this.name = name;
             this.time = time;
             this.nextTypeName = next;
-            this.onStart = onStart;
-            this.onFinish = onFinish;
         }
 
         public String getName() {
@@ -248,10 +264,6 @@ public class NightTerrorEntity extends EntityCreature {
 
         public long getTotalTime() {
             return this.time;
-        }
-
-        static {
-            for(AnimationType type : AnimationType.values()) BY_NAME.put(type.name,type);
         }
     }
 }

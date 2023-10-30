@@ -1,9 +1,8 @@
 package mods.thecomputerizer.sleepless.registry.entities.phantom;
 
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
+import mods.thecomputerizer.sleepless.registry.entities.ai.ExtendedMoveHelper;
 import mods.thecomputerizer.sleepless.util.EntityUtil;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityMoveHelper;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -11,8 +10,7 @@ import net.minecraft.world.World;
 
 import java.util.List;
 
-@SuppressWarnings("unchecked")
-public class PhantomMoveHelper<P extends PhantomEntity> extends EntityMoveHelper {
+public class PhantomMoveHelper<P extends PhantomEntity> extends ExtendedMoveHelper<P> {
 
     private static final double GRAVITY_FACTOR = 0.20000000298023224d;
 
@@ -20,13 +18,9 @@ public class PhantomMoveHelper<P extends PhantomEntity> extends EntityMoveHelper
         super(phantom);
     }
 
-    public P getPhantomEntity() {
-        return (P)this.entity;
-    }
-
     @Override
     public void onUpdateMoveHelper() {
-        P phantom = getPhantomEntity();
+        P phantom = getEntity();
         if(this.action==Action.MOVE_TO) {
             setAction(Action.WAIT);
             double motionX = getHorizontalOffset(true,phantom.posX,phantom.posZ);
@@ -51,23 +45,6 @@ public class PhantomMoveHelper<P extends PhantomEntity> extends EntityMoveHelper
         } else phantom.setSneaking(false);
     }
 
-    private void setAction(Action action) {
-        this.action = action;
-    }
-
-    private double getHorizontalOffset(boolean isX, double phantomX, double phantomZ) {
-        return isX ? this.posX-phantomX : this.posZ-phantomZ;
-    }
-
-    private void setEntityAISpeed(P phantom) {
-        double phantomSpeed = getEntitySpeed(phantom);
-        phantom.setAIMoveSpeed((float)(this.speed*phantomSpeed));
-    }
-
-    private double getEntitySpeed(P phantom) {
-        return phantom.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getAttributeValue();
-    }
-
     private boolean shouldJump(P phantom) {
         double jumpHeight = EntityUtil.getTotalJumpHeight(phantom.getJumpMotion(),GRAVITY_FACTOR);
         AxisAlignedBB phantomBB = phantom.getEntityBoundingBox();
@@ -89,12 +66,5 @@ public class PhantomMoveHelper<P extends PhantomEntity> extends EntityMoveHelper
         for(AxisAlignedBB aabb : collisionList)
             if(aabb.minY<height) height = aabb.minY;
         return height;
-    }
-
-    private BlockPos getFootPos(AxisAlignedBB phantomBB) {
-        int centerX = (int)(phantomBB.minX+((phantomBB.maxX-phantomBB.minX)/2d));
-        int y = (int)(phantomBB.minY-0.02);
-        int centerZ = (int)(phantomBB.minZ+((phantomBB.maxZ-phantomBB.minZ)/2d));
-        return new BlockPos(centerX,y,centerZ);
     }
 }
