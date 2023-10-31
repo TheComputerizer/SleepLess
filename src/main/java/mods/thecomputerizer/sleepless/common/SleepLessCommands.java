@@ -212,7 +212,7 @@ public class SleepLessCommands extends CommandBase {
             if(subCmd.matches("testrenders"))
                 return testRendersTabCompletions(args[args.length-1].isEmpty() ? args.length-2 : args.length-1);
             if(subCmd.matches("nightterror"))
-                return filteredTabsCompletions(args[args.length-1],true,"start","stop");
+                return filteredTabsCompletions(args[args.length-1],true,"begin","stop");
         }
         return Collections.emptyList();
     }

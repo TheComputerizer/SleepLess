@@ -8,6 +8,7 @@ import mods.thecomputerizer.sleepless.registry.PotionRegistry;
 import mods.thecomputerizer.sleepless.registry.entities.ai.EntityWatchClosestWithSleepDebt;
 import mods.thecomputerizer.sleepless.registry.entities.ai.PhantomAttackMelee;
 import mods.thecomputerizer.sleepless.registry.entities.ai.PhantomNearestAttackableTarget;
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.entity.Render;
@@ -16,13 +17,16 @@ import net.minecraft.entity.*;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.MobEffects;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializer;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.WeightedRandom;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -67,6 +71,7 @@ public class PhantomEntity extends EntityMob {
         this.addPotionEffect(new PotionEffect(PotionRegistry.PHASED,Integer.MAX_VALUE));
         this.ignoreFrustumCheck = true;
         this.moveHelper = new PhantomMoveHelper<>(this);
+        this.experienceValue = 0;
     }
 
     public void updateSize(float width, float height) {
@@ -90,6 +95,11 @@ public class PhantomEntity extends EntityMob {
     }
 
     @Override
+    public boolean isEntityInvulnerable(DamageSource src) {
+        return !src.isMagicDamage() && src!=DamageSource.OUT_OF_WORLD;
+    }
+
+    @Override
     public @Nullable IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, @Nullable IEntityLivingData data) {
         data = super.onInitialSpawn(difficulty,data);
         if(!this.presetClass) {
@@ -108,7 +118,7 @@ public class PhantomEntity extends EntityMob {
         super.applyEntityAttributes();
         this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(64d);
         this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.25d);
-        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(2d);
+        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(4d);
         this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(2d);
     }
 
@@ -133,6 +143,9 @@ public class PhantomEntity extends EntityMob {
 
     @Override
     public void fall(float distance, float damageMultiplier) {}
+
+    @Override
+    public void playStepSound(BlockPos pos, Block block) {}
 
     public boolean isAggressive() {
         return this.isAggressive && this.attackSpawnCooldown<=0;
@@ -183,6 +196,7 @@ public class PhantomEntity extends EntityMob {
     private void trySizeUpdate(Class<? extends Entity> entityClass) {
         Entity entity = null;
         try {
+            if(entityClass==EntityPlayer.class) entityClass = EntityPlayerMP.class;
             entity = entityClass.getDeclaredConstructor(World.class).newInstance(this.world);
         } catch (Exception ex) {
             Constants.LOGGER.error("Could not update size for phantom entity using class {} as reference",entityClass,ex);

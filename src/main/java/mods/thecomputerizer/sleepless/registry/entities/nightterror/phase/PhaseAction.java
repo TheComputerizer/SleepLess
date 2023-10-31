@@ -1,9 +1,16 @@
 package mods.thecomputerizer.sleepless.registry.entities.nightterror.phase;
 
+import mods.thecomputerizer.sleepless.registry.PotionRegistry;
 import mods.thecomputerizer.sleepless.registry.SoundRegistry;
 import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerrorEntity;
+import mods.thecomputerizer.sleepless.registry.entities.phantom.PhantomEntity;
 import mods.thecomputerizer.sleepless.util.SoundUtil;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -46,6 +53,11 @@ public class PhaseAction {
         return this;
     }
 
+    public PhaseAction setTeleportTarget(NightTerrorEntity entity, double x, double y, double z, boolean isOffset) {
+        entity.setTeleportTarget(x,y,z,isOffset);
+        return this;
+    }
+
     public PhaseAction getNextAction() {
         return this.nextAction;
     }
@@ -66,14 +78,58 @@ public class PhaseAction {
 
     public enum Type {
 
-        DAMAGE("damage",true,NightTerrorEntity.AnimationType.DAMAGE,entity -> {},entity -> {}),
+        DAMAGE("damage",true,NightTerrorEntity.AnimationType.DAMAGE,entity -> {
+            if(!entity.world.isRemote) {
+                entity.setTeleportTarget(0d,20d,0d,true);
+                int numSpawns = Math.max(1, (int) ((1f-(entity.getHealth()/entity.getMaxHealth()))*10f));
+                BlockPos pos = entity.getPosition();
+                for (int i = 0; i < numSpawns; i++) {
+                    final BlockPos finalPos = new BlockPos(pos);
+                    PhantomEntity.spawnPhantom(entity.getEntityWorld(), phantom -> {
+                        phantom.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6d);
+                        phantom.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.3d);
+                        phantom.setGlowing(true);
+                        phantom.markAggressive();
+                        phantom.setLifespan(600);
+                        phantom.presetClass(NightTerrorEntity.class);
+                        phantom.setPosition(finalPos.getX(), finalPos.getY(), finalPos.getZ());
+                    });
+                    pos = pos.add(0, 3, 0);
+                }
+            }
+        },entity -> {}),
         FLOAT("float",false,null,entity -> {},entity -> {}),
-        SPAWN("spawn",true,NightTerrorEntity.AnimationType.SPAWN,entity -> {},entity -> {}),
+        SPAWN("spawn",true,null,entity -> {
+            if(!entity.world.isRemote) {
+                int numSpawns = Math.max(3,(int)((1f-(entity.getHealth()/entity.getMaxHealth()))*20f));
+                BlockPos pos = entity.getPosition();
+                for (int i = 0; i < numSpawns; i++) {
+                    final BlockPos finalPos = new BlockPos(pos);
+                    PhantomEntity.spawnPhantom(entity.getEntityWorld(), phantom -> {
+                        phantom.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6d);
+                        phantom.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.3d);
+                        phantom.setGlowing(true);
+                        phantom.markAggressive();
+                        phantom.setLifespan(600);
+                        phantom.presetClass(NightTerrorEntity.class);
+                        phantom.setPosition(finalPos.getX(), finalPos.getY(), finalPos.getZ());
+                    });
+                    pos = pos.add(0, 3, 0);
+                }
+            }
+        },entity -> {}),
         TELEPORT("teleport",true,NightTerrorEntity.AnimationType.TELEPORT,
-                entity -> SoundUtil.playRemoteEntitySound(entity,SoundRegistry.BOOSTED_TP_SOUND,false,1f,0.5f),
+                entity -> {
+                    entity.addPotionEffect(new PotionEffect(PotionRegistry.PHASED,50));
+                    entity.setMoveTarget(1d);
+                    SoundUtil.playRemoteEntitySound(entity,SoundRegistry.BOOSTED_TP_SOUND,false,1f,0.5f);
+                },
                 entity -> SoundUtil.playRemoteEntitySound(entity,SoundRegistry.BOOSTED_TP_REVERSE_SOUND,false,1f,0.5f)),
         TRANSITION("transition",true,null,entity -> {},entity -> {}),
-        WAIT("wait",false,NightTerrorEntity.AnimationType.IDLE,entity -> {},entity -> {});
+        WAIT("wait",false,NightTerrorEntity.AnimationType.SPAWN,entity -> {
+            EntityLivingBase target = entity.getAttackTarget();
+            if(Objects.nonNull(target)) entity.setTeleportTarget(target.posX+1,target.posY,target.posZ,false);
+        },entity -> {});
 
         private static final Map<String,Type> BY_NAME = new HashMap<>();
 
@@ -96,7 +152,11 @@ public class PhaseAction {
         }
 
         public void onStart(NightTerrorEntity entity, long animationOffset, boolean invertInvul) {
-            entity.setEntityInvulnerable(invertInvul != this.isInvulnerable);
+            boolean invul = invertInvul != this.isInvulnerable;
+            entity.setEntityInvulnerable(invul);
+            entity.setGlowing(!invul);
+            if(entity.world.isRemote && entity.getAnimationData().currentAnimation==NightTerrorEntity.AnimationType.IDLE && !invul)
+                entity.renderMode = 2;
             if(Objects.nonNull(this.animationType))
                 entity.setAnimation(this.animationType,animationOffset);
             this.extraStartFunc.accept(entity);

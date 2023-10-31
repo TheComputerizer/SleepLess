@@ -37,8 +37,8 @@ public class RenderNightTerror extends RenderLivingBase<NightTerrorEntity> {
         super(manager,new ModelBaseCapture(new ModelPlayer(0f,true)),0f);
         ModelPlayer playerModel = getPlayerModel();
         playerModel.isChild = false;
-        setPartAnimations(playerModel.bipedRightLeg,anim -> anim.setMirrored(true),true);
-        setPartAnimations(playerModel.bipedRightArm,anim -> anim.setMirrored(true),true);
+        //setPartAnimations(playerModel.bipedRightLeg,anim -> anim.setMirrored(true),true);
+        //setPartAnimations(playerModel.bipedRightArm,anim -> anim.setMirrored(true),true);
     }
 
     private ModelPlayer getPlayerModel() {
@@ -109,8 +109,7 @@ public class RenderNightTerror extends RenderLivingBase<NightTerrorEntity> {
                 this.animationAngle = scaledTime*-25f;
                 this.animationAngleScales = entity.getPositionVector().crossProduct(entity.getLook(partialTick)).normalize();
                 final double scaledOffset = scaledTime*2d;
-                setLimbAnimations(anim -> anim.setRotationDegrees(false,0d,10d,0d).setOffset(scaledOffset),
-                        anim -> anim.setOffset(scaledOffset));
+                //setLimbAnimations(anim -> anim.setRotationDegrees(false,0d,10d,0d).setOffset(scaledOffset), anim -> anim.setOffset(scaledOffset));
                 return;
             }
             case TELEPORT: {
@@ -132,14 +131,13 @@ public class RenderNightTerror extends RenderLivingBase<NightTerrorEntity> {
                 this.animationAngle = scaledTime*-75f;
                 this.animationAngleScales = entity.getPositionVector().crossProduct(entity.getLook(partialTick)).normalize();
                 final double scaledOffset = scaledTime*2d;
-                setLimbAnimations(anim -> anim.setRotationDegrees(false,30d,0d,30d).setOffset(scaledOffset),
-                        anim -> anim.setRotationDegrees(false,15d,0d,15d).setOffset(scaledOffset));
+                //setLimbAnimations(anim -> anim.setRotationDegrees(false,30d,0d,30d).setOffset(scaledOffset), anim -> anim.setRotationDegrees(false,15d,0d,15d).setOffset(scaledOffset));
                 return;
             }
             case IDLE: {
                 entity.renderMode = 1;
                 this.animationAngle = 0f;
-                resetPartAnimations();
+                //resetPartAnimations();
             }
         }
     }

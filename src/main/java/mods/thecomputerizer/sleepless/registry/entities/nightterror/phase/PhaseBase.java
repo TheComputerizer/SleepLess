@@ -25,12 +25,20 @@ public abstract class PhaseBase {
 
     public void onTick() {
         if(this.entity.isNotDying() && !this.entity.isDead) {
-            if (Objects.isNull(this.currentAction)) this.currentAction = makeActionQueue();
+            if(Objects.isNull(this.currentAction)) {
+                this.currentAction = makeActionQueue();
+                this.currentAction.onStart(this.entity);
+            }
             else {
                 PhaseAction nextAction = this.currentAction.getTickedAction();
-                if(Objects.nonNull(nextAction) && nextAction != this.currentAction) nextAction.onStart(this.entity);
-                if(Objects.isNull(nextAction)) onQueueFinished();
-                this.currentAction = Objects.nonNull(nextAction) ? nextAction : makeActionQueue();
+                boolean madeNewQueue = false;
+                if(Objects.isNull(nextAction)) {
+                    onQueueFinished();
+                    nextAction = makeActionQueue();
+                    madeNewQueue = true;
+                }
+                if(madeNewQueue || nextAction != this.currentAction) nextAction.onStart(this.entity);
+                this.currentAction = nextAction;
             }
         }
     }
@@ -53,8 +61,10 @@ public abstract class PhaseBase {
     public void onDamage() {
         if(this.entity.isNotDying() && !this.entity.isDead) {
             this.currentAction = makeDamageAction(this.currentAction.getNextAction());
-            if(this.entity.getHealth()<=this.minHealth) {
-                this.entity.setHealth(this.minHealth);
+            this.currentAction.onStart(this.entity);
+            float dmgPercent = this.entity.getHealth()/this.entity.getMaxHealth();
+            if(dmgPercent<=this.minHealth) {
+                this.entity.setHealth(this.entity.getMaxHealth()*this.minHealth);
                 setNextPhase(this.currentAction);
             }
         }
