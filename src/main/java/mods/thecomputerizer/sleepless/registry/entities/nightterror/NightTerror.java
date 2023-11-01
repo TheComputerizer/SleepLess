@@ -58,8 +58,8 @@ public class NightTerror {
 
     public void onTick() {
         if(hasValidPlayer()) {
-            if (this.activeTicks == 0) initialize();
-            else if (this.activeTicks>=START_BELLS && this.activeTicks<=FINISH_BELLS) {
+            if(this.activeTicks == 0) initialize();
+            else if(this.activeTicks>=START_BELLS && this.activeTicks<=FINISH_BELLS) {
                 boolean isThirdSecond = this.activeTicks == START_BELLS || (this.activeTicks-START_BELLS)%60==0;
                 if(isThirdSecond) {
                     sendBellMessage();

@@ -2,6 +2,7 @@ package mods.thecomputerizer.sleepless.client;
 
 
 import mods.thecomputerizer.sleepless.client.render.ClientEffects;
+import mods.thecomputerizer.sleepless.client.render.geometry.ITickableGeometry;
 import mods.thecomputerizer.sleepless.client.render.geometry.StaticGeometryRender;
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
 import mods.thecomputerizer.sleepless.core.Constants;
@@ -18,6 +19,9 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import net.minecraftforge.fml.relauncher.Side;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 
 import static mods.thecomputerizer.sleepless.client.render.geometry.StaticGeometryRender.STATIC_RENDERS;
@@ -25,6 +29,7 @@ import static mods.thecomputerizer.sleepless.client.render.geometry.StaticGeomet
 @Mod.EventBusSubscriber(modid = Constants.MODID, value = Side.CLIENT)
 public class ClientEvents {
 
+    public static List<ITickableGeometry<?>> TICKABLE_GEOMETRY = new ArrayList<>();
     private static boolean shaderLoaded = false;
     private static boolean screenShakePositive = true;
     private static boolean breathingIn = true;
@@ -86,15 +91,25 @@ public class ClientEvents {
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if(event.phase==TickEvent.Phase.END && Objects.nonNull(Minecraft.getMinecraft().world)) {
             NightTerrorClient.checkRenderCache();
+            Iterator<ITickableGeometry<?>> tickItr = TICKABLE_GEOMETRY.iterator();
+            while(tickItr.hasNext()) {
+                ITickableGeometry<?> tickable = tickItr.next();
+                tickable.onTick();
+                if(!tickable.isInitialized()) tickItr.remove();
+            }
         }
     }
 
     @SubscribeEvent
     public static void onRenderWorld(RenderWorldLastEvent event) {
         if(ClientEffects.PHANTOM_VISIBILITY>0f) {
-            synchronized (STATIC_RENDERS) {
-                for(StaticGeometryRender staticRender : STATIC_RENDERS)
-                    staticRender.render(event.getPartialTicks());
+            synchronized(STATIC_RENDERS) {
+                Iterator<StaticGeometryRender> renderItr = STATIC_RENDERS.iterator();
+                while(renderItr.hasNext()) {
+                    StaticGeometryRender staticRender = renderItr.next();
+                    if(staticRender.isEmpty()) renderItr.remove();
+                    else staticRender.render(event.getPartialTicks());
+                }
             }
         }
     }

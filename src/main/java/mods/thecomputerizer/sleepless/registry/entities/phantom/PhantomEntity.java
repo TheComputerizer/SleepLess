@@ -17,7 +17,6 @@ import net.minecraft.entity.*;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.MobEffects;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
@@ -47,9 +46,10 @@ public class PhantomEntity extends EntityMob {
     private static final DataParameter<Class<?>> CLASS_TYPE_SYNC = EntityDataManager.createKey(PhantomEntity.class,
             (DataSerializer<Class<?>>)DataSerializerRegistry.CLASS_SERIALIZER.getSerializer());
 
-    public static void spawnPhantom(World world, Consumer<PhantomEntity> spawnSettings) {
+    public static void spawnPhantom(World world, double x, double y, double z, Consumer<PhantomEntity> spawnSettings) {
         PhantomEntity phantom = new PhantomEntity(world);
         spawnSettings.accept(phantom);
+        phantom.setPosition(x,y,z);
         world.spawnEntity(phantom);
     }
 
@@ -119,7 +119,7 @@ public class PhantomEntity extends EntityMob {
         this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(64d);
         this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.25d);
         this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(4d);
-        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(2d);
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(1d);
     }
 
     @Override
@@ -131,7 +131,7 @@ public class PhantomEntity extends EntityMob {
     @Override
     protected void initEntityAI() {
         this.tasks.addTask(3,new PhantomAttackMelee<>(this,1d,true));
-        this.tasks.addTask(6,new EntityWatchClosestWithSleepDebt(this,64f,5f,1f));
+        this.tasks.addTask(6,new EntityWatchClosestWithSleepDebt(this,128f,5f,1f));
         this.targetTasks.addTask(1,new PhantomNearestAttackableTarget<>(this,EntityPlayer.class,1, false,
                 false,7f,this::isAggressive));
     }
@@ -196,8 +196,8 @@ public class PhantomEntity extends EntityMob {
     private void trySizeUpdate(Class<? extends Entity> entityClass) {
         Entity entity = null;
         try {
-            if(entityClass==EntityPlayer.class) entityClass = EntityPlayerMP.class;
-            entity = entityClass.getDeclaredConstructor(World.class).newInstance(this.world);
+            if(!EntityPlayer.class.isAssignableFrom(entityClass))
+                entity = entityClass.getDeclaredConstructor(World.class).newInstance(this.world);
         } catch (Exception ex) {
             Constants.LOGGER.error("Could not update size for phantom entity using class {} as reference",entityClass,ex);
         }

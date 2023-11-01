@@ -97,7 +97,7 @@ config.sleepless.client.disableFog.tooltip=Stops sleep debt from increasing fog 
 entity.night_terror.name=Night Terror
 entity.phantom_entity.name=Phantom Entity
 
-item.sleepless.test_item.name=Item Placeholder
+item.sleepless.tesseract.name=Tesseract
 
 nightterror.sleepless.start=You feel like you should probably sleep
 nightterror.sleepless.toolate1=Something doesn't seem right
@@ -110,6 +110,5 @@ potion.sleepless.phased=Phased
 potion.sleepless.tired=Tired
 
 tile.bed.sleepless.insomnia=You can't seem to fall sleep
-tile.sleepless.test_block.name=Block Placeholder
 
 status.sleepless.sleepdebt=Your current sleep debt is %1$s days

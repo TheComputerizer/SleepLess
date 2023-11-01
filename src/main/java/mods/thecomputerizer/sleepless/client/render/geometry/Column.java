@@ -18,6 +18,7 @@ public class Column {
     private final List<ShapeHolder> movingShapes;
     private double shapeSpeed;
     private ShapeHolder recentShape;
+    private boolean shouldGenerateShapes;
 
     public Column(Random random, Vec3d relativeBottom, double height, double radius, double spacing) {
         this.random = random;
@@ -28,6 +29,7 @@ public class Column {
         this.outline = makeOutlineShape();
         this.movingShapes = new ArrayList<>();
         this.shapeSpeed = 1d;
+        this.shouldGenerateShapes = true;
     }
 
     private ShapeHolder makeOutlineShape() {
@@ -39,6 +41,11 @@ public class Column {
         return new ShapeHolder(column).setRelativePosition(this.relativeBottom.add(0d,this.height/2d,0d));
     }
 
+    public Column disableShapes() {
+        this.shouldGenerateShapes = false;
+        return this;
+    }
+
     public void setSpeed(double speed) {
         this.shapeSpeed = speed;
         for(ShapeHolder holder : this.movingShapes)
@@ -48,20 +55,22 @@ public class Column {
     public void render(Vec3d relativeCenter) {
         Vec3d actualRender = relativeCenter.add(this.relativeBottom.x,0d,this.relativeBottom.z);
         this.outline.render(actualRender);
-        if(this.movingShapes.isEmpty() || Objects.isNull(this.recentShape) ||
-                this.recentShape.getRelativePosition().y-this.relativeBottom.y>this.spacing) {
-            ShapeHolder newholder = new ShapeHolder(generateRandomBox())
-                    .setRelativePosition(this.relativeBottom).setDirection(new Vec3d(0d,0.04d*this.shapeSpeed,0d));
-            newholder.startMoving();
-            this.movingShapes.add(newholder);
-            this.recentShape = newholder;
-        }
-        Iterator<ShapeHolder> shapesIterator = this.movingShapes.listIterator();
-        while(shapesIterator.hasNext()) {
-            ShapeHolder holder = shapesIterator.next();
-            holder.render(actualRender);
-            if(holder.getRelativePosition().y+this.spacing>this.relativeBottom.y+height)
-                shapesIterator.remove();
+        if(this.shouldGenerateShapes) {
+            if(this.movingShapes.isEmpty() || Objects.isNull(this.recentShape) ||
+                    this.recentShape.getRelativePosition().y - this.relativeBottom.y > this.spacing) {
+                ShapeHolder newholder = new ShapeHolder(generateRandomBox())
+                        .setRelativePosition(this.relativeBottom).setDirection(new Vec3d(0d,0.04d *this.shapeSpeed,0d));
+                newholder.startMoving();
+                this.movingShapes.add(newholder);
+                this.recentShape = newholder;
+            }
+            Iterator<ShapeHolder> shapesIterator = this.movingShapes.listIterator();
+            while(shapesIterator.hasNext()) {
+                ShapeHolder holder = shapesIterator.next();
+                holder.render(actualRender);
+                if(holder.getRelativePosition().y+this.spacing>this.relativeBottom.y+height)
+                    shapesIterator.remove();
+            }
         }
     }
 

@@ -17,12 +17,12 @@ public class PhaseThree extends PhaseBase {
 
     @Override
     protected PhaseAction makeActionQueue() {
-        return new PhaseAction(PhaseAction.Type.SPAWN,100)
-                .setNextAction(new PhaseAction(PhaseAction.Type.WAIT,75)
-                        .setNextAction(new PhaseAction(PhaseAction.Type.TELEPORT,50)
-                                .setNextAction(new PhaseAction(PhaseAction.Type.WAIT,25)
-                                        .setNextAction(new PhaseAction(PhaseAction.Type.FLOAT,100)
-                                                .setNextAction(new PhaseAction(PhaseAction.Type.WAIT,75))))));
+        return PhaseAction.Type.SPAWN.create(100)
+                .setNextAction(PhaseAction.Type.WAIT.create(75)
+                        .setNextAction(PhaseAction.Type.TELEPORT.create(50)
+                                .setNextAction(PhaseAction.Type.WAIT.create(25)
+                                        .setNextAction(PhaseAction.Type.FLOAT.create(40)
+                                                .setNextAction(PhaseAction.Type.WAIT.create(75))))));
     }
 
     @Override
@@ -30,4 +30,11 @@ public class PhaseThree extends PhaseBase {
 
     @Override
     protected void setNextPhase(@Nullable PhaseAction inheretedQueue) {}
+
+    @Override
+    public NBTTagCompound writeToNBT() {
+        NBTTagCompound tag = super.writeToNBT();
+        tag.setInteger("phaseNumber",3);
+        return tag;
+    }
 }

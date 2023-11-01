@@ -9,6 +9,7 @@ import mods.thecomputerizer.sleepless.registry.PotionRegistry;
 import mods.thecomputerizer.sleepless.registry.entities.phantom.PhantomEntity;
 import mods.thecomputerizer.sleepless.registry.entities.phantom.PhantomSpawnEntry;
 import mods.thecomputerizer.sleepless.util.AddedEnums;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -90,9 +91,8 @@ public class WorldEvents {
             float phantomChance = CapabilityHandler.getPhantomFactor(player);
             Random rand = player.world.rand;
             if(phantomChance>0f && SleepLess.fudgeFloat(rand.nextFloat(),0f)<=phantomChance/2f) {
-                PhantomEntity.spawnPhantom(player.world,phantom -> {
-                    BlockPos pos = event.getEntity().getPosition();
-                    phantom.setPosition(pos.getX(),pos.getY(),pos.getZ());
+                EntityLivingBase entity = event.getEntityLiving();
+                PhantomEntity.spawnPhantom(player.world,entity.posX,entity.posY,entity.posZ,phantom -> {
                     if(phantomChance>0.5f && SleepLess.fudgeFloat(rand.nextFloat(),0f)<0.5f) phantom.markAggressive();
                     phantom.setLifespan(SleepLess.fudgeInt(Math.max(10,(int)(phantomChance*50f))*4,1200));
                     phantom.presetClass(event.getEntity().getClass());
@@ -113,11 +113,11 @@ public class WorldEvents {
             if(CapabilityHandler.worldHasNightTerror(world)) event.getList().clear();
             else {
                 BlockPos pos = event.getPos();
-                float phantomChance = getPhantomSpawnChance(world, pos);
+                float phantomChance = getPhantomSpawnChance(world,pos);
                 if(phantomChance>0) {
                     List<Biome.SpawnListEntry> spawnEntries = event.getList();
-                    int maxGroup = Math.min(3, MathHelper.ceil(phantomChance * 3f));
-                    spawnEntries.add(makePhantomSpawnEntry(WeightedRandom.getTotalWeight(spawnEntries), phantomChance, maxGroup));
+                    int maxGroup = Math.min(3,MathHelper.ceil(phantomChance*3f));
+                    spawnEntries.add(makePhantomSpawnEntry(WeightedRandom.getTotalWeight(spawnEntries),phantomChance,maxGroup));
                 }
             }
         }

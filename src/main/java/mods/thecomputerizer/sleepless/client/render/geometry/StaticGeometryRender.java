@@ -7,10 +7,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @SideOnly(Side.CLIENT)
 public class StaticGeometryRender {
@@ -46,14 +43,31 @@ public class StaticGeometryRender {
     }
 
     public void render(float partialTick) {
+        if(isEmpty()) return;
         Entity entity = Minecraft.getMinecraft().getRenderViewEntity();
         if(Objects.nonNull(entity) && Objects.nonNull(this.renderVec)) {
             double renderX = entity.lastTickPosX+(entity.posX-entity.lastTickPosX)*(double)partialTick;
             double renderY = entity.lastTickPosY+(entity.posY-entity.lastTickPosY)*(double)partialTick;
             double renderZ = entity.lastTickPosZ+(entity.posZ-entity.lastTickPosZ)*(double)partialTick;
             Vec3d renderAt = this.renderVec.subtract(renderX,renderY,renderZ);
-            for(Column column : this.columnRenders) column.render(renderAt);
-            for(ShapeHolder holder : this.freeShapeRenders) holder.render(renderAt);
+            Iterator<Column> columnItr = this.columnRenders.iterator();
+            while(columnItr.hasNext()) {
+                Column column = columnItr.next();
+                if(column instanceof ITickableGeometry && !((ITickableGeometry<?>)column).isInitialized())
+                    columnItr.remove();
+                else column.render(renderAt);
+            }
+            Iterator<ShapeHolder> holderItr = this.freeShapeRenders.iterator();
+            while(holderItr.hasNext()) {
+                ShapeHolder holder = holderItr.next();
+                if(holder instanceof ITickableGeometry && !((ITickableGeometry<?>)holder).isInitialized())
+                    holderItr.remove();
+                else holder.render(renderAt);
+            }
         }
+    }
+
+    public boolean isEmpty() {
+        return this.columnRenders.isEmpty() && this.freeShapeRenders.isEmpty();
     }
 }

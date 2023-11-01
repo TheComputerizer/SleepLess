@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.entity.*;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -159,7 +160,7 @@ public class RenderPhantomEntity extends RenderLiving<PhantomEntity> {
     @SuppressWarnings("unchecked")
     protected void renderShadowLayers(@Nonnull PhantomEntity entity, float swing, float swingAmount, float partialTick,
                                       float ageInTicks, float headYaw, float headPitch, float scale) {
-        if(entity.currentRender instanceof RenderLivingBase<?>) {
+        if(!(entity.referenceEntity instanceof EntityPlayer) && entity.currentRender instanceof RenderLivingBase<?>) {
             for(LayerRenderer<?> layer : ((RenderLivingBase<?>)entity.currentRender).layerRenderers) {
                 LayerRenderer<EntityLivingBase> baseLayer = (LayerRenderer<EntityLivingBase>)layer;
                 boolean flag = this.setBrightness(entity,partialTick,baseLayer.shouldCombineTextures());

@@ -16,6 +16,8 @@ public abstract class PhaseBase {
     protected PhaseBase(NightTerrorEntity entity, NBTTagCompound tag) {
         this.entity = entity;
         this.minHealth = tag.getFloat("minHealth");
+        if(tag.hasKey("actionQueue"))
+            this.currentAction = new PhaseAction(tag.getCompoundTag("actionQueue"));
     }
 
     protected PhaseBase(NightTerrorEntity entity, float minHealth) {
@@ -25,19 +27,13 @@ public abstract class PhaseBase {
 
     public void onTick() {
         if(this.entity.isNotDying() && !this.entity.isDead) {
-            if(Objects.isNull(this.currentAction)) {
-                this.currentAction = makeActionQueue();
-                this.currentAction.onStart(this.entity);
-            }
+            if(Objects.isNull(this.currentAction)) this.currentAction = makeActionQueue();
             else {
-                PhaseAction nextAction = this.currentAction.getTickedAction();
-                boolean madeNewQueue = false;
+                PhaseAction nextAction = this.currentAction.getTickedAction(this.entity);
                 if(Objects.isNull(nextAction)) {
                     onQueueFinished();
                     nextAction = makeActionQueue();
-                    madeNewQueue = true;
                 }
-                if(madeNewQueue || nextAction != this.currentAction) nextAction.onStart(this.entity);
                 this.currentAction = nextAction;
             }
         }
@@ -61,7 +57,6 @@ public abstract class PhaseBase {
     public void onDamage() {
         if(this.entity.isNotDying() && !this.entity.isDead) {
             this.currentAction = makeDamageAction(this.currentAction.getNextAction());
-            this.currentAction.onStart(this.entity);
             float dmgPercent = this.entity.getHealth()/this.entity.getMaxHealth();
             if(dmgPercent<=this.minHealth) {
                 this.entity.setHealth(this.entity.getMaxHealth()*this.minHealth);
@@ -71,15 +66,16 @@ public abstract class PhaseBase {
     }
 
     private PhaseAction makeDamageAction(@Nullable PhaseAction nextAction) {
-        return new PhaseAction(PhaseAction.Type.DAMAGE,15)
-                .setNextAction(new PhaseAction(PhaseAction.Type.TELEPORT,100)
-                        .setNextAction(new PhaseAction(PhaseAction.Type.WAIT,50)
+        return PhaseAction.Type.DAMAGE.create(15)
+                .setNextAction(PhaseAction.Type.TELEPORT.create(100)
+                        .setNextAction(PhaseAction.Type.WAIT.create(50)
                                 .setNextAction(nextAction)));
     }
 
     public NBTTagCompound writeToNBT() {
         NBTTagCompound tag = new NBTTagCompound();
         tag.setFloat("minHealth",this.minHealth);
+        if(Objects.nonNull(this.currentAction)) tag.setTag("actionQueue",this.currentAction.writeToNBT());
         return tag;
     }
 }

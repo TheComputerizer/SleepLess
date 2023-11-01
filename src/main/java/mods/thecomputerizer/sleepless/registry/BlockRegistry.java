@@ -1,9 +1,7 @@
 package mods.thecomputerizer.sleepless.registry;
 
 import mods.thecomputerizer.sleepless.core.Constants;
-import mods.thecomputerizer.sleepless.registry.blocks.TestBlock;
 import net.minecraft.block.Block;
-import net.minecraft.creativetab.CreativeTabs;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,8 +12,6 @@ import java.util.function.Supplier;
 public final class BlockRegistry {
 
     private static final List<Block> ALL_BLOCKS = new ArrayList<>();
-    public static final Block TEST_BLOCK = makeBlock("test_block", TestBlock::new,
-            block -> block.setCreativeTab(CreativeTabs.MISC));
 
     private static Block makeBlock(final String name, final Supplier<Block> constructor, final Consumer<Block> config) {
         final Block block = constructor.get();

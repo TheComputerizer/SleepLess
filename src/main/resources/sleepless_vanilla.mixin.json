@@ -19,7 +19,9 @@
     "InvokerRender",
     "MixinEntityPlayerSP",
     "MixinEntityRenderer",
+    "MixinItemRenderer",
     "MixinMinecraft",
+    "MixinRenderItem",
     "MixinShaderGroup",
     "MixinSoundSystemStarterThread",
     "MixinWorldClient"

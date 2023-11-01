@@ -17,10 +17,10 @@ public class PhaseOne extends PhaseBase {
 
     @Override
     protected PhaseAction makeActionQueue() {
-        return new PhaseAction(PhaseAction.Type.SPAWN,200)
-                .setNextAction(new PhaseAction(PhaseAction.Type.WAIT,100)
-                        .setNextAction(new PhaseAction(PhaseAction.Type.TELEPORT,100)
-                                .setNextAction(new PhaseAction(PhaseAction.Type.WAIT,50))));
+        return PhaseAction.Type.SPAWN.create(200)
+                .setNextAction(PhaseAction.Type.WAIT.create(100)
+                        .setNextAction(PhaseAction.Type.TELEPORT.create(100)
+                                .setNextAction(PhaseAction.Type.WAIT.create(50))));
     }
 
     @Override
@@ -31,5 +31,12 @@ public class PhaseOne extends PhaseBase {
         PhaseBase nextPhase = new PhaseTwo(this.entity,0.25f);
         nextPhase.inheretActionQueue(inheretedQueue);
         this.entity.setPhase(nextPhase);
+    }
+
+    @Override
+    public NBTTagCompound writeToNBT() {
+        NBTTagCompound tag = super.writeToNBT();
+        tag.setInteger("phaseNumber",1);
+        return tag;
     }
 }

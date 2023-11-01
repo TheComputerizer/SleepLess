@@ -5,11 +5,11 @@ import mods.thecomputerizer.sleepless.client.render.geometry.ShapeHolder;
 import mods.thecomputerizer.sleepless.client.render.geometry.Shapes;
 import mods.thecomputerizer.sleepless.config.SleepLessConfig;
 import mods.thecomputerizer.sleepless.registry.DataSerializerRegistry;
+import mods.thecomputerizer.sleepless.registry.ItemRegistry;
 import mods.thecomputerizer.sleepless.registry.SoundRegistry;
 import mods.thecomputerizer.sleepless.registry.entities.ai.EntityWatchClosestWithSleepDebt;
 import mods.thecomputerizer.sleepless.registry.entities.ai.PhantomNearestAttackableTarget;
-import mods.thecomputerizer.sleepless.registry.entities.nightterror.phase.PhaseBase;
-import mods.thecomputerizer.sleepless.registry.entities.nightterror.phase.PhaseSpawn;
+import mods.thecomputerizer.sleepless.registry.entities.nightterror.phase.*;
 import mods.thecomputerizer.theimpossiblelibrary.util.NetworkUtil;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityCreature;
@@ -61,7 +61,7 @@ public class NightTerrorEntity extends EntityCreature {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(64d);
+        this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(128d);
         this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(50d);
         this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.5d);
     }
@@ -105,8 +105,16 @@ public class NightTerrorEntity extends EntityCreature {
     @Override
     public void playStepSound(BlockPos pos, Block block) {}
 
+    public float getHealthPercent() {
+        return this.getHealth()/this.getMaxHealth();
+    }
+
     public long getTicksAlive() {
         return this.ticksAlive;
+    }
+
+    public void setTeleportTarget(Vec3d vec, boolean isOffset) {
+        setTeleportTarget(vec.x,vec.y,vec.z,isOffset);
     }
 
     public void setTeleportTarget(double x, double y, double z, boolean isOffset) {
@@ -169,6 +177,22 @@ public class NightTerrorEntity extends EntityCreature {
         this.ticksAlive = tag.getLong("nightTerrorTicksAlive");
         this.dataManager.get(ANIMATION_SYNC).readFromNBT(tag.getCompoundTag("nightTerrorAnimationData"));
         this.dataManager.setDirty(ANIMATION_SYNC);
+        NBTTagCompound phaseTag = tag.getCompoundTag("nightTerrorPhaseInfo");
+        switch(phaseTag.getInteger("phaseNumber")) {
+            case 1: {
+                this.currentPhase = new PhaseOne(this,phaseTag);
+                return;
+            }
+            case 2: {
+                this.currentPhase = new PhaseTwo(this,phaseTag);
+                return;
+            }
+            case 3: {
+                this.currentPhase = new PhaseThree(this,phaseTag);
+                return;
+            }
+            default: this.currentPhase = new PhaseSpawn(this,phaseTag);
+        }
     }
 
     @Override
@@ -231,7 +255,10 @@ public class NightTerrorEntity extends EntityCreature {
         private void tickAnimations(NightTerrorEntity entity) {
             this.currentAnimationTime++;
             if(this.currentAnimationTime>this.currentAnimation.time) {
-                if(this.currentAnimation==AnimationType.DEATH) entity.setDead();
+                if(this.currentAnimation==AnimationType.DEATH) {
+                    entity.dropItem(ItemRegistry.TESSERACT,1);
+                    entity.setDead();
+                }
                 else setAnimation(this.currentAnimation.nextTypeName,0L);
             }
         }

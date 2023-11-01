@@ -38,6 +38,24 @@ public class Convex3D {
             this.triangles[i] = new TriangleMapper(relativeCoords[i],relativeCoords);
     }
 
+    public Convex3D(Convex3D copy) {
+        this.radius = copy.radius;
+        this.triangles = copy.triangles;
+        setColor(copy.color);
+        setScale(copy.scale);
+        setTranslationOffset(copy.translationOffset);
+        setRotationSpeed(copy.rotationSpeed);
+        this.currentRotation[0] = copy.currentRotation[0];
+        this.currentRotation[1] = copy.currentRotation[1];
+        this.currentRotation[2] = copy.currentRotation[2];
+        this.showOutlines = copy.showOutlines;
+        this.enableCull = copy.enableCull;
+        this.pushMatrix = copy.pushMatrix;
+        this.previousRenderPos = copy.previousRenderPos;
+        this.orbitVec = copy.orbitVec;
+        this.orbit = copy.orbit;
+    }
+
     public double getRadius() {
         return this.radius;
     }

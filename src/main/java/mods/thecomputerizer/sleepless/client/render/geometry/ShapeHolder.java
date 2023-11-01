@@ -31,10 +31,10 @@ public class ShapeHolder {
         return holder;
     }
 
-    private final Convex3D shape;
+    protected final Convex3D shape;
     private final List<ShapeHolder> childHolders;
     private boolean isMoving;
-    private Vec3d relativePosVec;
+    protected Vec3d relativePosVec;
     private Vec3d dirVec;
 
     public ShapeHolder(Convex3D shape) {
