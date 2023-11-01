@@ -256,7 +256,7 @@ public class NightTerrorEntity extends EntityCreature {
             this.currentAnimationTime++;
             if(this.currentAnimationTime>this.currentAnimation.time) {
                 if(this.currentAnimation==AnimationType.DEATH) {
-                    entity.dropItem(ItemRegistry.TESSERACT,1);
+                    if(!entity.world.isRemote) entity.dropItem(ItemRegistry.TESSERACT,1);
                     entity.setDead();
                 }
                 else setAnimation(this.currentAnimation.nextTypeName,0L);
