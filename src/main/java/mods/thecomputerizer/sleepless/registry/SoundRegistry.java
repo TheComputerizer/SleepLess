@@ -1,6 +1,6 @@
 package mods.thecomputerizer.sleepless.registry;
 
-import mods.thecomputerizer.sleepless.core.Constants;
+import mods.thecomputerizer.sleepless.core.SleepLessRef;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 
@@ -20,7 +20,7 @@ public final class SoundRegistry {
     public static final SoundEvent EERIE_MUSIC = makeSoundEvent("music.eerie");
 
     private static SoundEvent makeSoundEvent(final String name) {
-        ResourceLocation id = Constants.res(name);
+        ResourceLocation id = SleepLessRef.res(name);
         SoundEvent sound = new SoundEvent(id).setRegistryName(name);
         ALL_SOUNDS.add(sound);
         return sound;

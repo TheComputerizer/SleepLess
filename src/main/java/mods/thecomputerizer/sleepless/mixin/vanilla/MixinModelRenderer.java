@@ -17,19 +17,15 @@ public class MixinModelRenderer implements ModelRendererAccess {
     @Unique private ModelRendererCapture sleepless$capture;
     @Unique private boolean sleepless$shouldSkipCapture = false;
 
-
-    @Override
-    public void sleepless$setCapture(ModelRendererCapture capture) {
+    @Override public void sleepless$setCapture(ModelRendererCapture capture) {
         this.sleepless$capture = capture;
     }
 
-    @Override
-    public ModelRendererCapture sleepless$getCapture() {
+    @Override public ModelRendererCapture sleepless$getCapture() {
         return this.sleepless$capture;
     }
 
-    @Override
-    public void sleepless$setSkipCapture(boolean shouldSkip) {
+    @Override public void sleepless$setSkipCapture(boolean shouldSkip) {
         this.sleepless$shouldSkipCapture = shouldSkip;
     }
 
@@ -37,7 +33,7 @@ public class MixinModelRenderer implements ModelRendererAccess {
         return !this.sleepless$shouldSkipCapture && Objects.nonNull(this.sleepless$capture);
     }
 
-    @Inject(at = @At("HEAD"), method = "render", cancellable = true)
+    @Inject(at=@At("HEAD"),method="render",cancellable=true)
     private void sleepless$renderHead(float scale, CallbackInfo ci) {
         if(sleepless$shouldCapture()) {
             this.sleepless$capture.render(scale);
@@ -45,7 +41,7 @@ public class MixinModelRenderer implements ModelRendererAccess {
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "renderWithRotation", cancellable = true)
+    @Inject(at=@At("HEAD"),method="renderWithRotation",cancellable=true)
     private void sleepless$renderWithRotationHead(float scale, CallbackInfo ci) {
         if(sleepless$shouldCapture()) {
             this.sleepless$capture.renderWithRotation(scale);
@@ -53,7 +49,7 @@ public class MixinModelRenderer implements ModelRendererAccess {
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "postRender", cancellable = true)
+    @Inject(at=@At("HEAD"),method="postRender",cancellable=true)
     private void sleepless$postRenderHead(float scale, CallbackInfo ci) {
         if(sleepless$shouldCapture()) {
             this.sleepless$capture.postRender(scale);

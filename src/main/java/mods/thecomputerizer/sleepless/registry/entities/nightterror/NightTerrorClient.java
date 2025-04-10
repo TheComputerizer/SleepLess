@@ -1,12 +1,9 @@
 package mods.thecomputerizer.sleepless.registry.entities.nightterror;
 
-import mods.thecomputerizer.sleepless.client.render.ClientEffects;
 import mods.thecomputerizer.sleepless.client.render.geometry.Column;
 import mods.thecomputerizer.sleepless.client.render.geometry.StaticGeometryRender;
-import mods.thecomputerizer.sleepless.util.AddedEnums;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.MusicTicker;
-import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import paulscode.sound.SoundSystem;
@@ -15,9 +12,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static mods.thecomputerizer.sleepless.client.render.ClientEffects.COLOR_CORRECTION;
+import static mods.thecomputerizer.sleepless.client.render.ClientEffects.LIGHT_DIMMING;
+import static mods.thecomputerizer.sleepless.client.render.ClientEffects.SCREEN_SHAKE;
 import static mods.thecomputerizer.sleepless.client.render.geometry.StaticGeometryRender.STATIC_RENDERS;
+import static mods.thecomputerizer.sleepless.util.AddedEnums.NIGHT_TERROR_BEGINNING;
+import static mods.thecomputerizer.sleepless.util.AddedEnums.NIGHT_TERROR_EERIE;
+import static net.minecraft.util.SoundCategory.MASTER;
 
 public class NightTerrorClient {
+    
     private static final Vec3d[] BELL_COLUMNS = new Vec3d[]{new Vec3d(100d,-150d,-100d).scale(2.2d/3d),
             new Vec3d(-100d,-150d,-100d).scale(2.2d/3d),new Vec3d(100d,-150d,100d).scale(2.2d/3d),
             new Vec3d(-100d,-150d,100d).scale(2.2d/3d),new Vec3d(33d,-100d,-100d),
@@ -45,17 +49,18 @@ public class NightTerrorClient {
             }
         }
         Minecraft mc = Minecraft.getMinecraft();
-        ((SoundSystem)mc.getSoundHandler().sndManager.sndSystem).setMasterVolume(mc.gameSettings.getSoundLevel(SoundCategory.MASTER));
+        ((SoundSystem)mc.getSoundHandler().sndManager.sndSystem).setMasterVolume(mc.gameSettings.getSoundLevel(MASTER));
     }
 
-    public static void setClientEffect(boolean silenceMusic, float fog, float color, float ending,int columnRender, boolean isCatchUp) {
+    public static void setClientEffect(boolean silenceMusic, float fog, float color, float ending,int columnRender,
+            boolean isCatchUp) {
         silenceMusicTicker = silenceMusic;
         fogOverride = fog;
         colorOverride = color;
         endingOverride = ending;
-        if(ending>0) ClientEffects.SCREEN_SHAKE = ending>0.98f ? 0f : ending*5f;
+        if(ending>0) SCREEN_SHAKE = ending>0.98f ? 0f : ending*5f;
         Minecraft mc = Minecraft.getMinecraft();
-        ((SoundSystem)mc.getSoundHandler().sndManager.sndSystem).setMasterVolume(mc.gameSettings.getSoundLevel(SoundCategory.MASTER));
+        ((SoundSystem)mc.getSoundHandler().sndManager.sndSystem).setMasterVolume(mc.gameSettings.getSoundLevel(MASTER));
         if(columnRender>=0) {
             if(isCatchUp) {
                 for(int i=0; i<=columnRender; i++) addColumn(i);
@@ -70,8 +75,7 @@ public class NightTerrorClient {
     }
 
     public static MusicTicker.MusicType getMusicOverride(MusicTicker.MusicType originalType) {
-        return silenceMusicTicker ? (fogOverride<=0 ? AddedEnums.NIGHT_TERROR_BEGINNING :
-                AddedEnums.NIGHT_TERROR_EERIE) : originalType;
+        return silenceMusicTicker ? (fogOverride<=0 ? NIGHT_TERROR_BEGINNING : NIGHT_TERROR_EERIE) : originalType;
     }
 
     public static boolean overrideQuietSound(boolean original) {
@@ -85,13 +89,13 @@ public class NightTerrorClient {
             hasCachedRenders = true;
             return;
         }
-        synchronized (STATIC_RENDERS) {
+        synchronized(STATIC_RENDERS) {
             if(Objects.isNull(GEOMETRY_RENDER)) {
                 GEOMETRY_RENDER = new StaticGeometryRender(Minecraft.getMinecraft().getRenderManager(),
                         mc.player.getPositionVector());
                 STATIC_RENDERS.add(GEOMETRY_RENDER);
             }
-            Column column = new Column(mc.world.rand, BELL_COLUMNS[columnRender]
+            Column column = new Column(mc.world.rand,BELL_COLUMNS[columnRender]
                     .scale(0.3f),1000d,10d,7.5d);
             column.setSpeed(1.25d);
             GEOMETRY_RENDER.addColumn(column);
@@ -129,15 +133,15 @@ public class NightTerrorClient {
     }
 
     public static float overrideGrayscale(float original) {
-        return withScreenShake(colorOverride>0f,original,Math.max(1f-(ClientEffects.COLOR_CORRECTION/4f),0.75f));
+        return withScreenShake(colorOverride>0f,original,Math.max(1f-(COLOR_CORRECTION/4f),0.75f));
     }
 
     public static float overrideBrightness(float original) {
         return withScreenShake(colorOverride>0f,original,
-                MathHelper.clamp(1f-(0.5f-(ClientEffects.LIGHT_DIMMING/2f)),0.5f,1f));
+                MathHelper.clamp(1f-(0.5f-(LIGHT_DIMMING/2f)),0.5f,1f));
     }
 
     private static float withScreenShake(boolean overrideAnyways, float orginal, float adjusted) {
-        return overrideAnyways ? adjusted : orginal+((adjusted-orginal)*MathHelper.clamp(ClientEffects.SCREEN_SHAKE,0f,1f));
+        return overrideAnyways ? adjusted : orginal+((adjusted-orginal)*MathHelper.clamp(SCREEN_SHAKE,0f,1f));
     }
 }

@@ -18,12 +18,13 @@ public class MixinPlayer {
         return (EntityPlayer)(Object)this;
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/util/FoodStats;addExhaustion(F)V"), method = "addExhaustion")
+    @Redirect(at=@At(value="INVOKE",target="Lnet/minecraft/util/FoodStats;addExhaustion(F)V"),
+            method="addExhaustion")
     private void sleepless$redirectAddExhaustion(FoodStats food, float exhaustion) {
         if(SleepLessConfigHelper.shouldBeHungry()) {
             EntityPlayer player = sleepless$cast();
             if(player instanceof EntityPlayerMP) {
-                float adjusted = CapabilityHandler.getHungerAmplifier((EntityPlayerMP)player, exhaustion);
+                float adjusted = CapabilityHandler.getHungerAmplifier((EntityPlayerMP)player,exhaustion);
                 food.addExhaustion(adjusted);
             }
         } else food.addExhaustion(exhaustion);

@@ -1,20 +1,27 @@
 package mods.thecomputerizer.sleepless.config;
 
 import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
+import mods.thecomputerizer.sleepless.config.SleepLessConfig.ClientEffects;
+import mods.thecomputerizer.sleepless.config.SleepLessConfig.NightTerror;
+import mods.thecomputerizer.sleepless.config.SleepLessConfig.Phantom;
+import mods.thecomputerizer.sleepless.config.SleepLessConfig.StatusEffects;
 import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerrorClient;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 import java.util.*;
 
+import static mods.thecomputerizer.sleepless.config.SleepLessConfig.*;
+import static net.minecraft.init.Blocks.BARRIER;
+import static net.minecraft.init.Blocks.BEDROCK;
+import static net.minecraftforge.fml.common.registry.ForgeRegistries.BLOCKS;
+
 public class SleepLessConfigHelper {
 
-    private static Block[] PHASED_BLOCK_BLACKLIST = new Block[]{Blocks.BEDROCK,Blocks.BARRIER};
-    private static Block[] PHANTOM_PATHFIND_BLACKLIST = new Block[]{Blocks.BEDROCK,Blocks.BARRIER};
+    private static Block[] PHASED_BLOCK_BLACKLIST = new Block[]{BEDROCK,BARRIER};
+    private static Block[] PHANTOM_PATHFIND_BLACKLIST = new Block[]{BEDROCK,BARRIER};
     private static boolean NEEDS_CACHING = true;
 
     public static void onConfigReloaded() {
@@ -22,11 +29,11 @@ public class SleepLessConfigHelper {
     }
 
     private static float getMaxPaid() {
-        return -1f*SleepLessConfig.SLEEP_DEBT_TIMINGS.maxDaysPaid;
+        return -1f*SLEEP_DEBT_TIMINGS.maxDaysPaid;
     }
 
     private static float getMaxLost() {
-        return SleepLessConfig.SLEEP_DEBT_TIMINGS.maxDaysLost;
+        return SLEEP_DEBT_TIMINGS.maxDaysLost;
     }
 
     public static float getAddedDebt(long ticks) {
@@ -53,7 +60,7 @@ public class SleepLessConfigHelper {
     }
 
     public static float nightTerrorChance(EntityPlayerMP player) {
-        SleepLessConfig.NightTerror nightTerror = SleepLessConfig.NIGHT_TERROR;
+        NightTerror nightTerror = NIGHT_TERROR;
         float sleepDebt = CapabilityHandler.getSleepDebt(player);
         if(sleepDebt<nightTerror.minSleepDebt) return -1;
         float debtIncrements = (sleepDebt-nightTerror.minSleepDebt)/nightTerror.sleepDebtIncrement;
@@ -61,7 +68,7 @@ public class SleepLessConfigHelper {
     }
 
     public static float calculateFinalChance(Collection<Float> chances) {
-        switch(SleepLessConfig.NIGHT_TERROR.serverChanceFormula) {
+        switch(NIGHT_TERROR.serverChanceFormula) {
             case "HIGHEST": return Collections.max(chances)/100f;
             case "LOWEST": return Collections.min(chances)/100f;
             default: {
@@ -73,52 +80,52 @@ public class SleepLessConfigHelper {
     }
 
     public static boolean shouldBeHungry() {
-        SleepLessConfig.StatusEffects effects = SleepLessConfig.STATUS_EFFECTS;
+        StatusEffects effects = STATUS_EFFECTS;
         return !effects.disableStatusEffects && !effects.disableHunger;
     }
 
     public static boolean shouldMineSlower() {
-        SleepLessConfig.StatusEffects effects = SleepLessConfig.STATUS_EFFECTS;
+        StatusEffects effects = STATUS_EFFECTS;
         return !effects.disableStatusEffects && !effects.disableMiningFatigue;
     }
 
     public static boolean shouldWalkSlower() {
-        SleepLessConfig.StatusEffects effects = SleepLessConfig.STATUS_EFFECTS;
+        StatusEffects effects = STATUS_EFFECTS;
         return !effects.disableStatusEffects && !effects.disableSlowness;
     }
 
     public static boolean shouldBreatheHeavily() {
-        SleepLessConfig.ClientEffects client = SleepLessConfig.CLIENT_EFFECTS;
+        ClientEffects client = CLIENT_EFFECTS;
         return !client.disableClientEffects && !client.disableVisualEffects && !client.disableHeavyBreathing;
     }
 
     public static boolean shouldPlaySounds() {
-        SleepLessConfig.ClientEffects client = SleepLessConfig.CLIENT_EFFECTS;
+        ClientEffects client = CLIENT_EFFECTS;
         return NightTerrorClient.overrideQuietSound(!client.disableClientEffects && !client.disableAudioEffects && !client.disableAmbientSounds);
     }
 
     public static boolean shouldMuffleSounds() {
-        SleepLessConfig.ClientEffects client = SleepLessConfig.CLIENT_EFFECTS;
+        ClientEffects client = CLIENT_EFFECTS;
         return NightTerrorClient.overrideQuietSound(!client.disableClientEffects && !client.disableAudioEffects && !client.disableSoundMuffler);
     }
 
     public static boolean shouldIncreaseFog() {
-        SleepLessConfig.ClientEffects client = SleepLessConfig.CLIENT_EFFECTS;
+        ClientEffects client = CLIENT_EFFECTS;
         return !client.disableClientEffects && !client.disableVisualEffects && !client.disableFog;
     }
 
     public static boolean shouldLoseColor() {
-        SleepLessConfig.ClientEffects client = SleepLessConfig.CLIENT_EFFECTS;
+        ClientEffects client = CLIENT_EFFECTS;
         return !client.disableClientEffects && !client.disableVisualEffects && !client.disableGrayscale;
     }
 
     public static boolean shouldDimLight() {
-        SleepLessConfig.ClientEffects client = SleepLessConfig.CLIENT_EFFECTS;
+        ClientEffects client = CLIENT_EFFECTS;
         return !client.disableClientEffects && !client.disableVisualEffects;
     }
 
     private static void cacheBlocks() {
-        SleepLessConfig.Phantom phantom = SleepLessConfig.PHANTOM;
+        Phantom phantom = PHANTOM;
         Set<Block> cachedBlocks = new HashSet<>();
         PHASED_BLOCK_BLACKLIST = addToBlockCache(cachedBlocks,phantom.phasedBlacklist).toArray(new Block[0]);
         PHANTOM_PATHFIND_BLACKLIST = addToBlockCache(cachedBlocks,phantom.pathfindBlacklist).toArray(new Block[0]);
@@ -128,7 +135,7 @@ public class SleepLessConfigHelper {
     private static Set<Block> addToBlockCache(Set<Block> blocks, String ... blockNames) {
         for(String blockName : blockNames) {
             ResourceLocation blockRes = new ResourceLocation(blockName);
-            if(ForgeRegistries.BLOCKS.containsKey(blockRes)) blocks.add(ForgeRegistries.BLOCKS.getValue(blockRes));
+            if(BLOCKS.containsKey(blockRes)) blocks.add(BLOCKS.getValue(blockRes));
         }
         return blocks;
     }

@@ -6,7 +6,6 @@ import net.minecraft.world.World;
 
 public class PhantomPathNavigateFlying extends PathNavigateFlying {
 
-
     public PhantomPathNavigateFlying(EntityLiving entity, World world) {
         super(entity,world);
     }

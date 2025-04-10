@@ -13,8 +13,7 @@ public class PhantomPathNavigateGround extends PathNavigateGround {
         super(entity,world);
     }
 
-    @Override
-    protected @Nonnull PathFinder getPathFinder() {
+    @Override protected @Nonnull PathFinder getPathFinder() {
         this.nodeProcessor = new PhantomWalkNodeProcessor();
         return new PathFinder(this.nodeProcessor);
     }

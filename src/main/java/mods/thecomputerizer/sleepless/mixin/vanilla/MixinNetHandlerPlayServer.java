@@ -1,6 +1,5 @@
 package mods.thecomputerizer.sleepless.mixin.vanilla;
 
-import mods.thecomputerizer.sleepless.registry.PotionRegistry;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.network.NetHandlerPlayServer;
@@ -13,14 +12,16 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.util.Collections;
 import java.util.List;
 
+import static mods.thecomputerizer.sleepless.registry.PotionRegistry.PHASED;
+
 @Mixin(value = NetHandlerPlayServer.class, remap = false)
 public class MixinNetHandlerPlayServer {
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/WorldServer;getCollisionBoxes(" +
-            "Lnet/minecraft/entity/Entity;Lnet/minecraft/util/math/AxisAlignedBB;)Ljava/util/List;", ordinal = 1),
-            method = "processPlayer")
+    @Redirect(at=@At(value="INVOKE",target="Lnet/minecraft/world/WorldServer;getCollisionBoxes(" +
+            "Lnet/minecraft/entity/Entity;Lnet/minecraft/util/math/AxisAlignedBB;)Ljava/util/List;",ordinal=1),
+            method="processPlayer")
     private List<AxisAlignedBB> sleepless$specialNoClip(WorldServer world, Entity entity, AxisAlignedBB aabb) {
-        if(entity instanceof EntityLivingBase && ((EntityLivingBase)entity).isPotionActive(PotionRegistry.PHASED))
+        if(entity instanceof EntityLivingBase && ((EntityLivingBase)entity).isPotionActive(PHASED))
             return Collections.emptyList();
         return world.getCollisionBoxes(entity,aabb);
     }

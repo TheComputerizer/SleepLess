@@ -1,5 +1,6 @@
 package mods.thecomputerizer.sleepless.mixin.vanilla;
 
+import mods.thecomputerizer.sleepless.client.render.geometry.Tesseract;
 import mods.thecomputerizer.sleepless.registry.items.TesseractItem;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderItem;
@@ -14,27 +15,30 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.annotation.Nullable;
 
+import static net.minecraft.util.math.Vec3d.ZERO;
+
 @Mixin(RenderItem.class)
 public class MixinRenderItem {
 
-    @Inject(at = @At("HEAD"), method = "renderItemAndEffectIntoGUI(Lnet/minecraft/entity/EntityLivingBase;" +
-            "Lnet/minecraft/item/ItemStack;II)V", cancellable = true)
+    @Inject(at=@At("HEAD"),method="renderItemAndEffectIntoGUI(Lnet/minecraft/entity/EntityLivingBase;" +
+            "Lnet/minecraft/item/ItemStack;II)V",cancellable=true)
     private void sleepless$renderItemAndEffectIntoGUI(@Nullable EntityLivingBase entity, final ItemStack stack, int x,
-                                                      int y, CallbackInfo ci) {
+            int y, CallbackInfo ci) {
         if(stack.getItem() instanceof TesseractItem) {
             GlStateManager.pushMatrix();
             GlStateManager.scale(36f,36f,36f);
-            ((TesseractItem)stack.getItem()).getRenderer().render(new Vec3d((double)(x+8)/36d,(double)(y+8)/36d,0d));
+            Tesseract renderer = ((TesseractItem)stack.getItem()).getRenderer();
+            renderer.render(new Vec3d((double)(x+8)/36d,(double)(y+8)/36d,0d));
             GlStateManager.popMatrix();
             ci.cancel();
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "renderItem(Lnet/minecraft/item/ItemStack;" +
-            "Lnet/minecraft/client/renderer/block/model/IBakedModel;)V", cancellable = true)
+    @Inject(at=@At("HEAD"),method="renderItem(Lnet/minecraft/item/ItemStack;"+
+            "Lnet/minecraft/client/renderer/block/model/IBakedModel;)V",cancellable=true)
     private void sleepless$renderItem(ItemStack stack, IBakedModel model, CallbackInfo ci) {
         if(stack.getItem() instanceof TesseractItem) {
-            ((TesseractItem)stack.getItem()).getRenderer().render(Vec3d.ZERO);
+            ((TesseractItem)stack.getItem()).getRenderer().render(ZERO);
             ci.cancel();
         }
     }

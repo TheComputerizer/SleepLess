@@ -10,7 +10,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(WorldClient.class)
 public class MixinWorldClient {
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Ljava/lang/String;)Z", ordinal = 0), method = "tick")
+    @Redirect(at=@At(value="INVOKE",target="Lnet/minecraft/world/GameRules;getBoolean(Ljava/lang/String;)Z",
+            ordinal=0),method="tick")
     private boolean sleepless$redirectDoDaylightCycle(GameRules instance, String name) {
         return instance.getBoolean(name) && !NightTerrorClient.shouldDaylightCycle();
     }

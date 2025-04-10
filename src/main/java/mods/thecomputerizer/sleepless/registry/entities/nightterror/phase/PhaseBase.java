@@ -7,6 +7,10 @@ import net.minecraft.nbt.NBTTagCompound;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
+import static mods.thecomputerizer.sleepless.registry.entities.nightterror.phase.PhaseAction.Type.DAMAGE;
+import static mods.thecomputerizer.sleepless.registry.entities.nightterror.phase.PhaseAction.Type.TELEPORT;
+import static mods.thecomputerizer.sleepless.registry.entities.nightterror.phase.PhaseAction.Type.WAIT;
+
 public abstract class PhaseBase {
 
     protected final NightTerrorEntity entity;
@@ -66,9 +70,9 @@ public abstract class PhaseBase {
     }
 
     private PhaseAction makeDamageAction(@Nullable PhaseAction nextAction) {
-        return PhaseAction.Type.DAMAGE.create(15)
-                .setNextAction(PhaseAction.Type.TELEPORT.create(100)
-                        .setNextAction(PhaseAction.Type.WAIT.create(50)
+        return DAMAGE.create(15)
+                .setNextAction(TELEPORT.create(100)
+                        .setNextAction(WAIT.create(50)
                                 .setNextAction(nextAction)));
     }
 

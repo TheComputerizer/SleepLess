@@ -18,8 +18,7 @@ public class NightTerrorCap implements INightTerrorCap {
     private NightTerror instance;
     private int cooldown;
 
-    @Override
-    public void checkInstance(WorldServer world) {
+    @Override public void checkInstance(WorldServer world) {
         long time = world.getWorldTime()%24000L;
         if(time<13000L) CapabilityHandler.finishNightTerror(world);
         else {
@@ -37,43 +36,36 @@ public class NightTerrorCap implements INightTerrorCap {
         }
     }
 
-    @Override
-    public void setInstance(NightTerror instance) {
+    @Override public void setInstance(NightTerror instance) {
         this.instance = instance;
     }
 
-    @Override
-    public NightTerror getInstance() {
+    @Override public NightTerror getInstance() {
         return this.instance;
     }
 
-    @Override
-    public boolean shoudlDaylightCycle() {
+    @Override public boolean shoudlDaylightCycle() {
         return Objects.isNull(this.instance) || this.instance.shoudlDaylightCycle();
     }
 
-    @Override
-    public void onPlayerJoinWorld(EntityPlayerMP player) {
+    @Override public void onPlayerJoinWorld(EntityPlayerMP player) {
         if(Objects.nonNull(this.instance)) this.instance.catchUpJoiningPlayer(player);
     }
 
-    @Override
-    public void finish() {
+    @Override public void finish() {
         if(Objects.nonNull(this.instance)) {
             this.instance.finish();
             this.instance = null;
         }
     }
 
-    @Override
-    public NBTTagCompound writeToNBT() {
+    @Override public NBTTagCompound writeToNBT() {
         NBTTagCompound tag = new NBTTagCompound();
         tag.setInteger("cooldownTime",this.cooldown);
         return Objects.nonNull(this.instance) ? this.instance.writeToNBT(tag) : tag;
     }
 
-    @Override
-    public void readFromNBT(NBTTagCompound tag) {
+    @Override public void readFromNBT(NBTTagCompound tag) {
         this.cooldown = tag.getInteger("cooldownTime");
         if(tag.hasKey("instance")) this.instance = new NightTerror(tag.getCompoundTag("instance"));
     }

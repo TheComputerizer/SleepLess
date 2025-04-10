@@ -3,10 +3,8 @@ package mods.thecomputerizer.sleepless.registry.entities.pathfinding;
 import mcp.MethodsReturnNonnullByDefault;
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
 import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.init.Blocks;
 import net.minecraft.pathfinding.NodeProcessor;
 import net.minecraft.pathfinding.PathNodeType;
 import net.minecraft.pathfinding.PathPoint;
@@ -21,8 +19,15 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
 
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
+import static net.minecraft.block.material.Material.AIR;
+import static net.minecraft.init.Blocks.FLOWING_LAVA;
+import static net.minecraft.init.Blocks.FLOWING_WATER;
+import static net.minecraft.init.Blocks.LAVA;
+import static net.minecraft.init.Blocks.WATER;
+import static net.minecraft.pathfinding.PathNodeType.BLOCKED;
+import static net.minecraft.pathfinding.PathNodeType.OPEN;
+
+@MethodsReturnNonnullByDefault @ParametersAreNonnullByDefault
 public abstract class PhantomNodeProcessor extends NodeProcessor {
 
     protected Block[] unpassableBlocks;
@@ -60,25 +65,25 @@ public abstract class PhantomNodeProcessor extends NodeProcessor {
 
     protected boolean isAir(BlockPos pos) {
         if(Objects.isNull(this.blockaccess)) return true;
-        return this.blockaccess.getBlockState(pos).getMaterial()==Material.AIR;
+        return this.blockaccess.getBlockState(pos).getMaterial()==AIR;
     }
 
     protected boolean isAirOrPassable(BlockPos pos) {
         if(Objects.isNull(this.blockaccess)) return true;
         IBlockState state = this.blockaccess.getBlockState(pos);
-        return state.getMaterial()==Material.AIR || state.getBlock().isPassable(this.blockaccess,pos);
+        return state.getMaterial()==AIR || state.getBlock().isPassable(this.blockaccess,pos);
     }
 
     protected boolean isWater(BlockPos pos) {
         if(Objects.isNull(this.blockaccess)) return false;
         Block block = this.blockaccess.getBlockState(pos).getBlock();
-        return block==Blocks.WATER || block==Blocks.FLOWING_WATER;
+        return block==WATER || block==FLOWING_WATER;
     }
 
     protected boolean isLava(BlockPos pos) {
         if(Objects.isNull(this.blockaccess)) return false;
         Block block = this.blockaccess.getBlockState(pos).getBlock();
-        return block==Blocks.LAVA || block==Blocks.FLOWING_LAVA;
+        return block==LAVA || block==FLOWING_LAVA;
     }
 
     protected boolean intersectsUnpassable(AxisAlignedBB aabb) {
@@ -103,13 +108,12 @@ public abstract class PhantomNodeProcessor extends NodeProcessor {
         return true;
     }
 
-    @Override
-    public PathNodeType getPathNodeType(IBlockAccess cache, int x, int y, int z) {
+    @Override public PathNodeType getPathNodeType(IBlockAccess cache, int x, int y, int z) {
         BlockPos pos = new BlockPos(x,y,z);
         if(isWater(pos)) return PathNodeType.WATER;
         if(isLava(pos)) return PathNodeType.LAVA;
-        if(isAirOrPassable(pos)) return PathNodeType.OPEN;
-        return !isPassable(pos) || y<this.entity.getPosition().getY() ? PathNodeType.BLOCKED : PathNodeType.OPEN;
+        if(isAirOrPassable(pos)) return OPEN;
+        return !isPassable(pos) || y<this.entity.getPosition().getY() ? BLOCKED : OPEN;
     }
 
     protected int tryAddingPoint(PathPoint[] points, @Nullable PathPoint point, int index, PathPoint target, float dist) {

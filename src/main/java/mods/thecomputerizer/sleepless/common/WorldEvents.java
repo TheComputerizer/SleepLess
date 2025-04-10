@@ -3,14 +3,13 @@ package mods.thecomputerizer.sleepless.common;
 import mods.thecomputerizer.sleepless.SleepLess;
 import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
-import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.network.PacketUpdateNightTerrorClient;
+import mods.thecomputerizer.sleepless.network.SleepLessNetwork;
 import mods.thecomputerizer.sleepless.registry.PotionRegistry;
 import mods.thecomputerizer.sleepless.registry.entities.phantom.PhantomEntity;
 import mods.thecomputerizer.sleepless.registry.entities.phantom.PhantomSpawnEntry;
 import mods.thecomputerizer.sleepless.util.AddedEnums;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.WeightedRandom;
@@ -19,21 +18,27 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.Biome.SpawnListEntry;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
-import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.event.world.WorldEvent.PotentialSpawns;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.WorldTickEvent;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID)
+import static mods.thecomputerizer.sleepless.core.SleepLessRef.MODID;
+import static net.minecraft.entity.EnumCreatureType.MONSTER;
+import static net.minecraftforge.fml.common.gameevent.TickEvent.Phase.END;
+
+@EventBusSubscriber(modid=MODID)
 public class WorldEvents {
 
     private static final double SQUARED_SPAWN_RANGE = Math.pow(144d,2d);
@@ -47,7 +52,7 @@ public class WorldEvents {
     }
 
     @SubscribeEvent
-    public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
+    public static void onPlayerLogin(PlayerLoggedInEvent event) {
         if(event.player instanceof EntityPlayerMP) {
             EntityPlayerMP player = (EntityPlayerMP)event.player;
             CapabilityHandler.sync(player);
@@ -55,14 +60,14 @@ public class WorldEvents {
     }
 
     @SubscribeEvent
-    public static void onBreakSpeed(net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed event) {
+    public static void onBreakSpeed(BreakSpeed event) {
         if(SleepLessConfigHelper.shouldMineSlower())
             event.setNewSpeed(event.getNewSpeed()*CapabilityHandler.getMiningSpeedFactor(event.getEntityPlayer()));
     }
 
     @SubscribeEvent
-    public static void onWorldTick(TickEvent.WorldTickEvent event) {
-        if(event.phase==TickEvent.Phase.END && event.world.provider.getDimension()==0 && event.world instanceof WorldServer) {
+    public static void onWorldTick(WorldTickEvent event) {
+        if(event.phase==END && event.world.provider.getDimension()==0 && event.world instanceof WorldServer) {
             WorldServer world = (WorldServer)event.world;
             tickTimer++;
             if(tickTimer>20) {
@@ -79,8 +84,8 @@ public class WorldEvents {
             EntityPlayerMP player = (EntityPlayerMP)event.getEntity();
             WorldServer world = player.getServerWorld();
             if(CapabilityHandler.worldHasNightTerror(world)) CapabilityHandler.syncNightTerror(world,player);
-            else new PacketUpdateNightTerrorClient(false,0f,0f,0f,-1,false)
-                    .addPlayers(player).send();
+            else SleepLessNetwork.sendToClient(new PacketUpdateNightTerrorClient(false,0f,
+                    0f,0f,-1,false),player);
         }
     }
 
@@ -107,8 +112,8 @@ public class WorldEvents {
     }
 
     @SubscribeEvent
-    public static void onGetPotentialSpawns(WorldEvent.PotentialSpawns event) {
-        if(event.getType()==EnumCreatureType.MONSTER) {
+    public static void onGetPotentialSpawns(PotentialSpawns event) {
+        if(event.getType()==MONSTER) {
             World world = event.getWorld();
             if(CapabilityHandler.worldHasNightTerror(world)) event.getList().clear();
             else {
@@ -136,7 +141,7 @@ public class WorldEvents {
         return totalChance/numPlayers;
     }
 
-    private static Biome.SpawnListEntry makePhantomSpawnEntry(int previousTotalWeight, float chance, int maxGroup) {
+    private static SpawnListEntry makePhantomSpawnEntry(int previousTotalWeight, float chance, int maxGroup) {
         int newWeight = (int)((float)previousTotalWeight/(1f-chance))-previousTotalWeight;
         return new PhantomSpawnEntry(PhantomEntity.class,newWeight,1,maxGroup,
                 MAX_PHANTOM_DESPAWN_RANGE-(MAX_PHANTOM_DESPAWN_RANGE*chance));

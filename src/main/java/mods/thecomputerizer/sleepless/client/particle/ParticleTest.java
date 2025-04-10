@@ -1,31 +1,32 @@
 package mods.thecomputerizer.sleepless.client.particle;
 
 import mods.thecomputerizer.sleepless.registry.ParticleRegistry;
-import mods.thecomputerizer.theimpossiblelibrary.util.client.FontUtil;
+import mods.thecomputerizer.sleepless.util.FontUtil;
+import mods.thecomputerizer.theimpossiblelibrary.api.shapes.vectors.Vector4;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.IParticleFactory;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.vecmath.Point4f;
 
-@SideOnly(Side.CLIENT)
+import static net.minecraftforge.fml.relauncher.Side.CLIENT;
+
+@SideOnly(CLIENT)
 public class ParticleTest extends Particle {
 
     private static final String  POTENTIAL_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private final double rangeFactor;
     private char curChar;
-    private Point4f charUV;
+    private Vector4 charUV;
 
-    public ParticleTest(World world, double x, double y, double z, double velocityX, double velocityY, double velocityZ,
-                         float maxAge, double rangeFactor, float scale) {
-        super(world, x, y, z, velocityX, velocityY, velocityZ);
+    public ParticleTest(World world, double x, double y, double z, double velocityX, double velocityY,
+            double velocityZ, float maxAge, double rangeFactor, float scale) {
+        super(world,x,y,z,velocityX,velocityY,velocityZ);
         this.rangeFactor = rangeFactor;
         randomizeInitialPos();
         this.particleTexture = ParticleRegistry.getFontAtlas();
@@ -52,8 +53,7 @@ public class ParticleTest extends Particle {
         this.prevPosZ = z;
     }
 
-    @Override
-    public void onUpdate() {
+    @Override public void onUpdate() {
         this.prevPosX = posX;
         this.prevPosY = posY;
         this.prevPosZ = posZ;
@@ -70,14 +70,13 @@ public class ParticleTest extends Particle {
         this.charUV = FontUtil.getCharUV(this.curChar,Minecraft.getMinecraft().fontRenderer);
     }
 
-    @Override
-    public void renderParticle(@Nonnull BufferBuilder buffer, @Nonnull Entity entityIn, float partialTicks,
-                               float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ) {
+    @Override public void renderParticle(@Nonnull BufferBuilder buffer, @Nonnull Entity entityIn, float partialTicks,
+            float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ) {
         FontUtil.bufferCharTex(this.curChar,Minecraft.getMinecraft().fontRenderer);
-        double minU = particleTexture.getMinU() + this.charUV.x;
-        double maxU = particleTexture.getMinU() + this.charUV.y;
-        double minV = particleTexture.getMinV() + this.charUV.z;
-        double maxV = particleTexture.getMinV() + this.charUV.w;
+        double minU = particleTexture.getMinU()+this.charUV.x().doubleValue();
+        double maxU = particleTexture.getMinU()+this.charUV.y().doubleValue();
+        double minV = particleTexture.getMinV()+this.charUV.z().doubleValue();
+        double maxV = particleTexture.getMinV()+this.charUV.w().doubleValue();
         double x = this.prevPosX+(this.posX-this.prevPosX)*partialTicks-interpPosX;
         double y = this.prevPosY+(this.posY-this.prevPosY)*partialTicks-interpPosY;
         double z = this.prevPosZ+(this.posZ-this.prevPosZ)*partialTicks-interpPosZ;
@@ -87,30 +86,34 @@ public class ParticleTest extends Particle {
         double scaledLRDirX = rotationX*this.particleScale;
         double scaledLRDirZ = rotationYZ*this.particleScale;
         int combinedBrightness = getBrightnessForRender(partialTicks);
-        int skyLight = combinedBrightness >> 16 & 65535;
-        int blockLight = combinedBrightness & 65535;
-        buffer.pos(x - scaledLRDirX - scaledUDDirX, y - scaledUDDirY, z - scaledLRDirZ - scaledUDDirZ)
+        int skyLight = combinedBrightness>>16&65535;
+        int blockLight = combinedBrightness&65535;
+        buffer.pos(x-scaledLRDirX-scaledUDDirX,y-scaledUDDirY,
+                   z-scaledLRDirZ-scaledUDDirZ)
                 .tex(maxU,maxV)
-                .color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha)
-                .lightmap(skyLight, blockLight).endVertex();
-        buffer.pos(x - scaledLRDirX + scaledUDDirX,y + scaledUDDirY,z - scaledLRDirZ + scaledUDDirZ)
-                .tex(maxU, minV)
-                .color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha)
-                .lightmap(skyLight, blockLight).endVertex();
-        buffer.pos(x + scaledLRDirX + scaledUDDirX,y + scaledUDDirY,z + scaledLRDirZ + scaledUDDirZ)
-                .tex(minU, minV)
-                .color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha)
-                .lightmap(skyLight, blockLight).endVertex();
-        buffer.pos(x + scaledLRDirX - scaledUDDirX,y - scaledUDDirY,z + scaledLRDirZ - scaledUDDirZ)
-                .tex(minU, maxV)
-                .color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha)
-                .lightmap(skyLight, blockLight).endVertex();
+                .color(this.particleRed,this.particleGreen,this.particleBlue,this.particleAlpha)
+                .lightmap(skyLight,blockLight).endVertex();
+        buffer.pos(x-scaledLRDirX+scaledUDDirX,y+scaledUDDirY,
+                   z-scaledLRDirZ+scaledUDDirZ)
+                .tex(maxU,minV)
+                .color(this.particleRed,this.particleGreen,this.particleBlue,this.particleAlpha)
+                .lightmap(skyLight,blockLight).endVertex();
+        buffer.pos(x+scaledLRDirX+scaledUDDirX,y+scaledUDDirY,
+                   z+scaledLRDirZ+scaledUDDirZ)
+                .tex(minU,minV)
+                .color(this.particleRed,this.particleGreen,this.particleBlue,this.particleAlpha)
+                .lightmap(skyLight,blockLight).endVertex();
+        buffer.pos(x+scaledLRDirX-scaledUDDirX,y-scaledUDDirY,
+                   z+scaledLRDirZ-scaledUDDirZ)
+                .tex(minU,maxV)
+                .color(this.particleRed,this.particleGreen,this.particleBlue,this.particleAlpha)
+                .lightmap(skyLight,blockLight).endVertex();
     }
 
     public static class Factory implements IParticleFactory {
-        @Nullable
-        @Override
-        public Particle createParticle(int id, @Nonnull World world, double posX, double posY, double posZ, double velocityX, double velocityY, double velocityZ, @Nonnull int... args) {
+        
+        @Override public @Nullable Particle createParticle(int id, @Nonnull World world, double posX, double posY,
+                double posZ, double velocityX, double velocityY, double velocityZ, @Nonnull int... args) {
             return new ParticleTest(Minecraft.getMinecraft().world, posX, posY, posZ, velocityX, velocityY, velocityZ,
                     args.length>=1 ? (float)args[0] : 100f, args.length>=2 ? (double)args[1] : 32d,
                     args.length>=3 ? ((float)args[2])/100f : 0.5f);

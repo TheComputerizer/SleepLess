@@ -1,12 +1,13 @@
 package mods.thecomputerizer.sleepless.registry;
 
-import mods.thecomputerizer.sleepless.core.Constants;
 import net.minecraft.block.Block;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import static mods.thecomputerizer.sleepless.core.SleepLessRef.MODID;
 
 @SuppressWarnings("SameParameterValue")
 public final class BlockRegistry {
@@ -16,8 +17,8 @@ public final class BlockRegistry {
     private static Block makeBlock(final String name, final Supplier<Block> constructor, final Consumer<Block> config) {
         final Block block = constructor.get();
         config.accept(block);
-        block.setRegistryName(Constants.MODID, name);
-        block.setTranslationKey(Constants.MODID+"."+name);
+        block.setRegistryName(MODID,name);
+        block.setTranslationKey(MODID+"."+name);
         ALL_BLOCKS.add(block);
         return block;
     }

@@ -1,11 +1,13 @@
 package mods.thecomputerizer.sleepless.registry;
 
-import mods.thecomputerizer.sleepless.core.Constants;
+import mods.thecomputerizer.sleepless.core.SleepLessRef;
 import mods.thecomputerizer.sleepless.registry.potions.SleepLessPotion;
 import net.minecraft.potion.Potion;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static mods.thecomputerizer.sleepless.core.SleepLessRef.MODID;
 
 public class PotionRegistry {
 
@@ -15,8 +17,8 @@ public class PotionRegistry {
     public static final Potion PHASED = makePotion("phased",new SleepLessPotion(false,0));
 
     private static Potion makePotion(final String name, final Potion potion) {
-        potion.setPotionName("potion." + Constants.MODID + "." + name);
-        potion.setRegistryName(Constants.res(name));
+        potion.setPotionName("potion."+MODID+"."+name);
+        potion.setRegistryName(SleepLessRef.res(name));
         ALL_POTIONS.add(potion);
         return potion;
     }

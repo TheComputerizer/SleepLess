@@ -2,6 +2,7 @@ package mods.thecomputerizer.sleepless.capability.sleepdebt;
 
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
 import mods.thecomputerizer.sleepless.network.PacketUpdateClientEffects;
+import mods.thecomputerizer.sleepless.network.SleepLessNetwork;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.MathHelper;
@@ -22,14 +23,12 @@ public class SleepDebt implements ISleepDebt {
     private float phantomVisibility = 0f;
 
 
-    @Override
-    public void of(EntityPlayerMP player, SleepDebt cap) {
+    @Override public void of(EntityPlayerMP player, SleepDebt cap) {
         this.debt = cap.debt;
         sync(player);
     }
 
-    @Override
-    public boolean onTicksSlept(long ticks) {
+    @Override public boolean onTicksSlept(long ticks) {
         boolean shouldAdjust = ticks<5000 || this.debt>0;
         if(shouldAdjust) {
             float addedDebt = SleepLessConfigHelper.getAddedDebt(ticks);
@@ -38,29 +37,24 @@ public class SleepDebt implements ISleepDebt {
         return shouldAdjust;
     }
 
-    @Override
-    public float getDebt() {
+    @Override public float getDebt() {
         return this.debt;
     }
 
-    @Override
-    public void setDebt(EntityPlayerMP player, float debt) {
+    @Override public void setDebt(EntityPlayerMP player, float debt) {
         this.debt = debt;
         sync(player);
     }
 
-    @Override
-    public float getHungerAmplifier() {
+    @Override public float getHungerAmplifier() {
         return this.hungerAmplifier;
     }
 
-    @Override
-    public float getMiningSpeedFactor() {
+    @Override public float getMiningSpeedFactor() {
         return this.miningSpeed;
     }
 
-    @Override
-    public float getPhantomFactor() {
+    @Override public float getPhantomFactor() {
         return this.phantomVisibility;
     }
 
@@ -78,23 +72,20 @@ public class SleepDebt implements ISleepDebt {
         this.phantomVisibility = this.debt>=5f ? this.debt>= 10f ? 1f : (this.debt-5f)/5f : 0f;
     }
 
-    @Override
-    public void sync(EntityPlayerMP player) {
+    @Override public void sync(EntityPlayerMP player) {
         updateEffects();
-        new PacketUpdateClientEffects(this.grayScale,this.ambientSoundChance,this.quietSounds,this.lightDimming,
-                this.fogDensity,this.speedFactor,this.breathingFactor,this.miningSpeed,this.phantomVisibility)
-                .addPlayers(player).send();
+        SleepLessNetwork.sendToClient(new PacketUpdateClientEffects(this.grayScale,this.ambientSoundChance,
+                this.quietSounds,this.lightDimming,this.fogDensity,this.speedFactor,this.breathingFactor,
+                this.miningSpeed,this.phantomVisibility),player);
     }
 
-    @Override
-    public NBTTagCompound writeToNBT() {
+    @Override public NBTTagCompound writeToNBT() {
         NBTTagCompound tag  = new NBTTagCompound();
         tag.setFloat("debt",this.debt);
         return tag;
     }
 
-    @Override
-    public void readFromNBT(NBTTagCompound tag) {
+    @Override public void readFromNBT(NBTTagCompound tag) {
         this.debt = tag.getFloat("debt");
         updateEffects();
     }

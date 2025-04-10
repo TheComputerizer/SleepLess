@@ -6,13 +6,11 @@ import mods.thecomputerizer.sleepless.capability.sleepdebt.ISleepDebt;
 import mods.thecomputerizer.sleepless.capability.sleepdebt.SleepDebt;
 import mods.thecomputerizer.sleepless.capability.sleepdebt.SleepDebtProvider;
 import mods.thecomputerizer.sleepless.client.SleepLessClient;
-import mods.thecomputerizer.sleepless.core.Constants;
-import mods.thecomputerizer.sleepless.registry.PotionRegistry;
+import mods.thecomputerizer.sleepless.core.SleepLessRef;
 import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerror;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentTranslation;
@@ -21,22 +19,26 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.util.Objects;
 
+import static java.lang.Integer.MAX_VALUE;
+import static mods.thecomputerizer.sleepless.core.SleepLessRef.MODID;
+import static mods.thecomputerizer.sleepless.registry.PotionRegistry.TIRED;
+
 @SuppressWarnings({"DataFlowIssue", "ConstantValue"})
-@Mod.EventBusSubscriber(modid = Constants.MODID)
+@EventBusSubscriber(modid=MODID)
 public class CapabilityHandler {
 
     @CapabilityInject(ISleepDebt.class)
     public static final Capability<ISleepDebt> SLEEP_DEBT_CAPABILITY = null;
-    public static final ResourceLocation SLEEP_DEBT = Constants.res("sleep_debt");
+    public static final ResourceLocation SLEEP_DEBT = SleepLessRef.res("sleep_debt");
 
     @CapabilityInject(INightTerrorCap.class)
     public static final Capability<INightTerrorCap> NIGHT_TERROR_CAPABILITY = null;
-    public static final ResourceLocation NIGHT_TERROR = Constants.res("night_terror");
+    public static final ResourceLocation NIGHT_TERROR = SleepLessRef.res("night_terror");
 
     public static ISleepDebt getSleepDebtCapability(EntityPlayer player) {
         if(Objects.isNull(SLEEP_DEBT_CAPABILITY)) return null; //Probably unreachable but sometimes weird things happen
@@ -87,12 +89,11 @@ public class CapabilityHandler {
     }
 
     private static void checkTiredEffect(EntityPlayer player, int level) {
-        Potion tired = PotionRegistry.TIRED;
-        PotionEffect tiredEffect = player.getActivePotionEffect(tired);
-        if(level<1) if(Objects.nonNull(tiredEffect)) player.removePotionEffect(tired);
+        PotionEffect tiredEffect = player.getActivePotionEffect(TIRED);
+        if(level<1) if(Objects.nonNull(tiredEffect)) player.removePotionEffect(TIRED);
         else {
             if(Objects.isNull(tiredEffect))
-                player.addPotionEffect(new PotionEffect(tired,Integer.MAX_VALUE,level));
+                player.addPotionEffect(new PotionEffect(TIRED,MAX_VALUE,level));
             else tiredEffect.amplifier = level;
         }
     }

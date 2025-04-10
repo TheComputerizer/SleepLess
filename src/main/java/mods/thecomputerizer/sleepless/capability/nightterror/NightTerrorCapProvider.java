@@ -15,24 +15,19 @@ public class NightTerrorCapProvider implements ICapabilitySerializable<NBTTagCom
 
     private final INightTerrorCap impl = NIGHT_TERROR_CAPABILITY.getDefaultInstance();
 
-    @Override
-    public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
+    @Override public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
         return capability==NIGHT_TERROR_CAPABILITY;
     }
-
-    @Nullable
-    @Override
-    public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
+    
+    @Override public <T> @Nullable T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
         return capability == NIGHT_TERROR_CAPABILITY ? NIGHT_TERROR_CAPABILITY.cast(this.impl) : null;
     }
 
-    @Override
-    public NBTTagCompound serializeNBT() {
+    @Override public NBTTagCompound serializeNBT() {
         return (NBTTagCompound)NIGHT_TERROR_CAPABILITY.getStorage().writeNBT(NIGHT_TERROR_CAPABILITY,this.impl,null);
     }
 
-    @Override
-    public void deserializeNBT(NBTTagCompound nbt) {
+    @Override public void deserializeNBT(NBTTagCompound nbt) {
         NIGHT_TERROR_CAPABILITY.getStorage().readNBT(NIGHT_TERROR_CAPABILITY,this.impl,null,nbt);
     }
 }

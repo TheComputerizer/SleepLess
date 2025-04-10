@@ -10,6 +10,10 @@ import net.minecraft.world.World;
 
 import java.util.List;
 
+import static net.minecraft.entity.ai.EntityMoveHelper.Action.JUMPING;
+import static net.minecraft.entity.ai.EntityMoveHelper.Action.MOVE_TO;
+import static net.minecraft.entity.ai.EntityMoveHelper.Action.WAIT;
+
 public class PhantomMoveHelper<P extends PhantomEntity> extends ExtendedMoveHelper<P> {
 
     private static final double GRAVITY_FACTOR = 0.20000000298023224d;
@@ -18,11 +22,10 @@ public class PhantomMoveHelper<P extends PhantomEntity> extends ExtendedMoveHelp
         super(phantom);
     }
 
-    @Override
-    public void onUpdateMoveHelper() {
+    @Override public void onUpdateMoveHelper() {
         P phantom = getEntity();
-        if(this.action==Action.MOVE_TO) {
-            setAction(Action.WAIT);
+        if(this.action==MOVE_TO) {
+            setAction(WAIT);
             double motionX = getHorizontalOffset(true,phantom.posX,phantom.posZ);
             double motionZ = getHorizontalOffset(false,phantom.posX,phantom.posZ);
             if(Math.pow(motionX,2)+Math.pow(this.posY-phantom.posY,2)+Math.pow(motionZ,2)<2.500000277905201E-7d) {
@@ -35,13 +38,13 @@ public class PhantomMoveHelper<P extends PhantomEntity> extends ExtendedMoveHelp
             phantom.setSneaking(this.posY<phantom.getEntityBoundingBox().minY);
             if(shouldJump(phantom)) {
                 phantom.getJumpHelper().setJumping();
-                setAction(Action.JUMPING);
+                setAction(JUMPING);
             }
         }
-        else if(this.action==Action.JUMPING) {
+        else if(this.action==JUMPING) {
             phantom.setSneaking(false);
             setEntityAISpeed(phantom);
-            if(phantom.onGround) setAction(Action.WAIT);
+            if(phantom.onGround) setAction(WAIT);
         } else phantom.setSneaking(false);
     }
 

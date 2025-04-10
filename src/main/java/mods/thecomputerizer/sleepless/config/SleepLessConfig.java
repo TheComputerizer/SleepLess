@@ -1,16 +1,18 @@
 package mods.thecomputerizer.sleepless.config;
 
-import mods.thecomputerizer.sleepless.core.Constants;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
-import net.minecraftforge.fml.client.event.ConfigChangedEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+import static mods.thecomputerizer.sleepless.core.SleepLessRef.MODID;
+import static mods.thecomputerizer.sleepless.core.SleepLessRef.NAME;
 import static net.minecraftforge.common.config.Config.*;
+import static net.minecraftforge.common.config.Config.Type.INSTANCE;
 
-@Mod.EventBusSubscriber(modid = Constants.MODID)
-@Config(modid = Constants.MODID, name = Constants.NAME, category = "")
+@EventBusSubscriber(modid=MODID)
+@Config(modid=MODID,name=NAME,category = "")
 public class SleepLessConfig {
 
     @Name("sleepdebttimings")
@@ -172,9 +174,9 @@ public class SleepLessConfig {
     }
 
     @SubscribeEvent
-    public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
-        if(event.getModID().equals(Constants.MODID)) {
-            ConfigManager.sync(event.getModID(),Config.Type.INSTANCE);
+    public static void onConfigChanged(OnConfigChangedEvent event) {
+        if(event.getModID().equals(MODID)) {
+            ConfigManager.sync(event.getModID(),INSTANCE);
             SleepLessConfigHelper.onConfigReloaded();
         }
     }

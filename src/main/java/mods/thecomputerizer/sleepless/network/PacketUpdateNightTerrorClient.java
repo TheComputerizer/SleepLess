@@ -2,22 +2,21 @@ package mods.thecomputerizer.sleepless.network;
 
 import io.netty.buffer.ByteBuf;
 import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerrorClient;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import mods.thecomputerizer.theimpossiblelibrary.api.network.message.MessageAPI;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class PacketUpdateNightTerrorClient extends PacketToClient {
 
-    private boolean silenceMusic;
-    private float fogOverride;
-    private float colorOverride;
-    private float endingOverride;
-    private int columnIndex;
-    private boolean isCatchUp;
-
-    public PacketUpdateNightTerrorClient() {}
+    private final boolean silenceMusic;
+    private final float fogOverride;
+    private final float colorOverride;
+    private final float endingOverride;
+    private final int columnIndex;
+    private final boolean isCatchUp;
 
     public PacketUpdateNightTerrorClient(boolean silenceMusic, float fogOverride, float colorOverride,
-                                         float endingOverride, int columnIndex, boolean isCatchUp) {
+            float endingOverride, int columnIndex, boolean isCatchUp) {
+        super();
         this.silenceMusic = silenceMusic;
         this.fogOverride = fogOverride;
         this.colorOverride = colorOverride;
@@ -25,16 +24,9 @@ public class PacketUpdateNightTerrorClient extends PacketToClient {
         this.columnIndex = columnIndex;
         this.isCatchUp = isCatchUp;
     }
-
-    @Override
-    public IMessage handle(MessageContext ctx) {
-        NightTerrorClient.setClientEffect(this.silenceMusic,this.fogOverride,this.colorOverride,this.endingOverride,
-                this.columnIndex,this.isCatchUp);
-        return null;
-    }
-
-    @Override
-    public void fromBytes(ByteBuf buf) {
+    
+    public PacketUpdateNightTerrorClient(ByteBuf buf) {
+        super(buf);
         this.silenceMusic = buf.readBoolean();
         this.fogOverride = buf.readFloat();
         this.colorOverride = buf.readFloat();
@@ -42,14 +34,19 @@ public class PacketUpdateNightTerrorClient extends PacketToClient {
         this.columnIndex = buf.readInt();
         this.isCatchUp = buf.readBoolean();
     }
-
-    @Override
-    public void toBytes(ByteBuf buf) {
+    
+    @Override public void encode(ByteBuf buf) {
         buf.writeBoolean(this.silenceMusic);
         buf.writeFloat(this.fogOverride);
         buf.writeFloat(this.colorOverride);
         buf.writeFloat(this.endingOverride);
         buf.writeInt(this.columnIndex);
         buf.writeBoolean(this.isCatchUp);
+    }
+
+    @Override public MessageAPI<MessageContext> handle(MessageContext ctx) {
+        NightTerrorClient.setClientEffect(this.silenceMusic,this.fogOverride,this.colorOverride,this.endingOverride,
+                this.columnIndex,this.isCatchUp);
+        return null;
     }
 }

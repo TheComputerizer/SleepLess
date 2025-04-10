@@ -1,11 +1,12 @@
 package mods.thecomputerizer.sleepless.registry.entities.ai;
 
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityMoveHelper;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+
+import static net.minecraft.entity.SharedMonsterAttributes.MOVEMENT_SPEED;
 
 @SuppressWarnings("unchecked")
 public abstract class ExtendedMoveHelper<E extends EntityLiving> extends EntityMoveHelper {
@@ -32,7 +33,7 @@ public abstract class ExtendedMoveHelper<E extends EntityLiving> extends EntityM
     }
 
     protected double getEntitySpeed(E entity) {
-        return entity.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getAttributeValue();
+        return entity.getEntityAttribute(MOVEMENT_SPEED).getAttributeValue();
     }
 
     protected BlockPos getFootPos(AxisAlignedBB entityBB) {

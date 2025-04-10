@@ -9,13 +9,13 @@ import javax.annotation.Nullable;
 
 public class SleepDebtStorage implements Capability.IStorage<ISleepDebt> {
 
-    @Override
-    public @Nullable NBTBase writeNBT(Capability<ISleepDebt> capability, ISleepDebt instance, EnumFacing side) {
+    @Override public @Nullable NBTBase writeNBT(Capability<ISleepDebt> capability, ISleepDebt instance,
+            EnumFacing side) {
         return instance.writeToNBT();
     }
 
-    @Override
-    public void readNBT(Capability<ISleepDebt> capability, ISleepDebt instance, EnumFacing side, NBTBase nbt) {
+    @Override public void readNBT(Capability<ISleepDebt> capability, ISleepDebt instance, EnumFacing side,
+            NBTBase nbt) {
         if(nbt instanceof NBTTagCompound) instance.readFromNBT((NBTTagCompound)nbt);
     }
 }

@@ -3,23 +3,19 @@ package mods.thecomputerizer.sleepless.registry.entities.nightterror.phase;
 import mods.thecomputerizer.sleepless.client.render.geometry.StaticGeometryRender;
 import mods.thecomputerizer.sleepless.client.render.geometry.TickableColumn;
 import mods.thecomputerizer.sleepless.config.SleepLessConfigHelper;
-import mods.thecomputerizer.sleepless.registry.PotionRegistry;
-import mods.thecomputerizer.sleepless.registry.SoundRegistry;
 import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerrorEntity;
+import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerrorEntity.AnimationType;
 import mods.thecomputerizer.sleepless.registry.entities.phantom.PhantomEntity;
 import mods.thecomputerizer.sleepless.util.SoundUtil;
 import mods.thecomputerizer.sleepless.util.VectorRandomizer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.IAttribute;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.MobEffects;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -29,6 +25,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+
+import static mods.thecomputerizer.sleepless.client.render.geometry.StaticGeometryRender.STATIC_RENDERS;
+import static mods.thecomputerizer.sleepless.registry.PotionRegistry.PHASED;
+import static mods.thecomputerizer.sleepless.registry.SoundRegistry.BELL_SOUND;
+import static mods.thecomputerizer.sleepless.registry.SoundRegistry.BOOSTED_TP_REVERSE_SOUND;
+import static mods.thecomputerizer.sleepless.registry.SoundRegistry.BOOSTED_TP_SOUND;
+import static net.minecraft.entity.SharedMonsterAttributes.ATTACK_DAMAGE;
+import static net.minecraft.entity.SharedMonsterAttributes.MOVEMENT_SPEED;
+import static net.minecraft.init.MobEffects.LEVITATION;
+import static net.minecraft.util.SoundCategory.HOSTILE;
 
 public class PhaseAction {
 
@@ -93,23 +99,24 @@ public class PhaseAction {
 
     public enum Type {
 
-        DAMAGE("damage",true,1,1,NightTerrorEntity.AnimationType.DAMAGE,
-                entity -> {
+        DAMAGE("damage",true,1,1,AnimationType.DAMAGE,
+               entity -> {
                     World world = entity.getEntityWorld();
                     if(!world.isRemote) {
                         float healthFactor = 1f-entity.getHealthPercent();
                         int numSpawns = Math.max(1,(int)(healthFactor*5f));
                         spawnPhantoms(world,entity.getPositionVector(),numSpawns,healthFactor,phantom -> {
-                            setPhantomAttribute(phantom,SharedMonsterAttributes.ATTACK_DAMAGE,healthFactor,2d);
-                            setPhantomAttribute(phantom,SharedMonsterAttributes.MOVEMENT_SPEED,healthFactor,1.2d);
+                            setPhantomAttribute(phantom,ATTACK_DAMAGE,healthFactor,2d);
+                            setPhantomAttribute(phantom,MOVEMENT_SPEED,healthFactor,1.2d);
                             phantom.setLifespan(600-(int)(300f*healthFactor));
                             phantom.presetClass(EntityPlayer.class);
                             phantom.markAggressive();
                         });
                     }
-                    VectorRandomizer rand = new VectorRandomizer(world.rand,-10d,10d,-10d,10d,20d,10d);
+                    VectorRandomizer rand = new VectorRandomizer(world.rand,-10d,10d,
+                            -10d,10d,20d,10d);
                     entity.setTeleportTarget(rand.rollOffset(entity.getPositionVector()),true);
-                },entity -> {}),
+                }, entity -> {}),
         FLOAT("float",false,3,1,null,entity -> {
             Vec3d posVec = entity.getPositionVector();
             int ticks = entity.getHealthPercent()<=0.25f ? 20 : 15;
@@ -118,18 +125,18 @@ public class PhaseAction {
                 for(EntityPlayer p : entity.world.playerEntities) {
                     EntityPlayerMP player = (EntityPlayerMP)p;
                     if(SleepLessConfigHelper.nightTerrorChance(player)>0 && isInXZRange(player.getPositionVector(),posVec,5d)) {
-                        player.addPotionEffect(new PotionEffect(MobEffects.LEVITATION,ticks*20));
+                        player.addPotionEffect(new PotionEffect(LEVITATION,ticks*20));
                         hitPlayer = true;
                     }
                 }
-                if(hitPlayer) SoundUtil.playRemoteGlobalSound(true,entity.world,SoundRegistry.BELL_SOUND,
-                        SoundCategory.HOSTILE,0.75f,1f);
+                if(hitPlayer) SoundUtil.playRemoteGlobalSound(true,entity.world,BELL_SOUND,
+                        HOSTILE,0.75f,1f);
             } else {
                 StaticGeometryRender render = new StaticGeometryRender(Minecraft.getMinecraft().getRenderManager(),
                         Minecraft.getMinecraft().player.getPositionVector());
                 render.addColumn(new TickableColumn(entity.world.rand,new Vec3d(0d,-200d,0d),
                         1000d,5d,5d).setTime(ticks).init());
-                StaticGeometryRender.STATIC_RENDERS.add(render);
+                STATIC_RENDERS.add(render);
             }
         },entity -> {}),
         SPAWN("spawn",true,3,1,null,entity -> {
@@ -138,23 +145,23 @@ public class PhaseAction {
                 float healthFactor = 1f-entity.getHealthPercent();
                 int numSpawns = Math.max(2,(int)(healthFactor*10f));
                 spawnPhantoms(world,entity.getPositionVector(),numSpawns,healthFactor,phantom -> {
-                    setPhantomAttribute(phantom,SharedMonsterAttributes.ATTACK_DAMAGE,healthFactor,2d);
-                    setPhantomAttribute(phantom,SharedMonsterAttributes.MOVEMENT_SPEED,healthFactor,1.2d);
+                    setPhantomAttribute(phantom,ATTACK_DAMAGE,healthFactor,2d);
+                    setPhantomAttribute(phantom,MOVEMENT_SPEED,healthFactor,1.2d);
                     phantom.setLifespan(600-(int)(300f*healthFactor));
                     phantom.presetClass(EntityPlayer.class);
                     phantom.markAggressive();
                 });
             }
         },entity -> {}),
-        TELEPORT("teleport",true,0,1,NightTerrorEntity.AnimationType.TELEPORT,
+        TELEPORT("teleport",true,0,1,AnimationType.TELEPORT,
                 entity -> {
-                    entity.addPotionEffect(new PotionEffect(PotionRegistry.PHASED,50));
+                    entity.addPotionEffect(new PotionEffect(PHASED,50));
                     entity.setMoveTarget(1d);
-                    playSound(entity,SoundRegistry.BOOSTED_TP_SOUND,1f,0.5f);
+                    playSound(entity,BOOSTED_TP_SOUND,1f,0.5f);
                 },
-                entity -> playSound(entity,SoundRegistry.BOOSTED_TP_REVERSE_SOUND,1f,0.5f)),
+                entity -> playSound(entity,BOOSTED_TP_REVERSE_SOUND,1f,0.5f)),
         TRANSITION("transition",true,0,1,
-                NightTerrorEntity.AnimationType.SPAWN,entity -> {}, entity -> {}),
+                NightTerrorEntity.AnimationType.SPAWN,entity -> {},entity -> {}),
         WAIT("wait",false,3,1,null,
                 entity -> {
                     EntityLivingBase target = entity.getAttackTarget();

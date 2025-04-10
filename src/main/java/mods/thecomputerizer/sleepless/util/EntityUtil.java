@@ -3,19 +3,19 @@ package mods.thecomputerizer.sleepless.util;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
-import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.registry.entities.ai.EntityWatchClosestWithSleepDebt;
 import mods.thecomputerizer.sleepless.registry.entities.ai.EntityWatchClosestWithSleepDebt2;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.EntityAITasks;
+import net.minecraft.entity.ai.EntityAITasks.EntityAITaskEntry;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.ai.EntityAIWatchClosest2;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.Tuple;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -25,6 +25,10 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Map.Entry;
+
+import static mods.thecomputerizer.sleepless.core.SleepLessRef.LOGGER;
 
 @SuppressWarnings("unused")
 public class EntityUtil {
@@ -41,73 +45,73 @@ public class EntityUtil {
      * Iterators should be slightly more efficient than Collection#removeIf
      */
     public static void makePhantomAITasks(EntityAITasks tasks, float minSleepDebt) {
-        Set<Tuple<Integer,EntityAIBase>> newEntries = new HashSet<>();
+        Set<Entry<Integer,EntityAIBase>> newEntries = new HashSet<>();
         int i = 0;
-        Iterator<EntityAITasks.EntityAITaskEntry> entryItr = tasks.taskEntries.iterator();
+        Iterator<EntityAITaskEntry> entryItr = tasks.taskEntries.iterator();
         while(entryItr.hasNext()) {
-            EntityAITasks.EntityAITaskEntry entry = entryItr.next();
-            Tuple<Integer,EntityAIBase> newEntry = makePhantomAITask(entry.priority,entry.action,minSleepDebt);
+            EntityAITaskEntry entry = entryItr.next();
+            Entry<Integer,EntityAIBase> newEntry = makePhantomAITask(entry.priority,entry.action,minSleepDebt);
             if(Objects.isNull(newEntry)) entryItr.remove();
             else newEntries.add(newEntry);
             i++;
         }
-        for(Tuple<Integer,EntityAIBase> newEntry : newEntries)
+        for(Entry<Integer,EntityAIBase> newEntry : newEntries)
             if(Objects.nonNull(newEntry))
-                tasks.addTask(newEntry.getFirst(),newEntry.getSecond());
+                tasks.addTask(newEntry.getKey(),newEntry.getValue());
     }
 
-    public static Tuple<Integer,EntityAIBase> makePhantomAITask(int priority, EntityAIBase task, float minSleepDebt) {
+    public static Entry<Integer,EntityAIBase> makePhantomAITask(int priority, EntityAIBase task, float minSleepDebt) {
         Class<? extends EntityAIBase> mappedClass = MAPPED_PHANTOM_AI.get(task.getClass());
         if(Objects.isNull(mappedClass)) return null;
         EntityAIBase mappedInstance = instantiatePhantomTask(task,minSleepDebt,mappedClass);
-        return Objects.nonNull(mappedInstance) ? new Tuple<>(priority,mappedInstance) : null;
+        return Objects.nonNull(mappedInstance) ? new SimpleImmutableEntry<>(priority,mappedInstance) : null;
     }
 
     private static EntityAIBase instantiatePhantomTask(EntityAIBase originalTask, float minSleepDebt,
-                                                       Class<? extends EntityAIBase> mappedClass) {
+            Class<? extends EntityAIBase> mappedClass) {
         Class<? extends EntityAIBase> originalClass = originalTask.getClass();
         try {
             Constructor<? extends EntityAIBase> constructor = mappedClass.getDeclaredConstructor(originalClass,Float.class);
             return constructor.newInstance(originalTask,minSleepDebt);
-        } catch (NoSuchMethodException ex) {
-            Constants.LOGGER.error("Unable to find valid contructor with inputs ({}[{}], {}[{}]) for mapped"+
-                            " phantom task of class {}",originalClass.getName()+" instance",originalTask,
-                    "float minSleepDebt",minSleepDebt,mappedClass);
-        } catch (InvocationTargetException ex) {
-            Constants.LOGGER.error("Unable to invoke contructor with inputs ({}[{}], {}[{}]) for mapped phantom"+
-                            " task of class {}",originalClass.getName()+" instance",originalTask,
-                    "float minSleepDebt",minSleepDebt,mappedClass);
-        } catch (InstantiationException ex) {
-            Constants.LOGGER.error("Unable to instantiate phantom task from contructor with inputs ({}[{}], "+
-                            "{}[{}]) for mapped phantom task of class {}",originalClass.getName()+" instance",
-                    originalTask,"float minSleepDebt",minSleepDebt,mappedClass);
-        } catch (IllegalAccessException ex) {
-            Constants.LOGGER.error("Tried to illegally access contructor with inputs ({}[{}], {}[{}]) for" +
-                            " mapped phantom task of class {}",originalClass.getName()+" instance",originalTask,
-                    "float minSleepDebt",minSleepDebt,mappedClass);
+        } catch(NoSuchMethodException ex) {
+            LOGGER.error("Unable to find valid contructor with inputs ({}[{}], {}[{}]) for mapped"+
+                                      " phantom task of class {}",originalClass.getName()+" instance",originalTask,
+                                      "float minSleepDebt",minSleepDebt,mappedClass,ex);
+        } catch(InvocationTargetException ex) {
+            LOGGER.error("Unable to invoke contructor with inputs ({}[{}], {}[{}]) for mapped phantom"+
+                         " task of class {}",originalClass.getName()+" instance",originalTask,
+                         "float minSleepDebt",minSleepDebt,mappedClass,ex);
+        } catch(InstantiationException ex) {
+            LOGGER.error("Unable to instantiate phantom task from contructor with inputs ({}[{}], "+
+                         "{}[{}]) for mapped phantom task of class {}",originalClass.getName()+" instance",
+                         originalTask,"float minSleepDebt",minSleepDebt,mappedClass,ex);
+        } catch(IllegalAccessException ex) {
+            LOGGER.error("Tried to illegally access contructor with inputs ({}[{}], {}[{}]) for"+
+                         " mapped phantom task of class {}",originalClass.getName()+" instance", originalTask,
+                         "float minSleepDebt",minSleepDebt,mappedClass,ex);
         }
         return null;
     }
 
     public static EntityPlayer getClosestPlayerWithSleepDebt(float minSleepDebt, World world, Vec3d posVec,
-                                                             double distance) {
+            double distance) {
         return getClosestPlayerWithSleepDebt(minSleepDebt,world,posVec,distance,null);
     }
 
     public static EntityPlayer getClosestPlayerWithSleepDebt(float minSleepDebt, World world, double x, double y,
-                                                             double z, double distance) {
+            double z, double distance) {
         return getClosestPlayerWithSleepDebt(minSleepDebt,world,x,y,z,distance,null);
     }
 
     @SuppressWarnings("Guava")
     public static EntityPlayer getClosestPlayerWithSleepDebt(float minSleepDebt, World world, Vec3d posVec,
-                                                             double distance, @Nullable Predicate<Entity> predicate) {
+            double distance, @Nullable Predicate<Entity> predicate) {
         return getClosestPlayerWithSleepDebt(minSleepDebt,world,posVec.x,posVec.y,posVec.z,distance,predicate);
     }
 
     @SuppressWarnings("Guava")
-    public static EntityPlayer getClosestPlayerWithSleepDebt(float minSleepDebt, World world, double x, double y, double z,
-                                                             double distance, @Nullable Predicate<Entity> predicate) {
+    public static EntityPlayer getClosestPlayerWithSleepDebt(float minSleepDebt, World world, double x, double y,
+            double z, double distance, @Nullable Predicate<Entity> predicate) {
         Predicate<Entity> sleepDebtPredicate = getSleepDebtPredicate(minSleepDebt);
         return world.getClosestPlayer(x,y,z,distance,Objects.nonNull(predicate) ?
                 Predicates.and(predicate,sleepDebtPredicate) : sleepDebtPredicate);
@@ -139,7 +143,7 @@ public class EntityUtil {
         int minZ = MathHelper.floor(aabb.minZ)-1;
         int MaxZ = MathHelper.ceil(aabb.maxZ)+1;
         WorldBorder worldborder = world.getWorldBorder();
-        BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
+        MutableBlockPos mutablePos = new MutableBlockPos();
         for(int x=minX; x<maxX; x++) {
             for(int z=minZ; z<MaxZ; z++) {
                 boolean isBorderX = x==minX || x==maxX-1;

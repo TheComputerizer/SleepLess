@@ -1,25 +1,18 @@
 package mods.thecomputerizer.sleepless.registry.entities.nightterror;
 
 import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
-import mods.thecomputerizer.sleepless.config.SleepLessConfig;
-import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.network.PacketToClient;
 import mods.thecomputerizer.sleepless.network.PacketUpdateNightTerrorClient;
 import mods.thecomputerizer.sleepless.network.PacketSendWorldSound;
-import mods.thecomputerizer.sleepless.registry.PotionRegistry;
-import mods.thecomputerizer.sleepless.registry.SoundRegistry;
+import mods.thecomputerizer.sleepless.network.SleepLessNetwork;
 import mods.thecomputerizer.sleepless.util.SoundUtil;
-import mods.thecomputerizer.theimpossiblelibrary.network.NetworkHandler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.BossInfo;
 import net.minecraft.world.BossInfoServer;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -27,6 +20,17 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.function.Consumer;
+
+import static mods.thecomputerizer.sleepless.config.SleepLessConfig.NIGHT_TERROR;
+import static mods.thecomputerizer.sleepless.core.SleepLessRef.MODID;
+import static mods.thecomputerizer.sleepless.registry.PotionRegistry.INSOMNIA;
+import static mods.thecomputerizer.sleepless.registry.SoundRegistry.BELL_REVERSE_SOUND;
+import static mods.thecomputerizer.sleepless.registry.SoundRegistry.BELL_SOUND;
+import static mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerrorEntity.AnimationType.DEATH;
+import static net.minecraft.util.SoundCategory.MASTER;
+import static net.minecraft.util.text.TextFormatting.DARK_RED;
+import static net.minecraft.world.BossInfo.Color.RED;
+import static net.minecraft.world.BossInfo.Overlay.NOTCHED_10;
 
 public class NightTerror {
 
@@ -52,30 +56,31 @@ public class NightTerror {
         this.activeTicks = tag.getInteger("activeTicks");
         this.bellVolume = tag.getFloat("bellVolume");
         this.maxColIndex = tag.getInteger("maxColumnIndex");
-        this.entity = this.activeTicks>FINISH_BELLS ? (NightTerrorEntity)this.world.getEntityByID(tag.getInteger("entityID")) : null;
+        this.entity = this.activeTicks>FINISH_BELLS ?
+                (NightTerrorEntity)this.world.getEntityByID(tag.getInteger("entityID")) : null;
         if(this.maxColIndex==11 && Objects.nonNull(this.entity)) instantiateBossBar();
     }
 
     public void onTick() {
         if(hasValidPlayer()) {
-            if(this.activeTicks == 0) initialize();
+            if(this.activeTicks==0) initialize();
             else if(this.activeTicks>=START_BELLS && this.activeTicks<=FINISH_BELLS) {
-                boolean isThirdSecond = this.activeTicks == START_BELLS || (this.activeTicks-START_BELLS)%60==0;
+                boolean isThirdSecond = this.activeTicks==START_BELLS || (this.activeTicks-START_BELLS)%60==0;
                 if(isThirdSecond) {
                     sendBellMessage();
                     onBell(false);
                     if(this.activeTicks==FINISH_BELLS) onFinalBell();
                 }
             } else if(this.activeTicks>FINISH_BELLS) {
-                sendUpdate(player -> player.addPotionEffect(new PotionEffect(PotionRegistry.INSOMNIA, 60)));
+                sendUpdate(player -> player.addPotionEffect(new PotionEffect(INSOMNIA,60)));
                 if(Objects.nonNull(this.entity)) {
                     if(Objects.nonNull(this.bossBar)) this.bossBar.setPercent(this.entity.getHealth()/this.entity.getMaxHealth());
-                    if(this.entity.getAnimationData().currentAnimation==NightTerrorEntity.AnimationType.DEATH && !this.entity.isDead) {
+                    if(this.entity.getAnimationData().currentAnimation==DEATH && !this.entity.isDead) {
                         if(this.endingTicks==0) SoundUtil.playRemoteGlobalSound(true,this.world,
-                                SoundRegistry.BELL_REVERSE_SOUND,SoundCategory.MASTER,1f,1f);
+                                BELL_REVERSE_SOUND,MASTER,1f,1f);
                         this.endingTicks++;
-                        float ending = 1f-(((float)(NightTerrorEntity.AnimationType.DEATH.getTotalTime()-this.endingTicks))/
-                                ((float)NightTerrorEntity.AnimationType.DEATH.getTotalTime()));
+                        float ending = 1f-(((float)(DEATH.getTotalTime()-this.endingTicks))/
+                                           ((float)DEATH.getTotalTime()));
                         sendWorldPacket(new PacketUpdateNightTerrorClient(true,20f,1f,
                                 ending,this.maxColIndex,false));
                     }
@@ -88,7 +93,7 @@ public class NightTerror {
 
     private void initialize() {
         sendWorldPacket(new PacketUpdateNightTerrorClient(true,0f,0f,0f,-1,false));
-        sendUpdate(player -> player.sendStatusMessage(createMessage(new Style().setColor(TextFormatting.DARK_RED),
+        sendUpdate(player -> player.sendStatusMessage(createMessage(new Style().setColor(DARK_RED),
                 lang("start")),true));
         onBell(true);
     }
@@ -105,12 +110,12 @@ public class NightTerror {
     }
 
     private void instantiateBossBar() {
-        this.bossBar = new BossInfoServer(this.entity.getDisplayName(),BossInfo.Color.RED,BossInfo.Overlay.NOTCHED_10);
+        this.bossBar = new BossInfoServer(this.entity.getDisplayName(),RED,NOTCHED_10);
         sendUpdate(player -> this.bossBar.addPlayer((EntityPlayerMP)player));
     }
 
     private void onBell(boolean isInit) {
-        this.maxColIndex = this.activeTicks < START_BELLS ? -1 : Math.min((this.activeTicks - START_BELLS) / 60, 11);
+        this.maxColIndex = this.activeTicks<START_BELLS ? -1 : Math.min((this.activeTicks-START_BELLS)/60,11);
         if(!isInit) {
             float fog = 0f;
             float color = 0f;
@@ -120,7 +125,7 @@ public class NightTerror {
             }
             sendWorldPacket(new PacketUpdateNightTerrorClient(true,fog,color,0f,this.maxColIndex,false));
         }
-        sendWorldPacket(new PacketSendWorldSound(SoundRegistry.BELL_SOUND,SoundCategory.MASTER,this.bellVolume,1f));
+        sendWorldPacket(new PacketSendWorldSound(BELL_SOUND,MASTER,this.bellVolume, 1f));
         this.bellVolume+=0.05f;
     }
 
@@ -128,12 +133,12 @@ public class NightTerror {
         int offset = this.activeTicks-START_BELLS-120;
         if(offset<0 || (offset>0 && offset%180!=0)) return;
         final int index = offset==0 ? 1 : 1+(offset/180);
-        sendUpdate(player -> player.sendStatusMessage(createMessage(new Style().setColor(TextFormatting.DARK_RED)
-                .setItalic(true), lang("toolate"+index)), true));
+        sendUpdate(player -> player.sendStatusMessage(createMessage(new Style().setColor(DARK_RED)
+                .setItalic(true),lang("toolate"+index)),true));
     }
 
     private String lang(String extra) {
-        return "nightterror."+Constants.MODID+"."+extra;
+        return "nightterror."+MODID+"."+extra;
     }
 
     private ITextComponent createMessage(@Nullable Style style, String langKey, Object ... args) {
@@ -147,7 +152,7 @@ public class NightTerror {
     }
 
     private void sendWorldPacket(PacketToClient packet) {
-        NetworkHandler.sendToDimension(packet,this.world.provider.getDimension());
+        SleepLessNetwork.sendToWorld(this.world,packet);
     }
 
     private void sendUpdate(Consumer<EntityPlayer> perPlayer) {
@@ -156,7 +161,7 @@ public class NightTerror {
 
     private boolean hasValidPlayer() {
         for(EntityPlayer player : this.world.playerEntities)
-            if(CapabilityHandler.getSleepDebt(player)>=SleepLessConfig.NIGHT_TERROR.minSleepDebt)
+            if(CapabilityHandler.getSleepDebt(player)>=NIGHT_TERROR.minSleepDebt)
                 return true;
         return false;
     }
@@ -166,15 +171,16 @@ public class NightTerror {
     }
 
     public void catchUpJoiningPlayer(EntityPlayerMP player) {
-        float ending = 1f-(((float)(NightTerrorEntity.AnimationType.DEATH.getTotalTime()-this.endingTicks))/
-                ((float)NightTerrorEntity.AnimationType.DEATH.getTotalTime()));
+        float ending = 1f-(((float)(DEATH.getTotalTime()-this.endingTicks))/
+                           ((float)DEATH.getTotalTime()));
         float fog = 0f;
         float color = 0f;
         if(this.maxColIndex==11) {
             fog = 20f;
             color = 1f;
         }
-        new PacketUpdateNightTerrorClient(true,fog,color,ending,this.maxColIndex,true).addPlayers(player).send();
+        SleepLessNetwork.sendToClient(new PacketUpdateNightTerrorClient(
+                true,fog,color,ending,this.maxColIndex,true),player);
         if(Objects.nonNull(this.bossBar)) this.bossBar.addPlayer(player);
     }
 

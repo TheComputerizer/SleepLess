@@ -7,57 +7,55 @@ import mods.thecomputerizer.sleepless.capability.sleepdebt.ISleepDebt;
 import mods.thecomputerizer.sleepless.capability.sleepdebt.SleepDebt;
 import mods.thecomputerizer.sleepless.capability.sleepdebt.SleepDebtStorage;
 import mods.thecomputerizer.sleepless.client.SleepLessClient;
-import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.network.*;
 import mods.thecomputerizer.sleepless.util.AddedEnums;
 import mods.thecomputerizer.sleepless.common.SleepLessCommands;
-import mods.thecomputerizer.theimpossiblelibrary.TheImpossibleLibrary;
-import mods.thecomputerizer.theimpossiblelibrary.network.NetworkHandler;
-import net.minecraftforge.common.capabilities.CapabilityManager;
+import mods.thecomputerizer.theimpossiblelibrary.api.core.CoreAPI;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
-@Mod(modid = Constants.MODID, name = Constants.NAME, version = Constants.VERSION, dependencies = Constants.DEPENDENCIES)
+import static mods.thecomputerizer.sleepless.core.SleepLessRef.*;
+import static net.minecraftforge.common.capabilities.CapabilityManager.INSTANCE;
+
+@Mod(modid=MODID,name=NAME,version=VERSION,dependencies=DEPENDENCIES)
 public class SleepLess {
 
     private static boolean GUARUNTEED_RANDOMS = false;
 
     public SleepLess() {
-        Constants.LOGGER.info("Started constructing mod class");
+        LOGGER.info("Started constructing mod class");
         AddedEnums.load();
-        if(Constants.IS_DEV) {
-            TheImpossibleLibrary.enableDevLog();
-            GUARUNTEED_RANDOMS = true;
-        }
-        NetworkHandler.queueClientPacketRegistries(PacketRenderTests.class,PacketUpdateClientEffects.class,
-                PacketUpdateNightTerrorClient.class, PacketSendWorldSound.class);
-        Constants.LOGGER.info("Constructed mod class");
+        if(IS_DEV) GUARUNTEED_RANDOMS = true;
+        SleepLessNetwork.initCommon();
+        if(CoreAPI.isClient()) SleepLessNetwork.initClient();
+        LOGGER.info("Constructed mod class");
     }
 
-    @Mod.EventHandler
+    @EventHandler
     public static void preInit(FMLPreInitializationEvent event) {
-        Constants.LOGGER.info("Starting common pre-init");
-        CapabilityManager.INSTANCE.register(ISleepDebt.class,new SleepDebtStorage(),SleepDebt::new);
-        CapabilityManager.INSTANCE.register(INightTerrorCap.class,new NightTerrorCapStorage(),NightTerrorCap::new);
+        LOGGER.info("Starting common pre-init");
+        INSTANCE.register(ISleepDebt.class,new SleepDebtStorage(),SleepDebt::new);
+        INSTANCE.register(INightTerrorCap.class,new NightTerrorCapStorage(),NightTerrorCap::new);
         if(isClient()) SleepLessClient.preInit(event);
-        Constants.LOGGER.info("Completed common pre-init");
+        LOGGER.info("Completed common pre-init");
     }
 
-    @Mod.EventHandler
+    @EventHandler
     public static void postInit(FMLPostInitializationEvent event) {
-        Constants.LOGGER.info("Starting common post-init");
+        LOGGER.info("Starting common post-init");
         if(isClient()) SleepLessClient.postInit(event);
-        Constants.LOGGER.info("Completed common post-init");
+        LOGGER.info("Completed common post-init");
     }
 
-    @Mod.EventHandler
+    @EventHandler
     public void start(FMLServerStartingEvent event) {
-        Constants.LOGGER.info("Handling server starting");
+        LOGGER.info("Handling server starting");
         event.registerServerCommand(new SleepLessCommands());
-        Constants.LOGGER.info("Handled server starting");
+        LOGGER.info("Handled server starting");
     }
 
     private static boolean isClient() {

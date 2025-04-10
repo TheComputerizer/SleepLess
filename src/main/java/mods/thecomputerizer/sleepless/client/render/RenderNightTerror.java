@@ -2,10 +2,11 @@ package mods.thecomputerizer.sleepless.client.render;
 
 import mods.thecomputerizer.sleepless.client.render.geometry.ModelBaseCapture;
 import mods.thecomputerizer.sleepless.client.render.geometry.ModelRendererCapture;
-import mods.thecomputerizer.sleepless.core.Constants;
+import mods.thecomputerizer.sleepless.core.SleepLessRef;
 import mods.thecomputerizer.sleepless.mixin.access.ModelRendererAccess;
 import mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerrorEntity;
 import net.minecraft.client.model.ModelBiped;
+import net.minecraft.client.model.ModelBiped.ArmPose;
 import net.minecraft.client.model.ModelPlayer;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.GlStateManager;
@@ -13,10 +14,8 @@ import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
@@ -24,14 +23,23 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-@ParametersAreNonnullByDefault
-@SideOnly(Side.CLIENT)
+import static net.minecraft.client.model.ModelBiped.ArmPose.BOW_AND_ARROW;
+import static net.minecraft.client.model.ModelBiped.ArmPose.EMPTY;
+import static net.minecraft.client.model.ModelBiped.ArmPose.ITEM;
+import static net.minecraft.client.renderer.GlStateManager.Profile.PLAYER_SKIN;
+import static net.minecraft.item.EnumAction.BLOCK;
+import static net.minecraft.item.EnumAction.BOW;
+import static net.minecraft.util.EnumHandSide.RIGHT;
+import static net.minecraft.util.math.Vec3d.ZERO;
+import static net.minecraftforge.fml.relauncher.Side.CLIENT;
+
+@SideOnly(CLIENT) @ParametersAreNonnullByDefault
 public class RenderNightTerror extends RenderLivingBase<NightTerrorEntity> {
 
-    private static final ResourceLocation SKIN_TEXTURE = Constants.res("textures/entity/night_terror.png");
+    private static final ResourceLocation SKIN_TEXTURE = SleepLessRef.res("textures/entity/night_terror.png");
 
     private float animationAngle = 0f;
-    private Vec3d animationAngleScales = Vec3d.ZERO;
+    private Vec3d animationAngleScales = ZERO;
 
     public RenderNightTerror(RenderManager manager) {
         super(manager,new ModelBaseCapture(new ModelPlayer(0f,true)),0f);
@@ -54,11 +62,11 @@ public class RenderNightTerror extends RenderLivingBase<NightTerrorEntity> {
             ((ModelBaseCapture)getMainModel()).setVisibility(entity.renderMode==1);
             double sneakOffset = entity.isSneaking() ? y-0.125d : y;
             this.setModelVisibilities(entity);
-            GlStateManager.enableBlendProfile(GlStateManager.Profile.PLAYER_SKIN);
+            GlStateManager.enableBlendProfile(PLAYER_SKIN);
             GlStateManager.disableLighting();
-            super.doRender(entity,x,sneakOffset,z,entityYaw, partialTick);
+            super.doRender(entity,x,sneakOffset,z,entityYaw,partialTick);
             GlStateManager.enableLighting();
-            GlStateManager.disableBlendProfile(GlStateManager.Profile.PLAYER_SKIN);
+            GlStateManager.disableBlendProfile(PLAYER_SKIN);
         }
     }
 
@@ -139,9 +147,8 @@ public class RenderNightTerror extends RenderLivingBase<NightTerrorEntity> {
         }
     }
 
-    @Override
-    protected void renderModel(NightTerrorEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks,
-                               float netHeadYaw, float headPitch, float scaleFactor) {
+    @Override protected void renderModel(NightTerrorEntity entity, float limbSwing, float limbSwingAmount,
+            float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor) {
         if(this.animationAngle!=0f) {
             GlStateManager.rotate(this.animationAngle,(float)this.animationAngleScales.x,0f,0f);
             GlStateManager.rotate(this.animationAngle,0f,(float)this.animationAngleScales.y,0f);
@@ -150,13 +157,12 @@ public class RenderNightTerror extends RenderLivingBase<NightTerrorEntity> {
         super.renderModel(entity,limbSwing,limbSwingAmount,ageInTicks,netHeadYaw,headPitch,scaleFactor);
     }
 
-    @Override
-    protected void applyRotations(NightTerrorEntity entity, float ageInTicks, float rotationYaw, float partialTick) {
+    @Override protected void applyRotations(NightTerrorEntity entity, float ageInTicks, float rotationYaw,
+            float partialTick) {
         super.applyRotations(entity,ageInTicks,rotationYaw,partialTick);
     }
 
-    @Override
-    protected boolean setBrightness(NightTerrorEntity entity, float partialTick, boolean combineTextures) {
+    @Override protected boolean setBrightness(NightTerrorEntity entity, float partialTick, boolean combineTextures) {
         return false;
     }
 
@@ -177,25 +183,25 @@ public class RenderNightTerror extends RenderLivingBase<NightTerrorEntity> {
         ItemStack stack = entity.getHeldItemMainhand();
         ItemStack stack1 = entity.getHeldItemOffhand();
         modelplayer.isSneak = entity.isSneaking();
-        ModelBiped.ArmPose modelbiped$armpose = ModelBiped.ArmPose.EMPTY;
-        ModelBiped.ArmPose modelbiped$armpose1 = ModelBiped.ArmPose.EMPTY;
-        if (!stack.isEmpty()) {
-            modelbiped$armpose = ModelBiped.ArmPose.ITEM;
-            if (entity.getItemInUseCount() > 0) {
+        ModelBiped.ArmPose modelbiped$armpose = EMPTY;
+        ModelBiped.ArmPose modelbiped$armpose1 = EMPTY;
+        if(!stack.isEmpty()) {
+            modelbiped$armpose = ITEM;
+            if(entity.getItemInUseCount() > 0) {
                 EnumAction enumaction = stack.getItemUseAction();
-                if (enumaction == EnumAction.BLOCK) modelbiped$armpose = ModelBiped.ArmPose.BLOCK;
-                else if (enumaction == EnumAction.BOW) modelbiped$armpose = ModelBiped.ArmPose.BOW_AND_ARROW;
+                if(enumaction==BLOCK) modelbiped$armpose = ArmPose.BLOCK;
+                else if(enumaction==BOW) modelbiped$armpose = BOW_AND_ARROW;
             }
         }
-        if (!stack1.isEmpty()) {
-            modelbiped$armpose1 = ModelBiped.ArmPose.ITEM;
-            if (entity.getItemInUseCount() > 0) {
+        if(!stack1.isEmpty()) {
+            modelbiped$armpose1 = ITEM;
+            if(entity.getItemInUseCount()>0) {
                 EnumAction enumaction1 = stack1.getItemUseAction();
-                if (enumaction1 == EnumAction.BLOCK) modelbiped$armpose1 = ModelBiped.ArmPose.BLOCK;
-                else if (enumaction1 == EnumAction.BOW) modelbiped$armpose1 = ModelBiped.ArmPose.BOW_AND_ARROW;
+                if(enumaction1==BLOCK) modelbiped$armpose1 = ModelBiped.ArmPose.BLOCK;
+                else if(enumaction1==BOW) modelbiped$armpose1 = BOW_AND_ARROW;
             }
         }
-        if (entity.getPrimaryHand() == EnumHandSide.RIGHT) {
+        if(entity.getPrimaryHand()==RIGHT) {
             modelplayer.rightArmPose = modelbiped$armpose;
             modelplayer.leftArmPose = modelbiped$armpose1;
         }
@@ -205,8 +211,7 @@ public class RenderNightTerror extends RenderLivingBase<NightTerrorEntity> {
         }
     }
 
-    @Override
-    protected boolean bindEntityTexture(NightTerrorEntity entity) {
+    @Override protected boolean bindEntityTexture(NightTerrorEntity entity) {
         ResourceLocation texture = this.getEntityTexture(entity);
         if(Objects.isNull(texture)) return false;
         else {
@@ -215,13 +220,11 @@ public class RenderNightTerror extends RenderLivingBase<NightTerrorEntity> {
         }
     }
 
-    @Override
-    protected @Nullable ResourceLocation getEntityTexture(NightTerrorEntity entity) {
+    @Override protected @Nullable ResourceLocation getEntityTexture(NightTerrorEntity entity) {
         return SKIN_TEXTURE;
     }
 
-    @Override
-    protected boolean canRenderName(NightTerrorEntity entity) {
+    @Override protected boolean canRenderName(NightTerrorEntity entity) {
         return false;
     }
 }

@@ -13,6 +13,9 @@ import net.minecraft.util.EntitySelectors;
 
 import java.util.Objects;
 
+import static mods.thecomputerizer.sleepless.registry.entities.nightterror.NightTerrorEntity.AnimationType.IDLE;
+import static net.minecraft.util.EntitySelectors.NOT_SPECTATING;
+
 @SuppressWarnings("Guava")
 public class EntityWatchClosestWithSleepDebt2 extends EntityAIWatchClosest2 {
 
@@ -32,13 +35,12 @@ public class EntityWatchClosestWithSleepDebt2 extends EntityAIWatchClosest2 {
     }
 
     private Predicate<Entity> setDefaultPredicate() {
-        return Predicates.and(EntitySelectors.NOT_SPECTATING,EntitySelectors.notRiding(this.entity));
+        return Predicates.and(NOT_SPECTATING,EntitySelectors.notRiding(this.entity));
     }
 
-    @Override
-    public boolean shouldExecute() {
+    @Override public boolean shouldExecute() {
         if(this.entity instanceof NightTerrorEntity && ((NightTerrorEntity)this.entity).getAnimationData()
-                .currentAnimation!=NightTerrorEntity.AnimationType.IDLE) return false;
+                .currentAnimation!=IDLE) return false;
         if(this.entity.getRNG().nextFloat() >= this.chance) return false;
         else {
             if(Objects.nonNull(this.entity.getAttackTarget())) this.closestEntity = this.entity.getAttackTarget();
@@ -49,10 +51,9 @@ public class EntityWatchClosestWithSleepDebt2 extends EntityAIWatchClosest2 {
         }
     }
 
-    @Override
-    public boolean shouldContinueExecuting() {
+    @Override public boolean shouldContinueExecuting() {
         if(this.entity instanceof NightTerrorEntity && ((NightTerrorEntity)this.entity).getAnimationData()
-                .currentAnimation!=NightTerrorEntity.AnimationType.IDLE) return false;
+                .currentAnimation!=IDLE) return false;
         return super.shouldContinueExecuting();
     }
 }

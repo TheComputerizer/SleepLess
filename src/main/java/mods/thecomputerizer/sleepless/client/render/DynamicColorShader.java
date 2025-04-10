@@ -6,26 +6,28 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.client.shader.Shader;
-import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.io.IOException;
 import java.util.Objects;
 
-@SideOnly(Side.CLIENT)
+import static mods.thecomputerizer.sleepless.client.render.ClientEffects.COLOR_CORRECTION;
+import static net.minecraftforge.fml.relauncher.Side.CLIENT;
+
+@SideOnly(CLIENT)
 public class DynamicColorShader extends Shader {
+    
     public DynamicColorShader(IResourceManager manager, String name, Framebuffer bufferIn, Framebuffer bufferOut) throws IOException {
         super(manager,name,bufferIn,bufferOut);
     }
 
-    @Override
-    public void render(float partialTicks) {
+    @Override public void render(float partialTicks) {
         if(Objects.nonNull(Minecraft.getMinecraft().player)) {
             if(SleepLessConfigHelper.shouldLoseColor()) {
                 this.getShaderManager().getShaderUniformOrDefault("Prominence").set(
-                        NightTerrorClient.overrideProminence(ClientEffects.COLOR_CORRECTION));
+                        NightTerrorClient.overrideProminence(COLOR_CORRECTION));
                 this.getShaderManager().getShaderUniformOrDefault("ColorAdjust").set(
-                        NightTerrorClient.overrideGrayscale(1f-ClientEffects.COLOR_CORRECTION/2f));
+                        NightTerrorClient.overrideGrayscale(1f-COLOR_CORRECTION/2f));
             }
             if(SleepLessConfigHelper.shouldDimLight())
                 this.getShaderManager().getShaderUniformOrDefault("LumaAdjust").set(

@@ -2,8 +2,8 @@ package mods.thecomputerizer.sleepless.common;
 
 import mcp.MethodsReturnNonnullByDefault;
 import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
-import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.network.PacketRenderTests;
+import mods.thecomputerizer.sleepless.network.SleepLessNetwork;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -19,57 +19,56 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
 import java.util.function.Function;
 
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
+import static java.lang.Float.NaN;
+import static mods.thecomputerizer.sleepless.core.SleepLessRef.MODID;
+
+@MethodsReturnNonnullByDefault @ParametersAreNonnullByDefault
 public class SleepLessCommands extends CommandBase {
 
     private final String[] testRenderTab = new String[]{"@s","~","~","~","0","0","0","200"};
     private String curSubName;
     private EntityPlayerMP curPlayerSelector;
 
-    @Override
-    public String getName() {
-        return Constants.MODID;
+    @Override public String getName() {
+        return MODID;
     }
 
-    @Override
-    public String getUsage(ICommandSender sender) {
-        String baseLang = "commands."+Constants.MODID+".";
+    @Override public String getUsage(ICommandSender sender) {
+        String baseLang = "commands."+MODID+".";
         return Objects.nonNull(this.curSubName) && !this.curSubName.isEmpty() ?
                 baseLang+this.curSubName +".usage" : baseLang+"help";
     }
 
-    @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String ... args) throws CommandException {
+    @Override public void execute(MinecraftServer server, ICommandSender sender, String ... args) throws CommandException {
         try {
-            if (args.length == 0) sendMessage(sender, true, false, "help");
-            this.curSubName = getOrNull(0, args);
-            if (Objects.isNull(this.curSubName) || this.curSubName.isEmpty())
-                sendMessage(sender, true, false, "help");
+            if(args.length==0) sendMessage(sender,true,false,"help");
+            this.curSubName = getOrNull(0,args);
+            if(Objects.isNull(this.curSubName) || this.curSubName.isEmpty())
+                sendMessage(sender, true,false,"help");
             else {
-                switch (this.curSubName) {
+                switch(this.curSubName) {
                     case "setsleepdebt": {
-                        setSleepDebt(server, sender, getOrNull(1, args), getOrNull(2, args));
+                        setSleepDebt(server,sender,getOrNull(1,args),getOrNull(2,args));
                         resetParameters();
                         return;
                     }
                     case "testrenders": {
-                        if (args.length < 5) sendMessage(sender, true, false, "usage");
-                        testRenders(server, sender, getOrNull(1, args), getOrNull(2, args), getOrNull(3, args),
-                                getOrNull(4, args), getOrNull(5, args), getOrNull(6, args),
-                                getOrNull(7, args), getOrNull(8, args));
+                        if(args.length<5) sendMessage(sender,true,false,"usage");
+                        testRenders(server,sender,getOrNull(1,args),getOrNull(2,args),getOrNull(3,args),
+                                getOrNull(4,args),getOrNull(5,args),getOrNull(6,args),
+                                getOrNull(7,args),getOrNull(8,args));
                         resetParameters();
                         return;
                     }
                     case "nightterror": {
-                        nightTerror(sender,getOrNull(1, args));
+                        nightTerror(sender,getOrNull(1,args));
                         resetParameters();
                         return;
                     }
-                    default: sendMessage(sender, true, false, "usage");
+                    default: sendMessage(sender,true,false, "usage");
                 }
             }
-        } catch (CommandException ex) {
+        } catch(CommandException ex) {
             resetParameters();
             throw ex;
         }
@@ -80,20 +79,20 @@ public class SleepLessCommands extends CommandBase {
     }
 
     private void setSleepDebt(MinecraftServer server, ICommandSender sender, @Nullable String unparsedPlayer,
-                              @Nullable String unparsedDebt) throws CommandException {
+            @Nullable String unparsedDebt) throws CommandException {
         parsePlayer(server,sender,unparsedPlayer);
         if(Objects.isNull(unparsedDebt)) sendMessage(sender,true,false,"usage");
         else {
-            float debt = Math.max(0f,(float)parseDouble(sender,Float.NaN,unparsedDebt));
+            float debt = Math.max(0f,(float)parseDouble(sender,NaN,unparsedDebt));
             CapabilityHandler.setSleepDebt(this.curPlayerSelector, debt);
             sendMessage(sender,false,true,"success",debt);
         }
     }
 
     private void testRenders(MinecraftServer server, ICommandSender sender, @Nullable String unparsedPlayer,
-                             @Nullable String unparsedX, @Nullable String unparsedY, @Nullable String unparsedZ,
-                             @Nullable String unparsedRotX, @Nullable String unparsedRotY, @Nullable String unparsedRotZ,
-                             @Nullable String unparsedTicks) throws CommandException {
+            @Nullable String unparsedX, @Nullable String unparsedY, @Nullable String unparsedZ,
+            @Nullable String unparsedRotX, @Nullable String unparsedRotY, @Nullable String unparsedRotZ,
+            @Nullable String unparsedTicks) throws CommandException {
         parsePlayer(server,sender,unparsedPlayer);
         Vec3d pos = parseExternalCoords(sender,unparsedX,unparsedY,unparsedZ);
         if(Objects.isNull(pos)) sendMessage(sender,true,false,"pos");
@@ -101,14 +100,14 @@ public class SleepLessCommands extends CommandBase {
             Vec3d rotVec = new Vec3d(parseDouble(sender,0d,unparsedRotX),
                     parseDouble(sender,0d,unparsedRotY),parseDouble(sender,0d,unparsedRotZ));
             int ticks = (int)parseDouble(sender,0d,unparsedTicks);
-            new PacketRenderTests(pos,rotVec,ticks).addPlayers(this.curPlayerSelector).send();
+            SleepLessNetwork.sendToClient(new PacketRenderTests(pos,rotVec,ticks),this.curPlayerSelector);
             sendMessage(sender,false,true,"success",pos.x,pos.y,pos.z);
         }
     }
 
     private void nightTerror(ICommandSender sender, @Nullable String subType) throws CommandException {
         if(Objects.isNull(subType) || subType.isEmpty())
-            sendMessage(sender, true, false, "usage");
+            sendMessage(sender,true,false,"usage");
         else {
             WorldServer world = (WorldServer)sender.getEntityWorld();
             switch(subType) {
@@ -119,17 +118,17 @@ public class SleepLessCommands extends CommandBase {
                         sendMessage(sender,false,false,"fail.begin.time");
                     else {
                         CapabilityHandler.setNewNightTerror(world);
-                        sendMessage(sender, false, false, "success.begin");
+                        sendMessage(sender,false,false,"success.begin");
                     }
                     return;
                 }
                 case "stop": {
                     if(CapabilityHandler.finishNightTerror(world))
-                        sendMessage(sender, false, false, "success.stop");
-                    else sendMessage(sender, false, false, "fail.stop");
+                        sendMessage(sender,false,false,"success.stop");
+                    else sendMessage(sender,false,false,"fail.stop");
                     return;
                 }
-                default: sendMessage(sender, true, false, "usage");
+                default: sendMessage(sender,true,false,"usage");
             }
         }
     }
@@ -157,8 +156,8 @@ public class SleepLessCommands extends CommandBase {
         return defVal; //This should be unreachable
     }
 
-    private @Nullable Vec3d parseExternalCoords(ICommandSender sender, @Nullable String unparsedX, @Nullable String unparsedY,
-                                                @Nullable String unparsedZ) throws CommandException {
+    private @Nullable Vec3d parseExternalCoords(ICommandSender sender, @Nullable String unparsedX,
+            @Nullable String unparsedY, @Nullable String unparsedZ) throws CommandException {
         if(Objects.isNull(unparsedX) || Objects.isNull(unparsedY) || Objects.isNull(unparsedZ) ||
                 unparsedX.isEmpty() || unparsedY.isEmpty() || unparsedZ.isEmpty())
             sendMessage(sender,true,false,"pos.missing");
@@ -172,13 +171,13 @@ public class SleepLessCommands extends CommandBase {
      * Assumes the unparsed value can never be null or empty
      */
     private double parseExternalCoord(ICommandSender sender, double original, String unparsed) throws CommandException {
-        if(!unparsed.contains("~")) return parseDouble(sender,Float.NaN,unparsed);
+        if(!unparsed.contains("~")) return parseDouble(sender,NaN,unparsed);
         String replaced = unparsed.replaceAll("~","");
-        return (float)original+parseDouble(sender,Float.NaN,replaced.isEmpty() ? "0" : replaced);
+        return (float)original+parseDouble(sender,NaN,replaced.isEmpty() ? "0" : replaced);
     }
 
     private void sendMessage(ICommandSender sender, boolean isException, boolean isStatusMsg,
-                               @Nullable String extraLang, Object ... args) throws CommandException {
+            @Nullable String extraLang, Object ... args) throws CommandException {
         String lang = buildLangKey(extraLang);
         checkStatusMessage(isStatusMsg,lang,args);
         if(isException) throw new CommandException(lang,args);
@@ -186,7 +185,7 @@ public class SleepLessCommands extends CommandBase {
     }
 
     private String buildLangKey(@Nullable String extraLang) {
-        String lang = "commands."+Constants.MODID;
+        String lang = "commands."+MODID;
         if(Objects.nonNull(this.curSubName) && !this.curSubName.isEmpty()) lang+=("."+this.curSubName);
         if(Objects.nonNull(extraLang) && !extraLang.isEmpty()) lang+=("."+extraLang);
         return lang;
@@ -202,12 +201,13 @@ public class SleepLessCommands extends CommandBase {
         this.curPlayerSelector = null;
     }
 
-    @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args,
-                                          @Nullable BlockPos targetPos) {
-        if(args.length==0) return Collections.emptyList();
+    @Override public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args,
+            @Nullable BlockPos targetPos) {
+        if(args.length==0)
+            return Collections.emptyList();
         String subCmd = args[0];
-        if(args.length==1) return filteredTabsCompletions(subCmd,false,"setsleepdebt","nightterror","testrenders");
+        if(args.length==1)
+            return filteredTabsCompletions(subCmd,false,"setsleepdebt","nightterror","testrenders");
         if(Objects.nonNull(subCmd) && !subCmd.isEmpty()) {
             if(subCmd.matches("testrenders"))
                 return testRendersTabCompletions(args[args.length-1].isEmpty() ? args.length-2 : args.length-1);

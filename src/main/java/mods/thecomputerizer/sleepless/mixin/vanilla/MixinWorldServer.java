@@ -7,9 +7,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameRules;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.Biome.SpawnListEntry;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,8 +23,8 @@ public class MixinWorldServer {
         return (WorldServer)(Object)this;
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/WorldServer;getWorldTime()J", ordinal = 0),
-            method = "tick")
+    @Redirect(at=@At(value="INVOKE",target="Lnet/minecraft/world/WorldServer;getWorldTime()J",ordinal=0),
+            method="tick")
     private long sleepless$redirectGetWorldTime(WorldServer world) {
         long time = world.getWorldTime();
         long next = time+24000L;
@@ -35,20 +34,21 @@ public class MixinWorldServer {
         return time;
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;" +
-            "getBoolean(Ljava/lang/String;)Z", ordinal = 0), method = "tick")
+    @Redirect(at=@At(value="INVOKE",target="Lnet/minecraft/world/GameRules;" +
+            "getBoolean(Ljava/lang/String;)Z",ordinal=0),method="tick")
     private boolean sleepless$redirectDoDaylightCycle1(GameRules instance, String name) {
         return instance.getBoolean(name) && CapabilityHandler.shouldDaylightCycle(sleepless$cast());
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;" +
-            "getBoolean(Ljava/lang/String;)Z", ordinal = 2), method = "tick")
+    @Redirect(at=@At(value="INVOKE",target="Lnet/minecraft/world/GameRules;"+
+            "getBoolean(Ljava/lang/String;)Z",ordinal=2),method="tick")
     private boolean sleepless$redirectDoDaylightCycle2(GameRules instance, String name) {
         return instance.getBoolean(name) && CapabilityHandler.shouldDaylightCycle(sleepless$cast());
     }
 
-    @Inject(at = @At("HEAD"), method = "canCreatureTypeSpawnHere", cancellable = true)
-    private void sleepless$canCreatureTypeSpawnHere(EnumCreatureType type, Biome.SpawnListEntry entry, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(at=@At("HEAD"),method="canCreatureTypeSpawnHere",cancellable=true)
+    private void sleepless$canCreatureTypeSpawnHere(EnumCreatureType type, SpawnListEntry entry, BlockPos pos,
+            CallbackInfoReturnable<Boolean> cir) {
         if(entry instanceof PhantomSpawnEntry) cir.setReturnValue(true);
     }
 }

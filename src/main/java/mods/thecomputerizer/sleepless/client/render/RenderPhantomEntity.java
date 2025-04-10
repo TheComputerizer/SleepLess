@@ -1,12 +1,10 @@
 package mods.thecomputerizer.sleepless.client.render;
 
-import mods.thecomputerizer.sleepless.core.Constants;
 import mods.thecomputerizer.sleepless.mixin.vanilla.InvokerRender;
 import mods.thecomputerizer.sleepless.registry.entities.phantom.PhantomEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.entity.*;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
 import net.minecraft.entity.Entity;
@@ -15,16 +13,24 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import net.minecraftforge.client.event.RenderLivingEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.client.event.RenderLivingEvent.Post;
+import net.minecraftforge.client.event.RenderLivingEvent.Pre;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
-@SideOnly(Side.CLIENT)
+import static mods.thecomputerizer.sleepless.client.render.ClientEffects.PHANTOM_VISIBILITY;
+import static mods.thecomputerizer.sleepless.core.SleepLessRef.LOGGER;
+import static net.minecraft.client.renderer.GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA;
+import static net.minecraft.client.renderer.GlStateManager.SourceFactor.SRC_ALPHA;
+import static net.minecraft.client.renderer.OpenGlHelper.defaultTexUnit;
+import static net.minecraft.client.renderer.OpenGlHelper.lightmapTexUnit;
+import static net.minecraftforge.common.MinecraftForge.EVENT_BUS;
+import static net.minecraftforge.fml.relauncher.Side.CLIENT;
+
+@SideOnly(CLIENT)
 public class RenderPhantomEntity extends RenderLiving<PhantomEntity> {
 
     @SuppressWarnings("DataFlowIssue")
@@ -50,8 +56,8 @@ public class RenderPhantomEntity extends RenderLiving<PhantomEntity> {
                 try {
                     entity.referenceEntity = (EntityLivingBase)entity.getShadowEntityClass()
                             .getConstructor(World.class).newInstance(entity.world);
-                } catch (Exception e) {
-                    Constants.LOGGER.error("FAILED TO INSTANTIATE REFERENCE ENTITY! ", e);
+                } catch(Exception ex) {
+                    LOGGER.error("FAILED TO INSTANTIATE REFERENCE ENTITY! ",ex);
                 }
             }
             updateSize(entity);
@@ -69,9 +75,9 @@ public class RenderPhantomEntity extends RenderLiving<PhantomEntity> {
                 getModel(entity.currentRender) : null;
     }
 
-    @Override
-    public void doRender(@Nonnull PhantomEntity entity, double x, double y, double z, float entityYaw, float partialTick) {
-        if(MinecraftForge.EVENT_BUS.post(new RenderLivingEvent.Pre<>(entity,this,partialTick,x,y,z))) return;
+    @Override public void doRender(@Nonnull PhantomEntity entity, double x, double y, double z, float entityYaw,
+            float partialTick) {
+        if(EVENT_BUS.post(new Pre<>(entity,this,partialTick,x,y,z))) return;
         makeReferenceEntity(entity);
         GlStateManager.pushMatrix();
         GlStateManager.disableCull();
@@ -101,8 +107,8 @@ public class RenderPhantomEntity extends RenderLiving<PhantomEntity> {
                 float rotationFloat = this.handleRotationFloat(entity,partialTick);
                 this.applyRotations(entity,rotationFloat,yawOffset,partialTick);
                 float scale = this.prepareScale(entity,partialTick);
-                float lingSwingAmountChange = 0.0F;
-                float limbSwingChange = 0.0F;
+                float lingSwingAmountChange = 0f;
+                float limbSwingChange = 0f;
                 if(!entity.isRiding()) {
                     lingSwingAmountChange = entity.prevLimbSwingAmount+(entity.limbSwingAmount-entity.prevLimbSwingAmount)*partialTick;
                     limbSwingChange = entity.limbSwing-entity.limbSwingAmount*(1f-partialTick);
@@ -130,23 +136,23 @@ public class RenderPhantomEntity extends RenderLiving<PhantomEntity> {
                     renderShadowLayers(entity,limbSwingChange,lingSwingAmountChange,partialTick,rotationFloat,adjustedYaw,rotationPitch,scale);
                 }
                 GlStateManager.disableRescaleNormal();
-            } catch (Exception e) {
-                Constants.LOGGER.error("Couldn't render phantom entity", e);
+            } catch(Exception ex) {
+                LOGGER.error("Couldn't render phantom entity",ex);
             }
         }
-        GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+        GlStateManager.setActiveTexture(lightmapTexUnit);
         GlStateManager.enableTexture2D();
-        GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+        GlStateManager.setActiveTexture(defaultTexUnit);
         GlStateManager.enableCull();
         GlStateManager.popMatrix();
         if(Objects.nonNull(entity.referenceEntity) && canYouSeeMe()) {
             if(!this.renderOutlines) this.renderName(entity,x,y,z);
-            MinecraftForge.EVENT_BUS.post(new RenderLivingEvent.Post<>(entity,this,partialTick,x,y,z));
+            EVENT_BUS.post(new Post<>(entity,this,partialTick,x,y,z));
         }
     }
 
     protected void renderShadowModel(@Nonnull PhantomEntity entity, float swing, float swingAmount, float ageInTicks,
-                                     float headYaw, float headPitch, float scale) {
+            float headYaw, float headPitch, float scale) {
         boolean isVisible = this.isVisible(entity);
         boolean isVisibleAnyways = !isVisible && !entity.isInvisibleToPlayer(Minecraft.getMinecraft().player);
         if(isVisible || isVisibleAnyways) {
@@ -159,7 +165,7 @@ public class RenderPhantomEntity extends RenderLiving<PhantomEntity> {
 
     @SuppressWarnings("unchecked")
     protected void renderShadowLayers(@Nonnull PhantomEntity entity, float swing, float swingAmount, float partialTick,
-                                      float ageInTicks, float headYaw, float headPitch, float scale) {
+            float ageInTicks, float headYaw, float headPitch, float scale) {
         if(!(entity.referenceEntity instanceof EntityPlayer) && entity.currentRender instanceof RenderLivingBase<?>) {
             for(LayerRenderer<?> layer : ((RenderLivingBase<?>)entity.currentRender).layerRenderers) {
                 LayerRenderer<EntityLivingBase> baseLayer = (LayerRenderer<EntityLivingBase>)layer;
@@ -171,11 +177,11 @@ public class RenderPhantomEntity extends RenderLiving<PhantomEntity> {
     }
 
     private void applyColor() {
-        float reversePhantom = 1f-ClientEffects.PHANTOM_VISIBILITY;
-        GlStateManager.color(reversePhantom,reversePhantom,reversePhantom,ClientEffects.PHANTOM_VISIBILITY);
+        float reversePhantom = 1f-PHANTOM_VISIBILITY;
+        GlStateManager.color(reversePhantom,reversePhantom,reversePhantom,PHANTOM_VISIBILITY);
         GlStateManager.depthMask(false);
         GlStateManager.enableBlend();
-        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+        GlStateManager.blendFunc(SRC_ALPHA,ONE_MINUS_SRC_ALPHA);
         GlStateManager.alphaFunc(516,0.003921569f);
     }
 
@@ -185,19 +191,18 @@ public class RenderPhantomEntity extends RenderLiving<PhantomEntity> {
         GlStateManager.depthMask(true);
     }
 
-    @Override
-    public void doRenderShadowAndFire(@Nonnull Entity entity, double x, double y, double z, float yaw, float partialTick) {
+    @Override public void doRenderShadowAndFire(@Nonnull Entity entity, double x, double y, double z, float yaw,
+            float partialTick) {
         if(canYouSeeMe()) super.doRenderShadowAndFire(entity,x,y,z,yaw,partialTick);
     }
 
     @SuppressWarnings("unchecked")
-    @Override
-    protected @Nullable ResourceLocation getEntityTexture(@Nonnull PhantomEntity entity) {
+    @Override protected @Nullable ResourceLocation getEntityTexture(@Nonnull PhantomEntity entity) {
         return Objects.nonNull(entity.currentRender) ? Objects.nonNull(entity.referenceEntity) ?
                 (((InvokerRender<EntityLivingBase>)entity.currentRender).callGetEntityTexture(entity.referenceEntity)) : null : null;
     }
 
     private boolean canYouSeeMe() {
-        return ClientEffects.PHANTOM_VISIBILITY>0;
+        return PHANTOM_VISIBILITY>0;
     }
 }

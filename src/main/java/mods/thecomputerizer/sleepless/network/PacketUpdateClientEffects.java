@@ -2,26 +2,24 @@ package mods.thecomputerizer.sleepless.network;
 
 import io.netty.buffer.ByteBuf;
 import mods.thecomputerizer.sleepless.client.ClientPacketHandlers;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import mods.thecomputerizer.theimpossiblelibrary.api.network.message.MessageAPI;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class PacketUpdateClientEffects extends PacketToClient {
 
-    private float grayscale;
-    private float ambientChance;
-    private float quietSounds;
-    private float lightDim;
-    private float fogDensity;
-    private float walkSpeed;
-    private float breathingFactor;
-    private float miningSpeed;
-    private float phantomVisibility;
-
-    public PacketUpdateClientEffects() {}
+    private final float grayscale;
+    private final float ambientChance;
+    private final float quietSounds;
+    private final float lightDim;
+    private final float fogDensity;
+    private final float walkSpeed;
+    private final float breathingFactor;
+    private final float miningSpeed;
+    private final float phantomVisibility;
 
     public PacketUpdateClientEffects(float grayscale, float ambientChance, float quietSounds, float lightDim,
-                                     float fogDensity, float walkSpeed, float breathingFactor, float miningSpeed,
-                                     float phantomVisibility) {
+            float fogDensity, float walkSpeed, float breathingFactor, float miningSpeed, float phantomVisibility) {
+        super();
         this.grayscale = grayscale;
         this.ambientChance = ambientChance;
         this.quietSounds = quietSounds;
@@ -32,16 +30,9 @@ public class PacketUpdateClientEffects extends PacketToClient {
         this.miningSpeed = miningSpeed;
         this.phantomVisibility = phantomVisibility;
     }
-
-    @Override
-    public IMessage handle(MessageContext messageContext) {
-        ClientPacketHandlers.updateClientEffects(this.grayscale,this.ambientChance,this.quietSounds,this.lightDim,
-                this.fogDensity,this.walkSpeed,this.breathingFactor,this.miningSpeed,this.phantomVisibility);
-        return null;
-    }
-
-    @Override
-    public void fromBytes(ByteBuf buf) {
+    
+    public PacketUpdateClientEffects(ByteBuf buf) {
+        super(buf);
         this.grayscale = buf.readFloat();
         this.ambientChance = buf.readFloat();
         this.quietSounds = buf.readFloat();
@@ -52,9 +43,8 @@ public class PacketUpdateClientEffects extends PacketToClient {
         this.miningSpeed = buf.readFloat();
         this.phantomVisibility = buf.readFloat();
     }
-
-    @Override
-    public void toBytes(ByteBuf buf) {
+    
+    @Override public void encode(ByteBuf buf) {
         buf.writeFloat(this.grayscale);
         buf.writeFloat(this.ambientChance);
         buf.writeFloat(this.quietSounds);
@@ -64,5 +54,11 @@ public class PacketUpdateClientEffects extends PacketToClient {
         buf.writeFloat(this.breathingFactor);
         buf.writeFloat(this.miningSpeed);
         buf.writeFloat(this.phantomVisibility);
+    }
+
+    @Override public MessageAPI<MessageContext> handle(MessageContext ctx) {
+        ClientPacketHandlers.updateClientEffects(this.grayscale,this.ambientChance,this.quietSounds,this.lightDim,
+                this.fogDensity,this.walkSpeed,this.breathingFactor,this.miningSpeed,this.phantomVisibility);
+        return null;
     }
 }

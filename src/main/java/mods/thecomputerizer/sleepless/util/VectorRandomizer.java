@@ -9,8 +9,9 @@ public class VectorRandomizer {
     private final Random rand;
     private final Vec3d minOffset;
     private final Vec3d maxOffset;
+    
     public VectorRandomizer(Random rand, double minXOffset, double minYOffset, double minZOffset, double maxXOffset,
-                            double maxYOffset, double maxZOffset) {
+            double maxYOffset, double maxZOffset) {
         this(rand,new Vec3d(minXOffset,minYOffset,minZOffset),new Vec3d(maxXOffset,maxYOffset,maxZOffset));
     }
 

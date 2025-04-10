@@ -1,15 +1,13 @@
 package mods.thecomputerizer.sleepless.client.render;
 
-import mods.thecomputerizer.sleepless.core.Constants;
+import mods.thecomputerizer.sleepless.core.SleepLessRef;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
-import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.Arrays;
@@ -17,15 +15,18 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
-@SideOnly(Side.CLIENT)
+import static net.minecraft.init.SoundEvents.*;
+import static net.minecraftforge.fml.relauncher.Side.CLIENT;
+
+@SideOnly(CLIENT)
 public class ClientEffects {
-    public static final ResourceLocation GRAYSCALE_SHADER = Constants.res("shaders/post/dynamic_color_overlay.json");
+    
+    public static final ResourceLocation GRAYSCALE_SHADER = SleepLessRef.res("shaders/post/dynamic_color_overlay.json");
     private static final Random RANDOM = new Random();
-    private static final List<SoundEvent> AMBIENT_SOUNDS = Arrays.asList(SoundEvents.AMBIENT_CAVE,SoundEvents.AMBIENT_CAVE,
-            SoundEvents.ENTITY_CREEPER_PRIMED,SoundEvents.ENTITY_WITHER_SKELETON_STEP,SoundEvents.BLOCK_GRASS_STEP,
-            SoundEvents.BLOCK_GRASS_STEP,SoundEvents.BLOCK_GRASS_STEP,SoundEvents.ENTITY_CREEPER_PRIMED,
-            SoundEvents.ENTITY_SILVERFISH_AMBIENT,SoundEvents.ENTITY_SKELETON_AMBIENT,SoundEvents.BLOCK_SAND_STEP,
-            SoundEvents.BLOCK_SAND_STEP,SoundEvents.ENTITY_PLAYER_BREATH,SoundEvents.ENTITY_PLAYER_BREATH);
+    private static final List<SoundEvent> AMBIENT_SOUNDS = Arrays.asList(AMBIENT_CAVE,AMBIENT_CAVE,
+            ENTITY_CREEPER_PRIMED,ENTITY_WITHER_SKELETON_STEP,BLOCK_GRASS_STEP,BLOCK_GRASS_STEP,BLOCK_GRASS_STEP,
+            ENTITY_CREEPER_PRIMED,ENTITY_SILVERFISH_AMBIENT,ENTITY_SKELETON_AMBIENT,BLOCK_SAND_STEP,BLOCK_SAND_STEP,
+            ENTITY_PLAYER_BREATH,ENTITY_PLAYER_BREATH);
     public static float FOV_ADJUST = 0f;
     public static float BREATHING_FACTOR = 0f;
     public static float COLOR_CORRECTION = 0f;

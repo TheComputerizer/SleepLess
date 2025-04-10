@@ -4,42 +4,37 @@ import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 import zone.rong.mixinbooter.IEarlyMixinLoader;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import static mods.thecomputerizer.sleepless.core.SleepLessRef.LOGGER;
 
 public class VanillaMixinLoader implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
     static {
-        Constants.LOGGER.info("Initializing vanilla mixins");
+        LOGGER.info("Initializing vanilla mixins");
+    }
+    
+    @Override public String getAccessTransformerClass() {
+        return null;
     }
 
-    @Override
-    public List<String> getMixinConfigs() {
-        return Stream.of("sleepless_vanilla.mixin.json").collect(Collectors.toList());
-    }
-
-    @Override
-    public String[] getASMTransformerClass() {
+    @Override public String[] getASMTransformerClass() {
         return new String[0];
     }
+    
+    @Override public List<String> getMixinConfigs() {
+        return Collections.singletonList("sleepless_vanilla.mixin.json");
+    }
 
-    @Override
-    public String getModContainerClass() {
+    @Override public String getModContainerClass() {
         return null;
     }
 
-    @Override
-    public @Nullable String getSetupClass() {
+    @Override public @Nullable String getSetupClass() {
         return null;
     }
 
-    @Override
-    public void injectData(Map<String, Object> data) {}
-
-    @Override
-    public String getAccessTransformerClass() {
-        return null;
-    }
+    @Override public void injectData(Map<String,Object> data) {}
 }

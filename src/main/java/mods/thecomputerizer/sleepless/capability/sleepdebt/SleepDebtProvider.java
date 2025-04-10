@@ -15,24 +15,19 @@ public class SleepDebtProvider implements ICapabilitySerializable<NBTTagCompound
 
     private final ISleepDebt impl = SLEEP_DEBT_CAPABILITY.getDefaultInstance();
 
-    @Override
-    public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
+    @Override public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
         return capability==SLEEP_DEBT_CAPABILITY;
     }
-
-    @Nullable
-    @Override
-    public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
-        return capability == SLEEP_DEBT_CAPABILITY ? SLEEP_DEBT_CAPABILITY.cast(this.impl) : null;
+    
+    @Override public <T> @Nullable T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
+        return capability==SLEEP_DEBT_CAPABILITY ? SLEEP_DEBT_CAPABILITY.cast(this.impl) : null;
     }
 
-    @Override
-    public NBTTagCompound serializeNBT() {
+    @Override public NBTTagCompound serializeNBT() {
         return (NBTTagCompound)SLEEP_DEBT_CAPABILITY.getStorage().writeNBT(SLEEP_DEBT_CAPABILITY,this.impl,null);
     }
 
-    @Override
-    public void deserializeNBT(NBTTagCompound nbt) {
+    @Override public void deserializeNBT(NBTTagCompound nbt) {
         SLEEP_DEBT_CAPABILITY.getStorage().readNBT(SLEEP_DEBT_CAPABILITY,this.impl,null,nbt);
     }
 }
