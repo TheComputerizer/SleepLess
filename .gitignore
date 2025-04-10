@@ -28,3 +28,8 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Other Stuff ###
+run
+run_client
+run_server
