@@ -95,10 +95,11 @@ jar {
     archivesBaseName = base_name
     manifest {
         attributes([
+                'FMLAT': 'sleepless_at.cfg',
                 'FMLCorePlugin': 'mods.thecomputerizer.sleepless.core.VanillaMixinLoader',
                 'FMLCorePluginContainsFMLMod': true,
                 'ForceLoadAsMod': true,
-                'FMLAT': 'sleepless_at.cfg',
+                'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker'
         ])
     }
 }
