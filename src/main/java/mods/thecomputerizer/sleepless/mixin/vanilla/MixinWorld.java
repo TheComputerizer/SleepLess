@@ -1,6 +1,7 @@
 package mods.thecomputerizer.sleepless.mixin.vanilla;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import mods.thecomputerizer.sleepless.capability.CapabilityHandler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -39,9 +40,11 @@ public abstract class MixinWorld {
     }
 
 
+    @SuppressWarnings("LocalMayBeArgsOnly")
     @ModifyExpressionValue(at=@At(value="FIELD",target="Lnet/minecraft/entity/Entity;preventEntitySpawning:Z",
-            opcode=GETFIELD),method="checkNoEntityCollision")
-    private boolean sleepless$noPhantomCollisions(Entity entity, boolean original) {
+            opcode=GETFIELD),method="checkNoEntityCollision(Lnet/minecraft/util/math/AxisAlignedBB;"+
+                                    "Lnet/minecraft/entity/Entity;)Z")
+    private boolean sleepless$noPhantomCollisionsOld(boolean original, @Local Entity entity) {
         return original && (!(entity instanceof EntityLivingBase) ||
                 !((EntityLivingBase)entity).isPotionActive(PHASED));
     }
